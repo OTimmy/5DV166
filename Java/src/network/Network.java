@@ -26,10 +26,9 @@ public class Network {
 	private final String nameServerAddress = "itchy.cs.umu.se";
 	private final int nameServerPort = 1337;
 
-	//private Socket socket;
-	//private DatagramSocket socket = null;
-	private DatagramPacket packet;
-
+	private DatagramPacket datagramPacket;
+	private DatagramSocket datagramSocket;
+	
 	private PrintWriter msgOut;
 	private OutputStream socketOut;
 	private InputStream socketIn;
@@ -85,20 +84,22 @@ public class Network {
 	}
 
 
-	public void conncetToClientServer() {
-
-	}
-
 	public void getNameServerList() {
 		//while loop till end of data
 		 // collect data
 		//done
 		//return data
 
-		socket.disconnect();
+		datagramSocket.disconnect();
 
 		return;
 	}
+	
+	
+	public void conncetToClientServer() {
+
+	}
+
 
 	public void getClientServerData() {
 
