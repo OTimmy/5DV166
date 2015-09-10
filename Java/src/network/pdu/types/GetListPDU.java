@@ -5,6 +5,7 @@ package network.pdu.types;
  */
 public class GetListPDU {
 
+	
 	public byte[] toByteArrat() {
 		byte[] pdu = new byte[4];
 

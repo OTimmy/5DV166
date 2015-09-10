@@ -26,7 +26,6 @@ public class Network {
 	private final String nameServerAddress = "itchy.cs.umu.se";
 	private final int nameServerPort = 1337;
 
-	private DatagramPacket datagramPacket;
 	private DatagramSocket datagramSocket;
 	
 	private PrintWriter msgOut;
@@ -75,21 +74,25 @@ public class Network {
 													pdu.toByteArrat().length,
 													address,nameServerPort);
 
-		DatagramSocket socket = new DatagramSocket();
+		DatagramSocket datagramSocket = new DatagramSocket();
+		
+		datagramSocket.send(packet);
 
-		socket.send(packet);
 
-
-		return socket.isConnected();
+		return datagramSocket.isConnected();
 	}
 
 
 	public void getNameServerList() {
+		DatagramPacket packet = new DatagramPacket(pduSLIST,pduSLIST.length); 
+		
 		//while loop till end of data
 		 // collect data
 		//done
 		//return data
-
+		datagramSocket.receive(arg0);
+		
+		
 		datagramSocket.disconnect();
 
 		return;
