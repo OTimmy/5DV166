@@ -1,4 +1,4 @@
-package model;
+package network;
 
 
 import java.io.IOException;
@@ -43,25 +43,35 @@ public class Network {
 			InetAddress inetAddress = InetAddress.getByName(address);
 			packet = new DatagramPacket(pduGETLIST,pduGETLIST.length,inetAddress,port);
 			socket.send(packet);
-			
+
 			//RECEIVING packet
 			byte[] pduSLIST = new byte[16];
 			packet = new DatagramPacket(pduSLIST,pduSLIST.length);
-			  //method blocks untill it receive packet. 
+			  //method blocks untill it receive packet.
 			socket.receive(packet);
-			
-			
+
+
 			System.out.println(pduSLIST[0]);
-			
+
 		} catch (IOException e){
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} //catch (ACKException e)
 	}
 
+	public void conncetNameServer(){
+
+	}
+
+	public void conncetClientServer() {
+
+	}
+
 	public void disconnect() {
 
 	}
+
+
 
 	/**
 	 * @return true if message was successfully transmitted,

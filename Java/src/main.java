@@ -1,6 +1,7 @@
 import java.net.InetAddress;
 
-import model.Network;
+import network.Network;
+
 
 
 public class main {
