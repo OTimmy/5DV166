@@ -9,6 +9,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+import network.pdu.types.GetListPDU;
+
 
 // http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
 // https://docs.oracle.com/javase/tutorial/networking/datagrams/
@@ -20,8 +22,12 @@ import java.net.InetAddress;
  */
 public class Network {
 
+
+	private final String nameServerAddress = "itchy.cs.umu.se";
+	private final int nameServerPort = 1337;
+
 	//private Socket socket;
-	private DatagramSocket socket = null;
+	//private DatagramSocket socket = null;
 	private DatagramPacket packet;
 
 	private PrintWriter msgOut;
@@ -49,6 +55,7 @@ public class Network {
 			packet = new DatagramPacket(pduSLIST,pduSLIST.length);
 			  //method blocks untill it receive packet.
 			socket.receive(packet);
+			socket.
 
 
 			System.out.println(pduSLIST[0]);
@@ -59,13 +66,45 @@ public class Network {
 		} //catch (ACKException e)
 	}
 
-	public void conncetNameServer(){
+	//return false, if connection is not established
+	public boolean conncetToNameServer(){
+		//settings
+		InetAddress address = InetAddress.getByName(nameServerAddress);
+		GetListPDU pdu = new GetListPDU();
+
+		DatagramPacket packet = new DatagramPacket(pdu.toByteArrat(),
+													pdu.toByteArrat().length,
+													address,nameServerPort);
+
+		DatagramSocket socket = new DatagramSocket();
+
+		socket.send(packet);
+
+
+		return socket.isConnected();
+	}
+
+
+	public void conncetToClientServer() {
 
 	}
 
-	public void conncetClientServer() {
+	public void getNameServerList() {
+		//while loop till end of data
+		 // collect data
+		//done
+		//return data
+
+		socket.disconnect();
+
+		return;
+	}
+
+	public void getClientServerData() {
 
 	}
+
+	public void
 
 	public void disconnect() {
 
