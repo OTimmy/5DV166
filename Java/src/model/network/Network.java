@@ -1,4 +1,4 @@
-package network;
+package model.network;
 
 
 import java.io.IOException;
@@ -10,6 +10,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 import network.pdu.types.GetListPDU;
+import network.pdu.types.SListPDU;
 
 
 // http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
@@ -26,7 +27,7 @@ public class Network {
 	private final String nameServerAddress = "itchy.cs.umu.se";
 	private final int nameServerPort = 1337;
 
-	private DatagramSocket datagramSocket;
+	private DatagramSocket udpSocket;
 	
 	private PrintWriter msgOut;
 	private OutputStream socketOut;
@@ -77,20 +78,23 @@ public class Network {
 		DatagramSocket datagramSocket = new DatagramSocket();
 		
 		datagramSocket.send(packet);
-
+		 udpSocket.r
 
 		return datagramSocket.isConnected();
 	}
 
 
 	public void getNameServerList() {
-		DatagramPacket packet = new DatagramPacket(pduSLIST,pduSLIST.length); 
 		
+		SListPDU pdu = new SListPDU();
+		DatagramPacket packet = new DatagramPacket(pdu.,pduSLIST.length); 
+		udpSocket.receive(pakcet);
 		//while loop till end of data
 		 // collect data
 		//done
 		//return data
 		datagramSocket.receive(arg0);
+		packet.re
 		
 		
 		datagramSocket.disconnect();
