@@ -3,14 +3,16 @@ package model.network.pdu.types;
 import model.network.pdu.PDU;
 
 public class GetListPDU extends PDU{
+    private int size;
 
 	@Override
 	public byte[] toByteArray(int size) {
-		byte[] bytes = new byte[size];
+		this.size = size;
+	    byte[] bytes = new byte[size];
 
 		bytes[0] = 3; //getList code
 
-		for(int i = 0; i < size; i++) {
+		for(int i = 1; i < size; i++) {
 			bytes[i] = 0;
 		}
 
@@ -18,9 +20,8 @@ public class GetListPDU extends PDU{
 	}
 
 	@Override
-	public int getLength() {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getSize() {
+		return size;
 	}
 
 }

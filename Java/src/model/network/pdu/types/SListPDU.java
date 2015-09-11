@@ -18,8 +18,18 @@ public class SListPDU extends PDU{
 		return pdu;
 	}
 
-	public int getLength() {
+	@Override
+	public int getSize() {
 		return size;
+	}
+
+	public int getNrServers() {
+	    
+	    return 0;
+	}
+
+	public String getAddress() {
+	    return null;
 	}
 
 }

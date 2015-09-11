@@ -8,6 +8,9 @@ import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 import model.network.pdu.types.GetListPDU;
 import model.network.pdu.types.SListPDU;
@@ -26,6 +29,7 @@ public class Network {
 
 	private final String nameServerAddress = "itchy.cs.umu.se";
 	private final int nameServerPort = 1337;
+	private final int recieveTimeOut = 400;
 
 	private DatagramSocket udpSocket;
 
@@ -34,72 +38,103 @@ public class Network {
 	private InputStream socketIn;
 
 	//Should throw exceptions, and it should be handled in Listener.
-	public void connect(String address, int port, String nickName) { //Change address type to InetAddress??
-		try {
+//	public void connect(String address, int port, String nickName) { //Change address type to InetAddress??
+//		try {
+////
+////			socket = new DatagramSocket();
+////
+////			//TEST Send pdu
+////			byte[] pduGETLIST = new byte[2];
+////			pduGETLIST[0] = 3;
+////			pduGETLIST[1] = 0;
+////
+////			//SENDING packet
+////			InetAddress inetAddress = InetAddress.getByName(address);
+////			packet = new DatagramPacket(pduGETLIST,pduGETLIST.length,inetAddress,port);
+////			socket.send(packet);
+////
+////			//RECEIVING packet
+////			byte[] pduSLIST = new byte[16];
+////			packet = new DatagramPacket(pduSLIST,pduSLIST.length);
+////			  //method blocks untill it receive packet.
+////			socket.receive(packet);
+////			socket.
+////
+////
+////			System.out.println(pduSLIST[0]);
 //
-//			socket = new DatagramSocket();
-//
-//			//TEST Send pdu
-//			byte[] pduGETLIST = new byte[2];
-//			pduGETLIST[0] = 3;
-//			pduGETLIST[1] = 0;
-//
-//			//SENDING packet
-//			InetAddress inetAddress = InetAddress.getByName(address);
-//			packet = new DatagramPacket(pduGETLIST,pduGETLIST.length,inetAddress,port);
-//			socket.send(packet);
-//
-//			//RECEIVING packet
-//			byte[] pduSLIST = new byte[16];
-//			packet = new DatagramPacket(pduSLIST,pduSLIST.length);
-//			  //method blocks untill it receive packet.
-//			socket.receive(packet);
-//			socket.
-//
-//
-//			System.out.println(pduSLIST[0]);
-
-		} catch (IOException e){
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} //catch (ACKException e)
-	}
+//		} catch (IOException e){
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} //catch (ACKException e)
+//	}
 
 	//return false, if connection is not established
-	public boolean conncetToNameServer(){
+	public boolean conncetToNameServer() {
 		//settings
-		InetAddress address = InetAddress.getByName(nameServerAddress);
-		GetListPDU pdu = new GetListPDU();
+		try {
 
-		DatagramPacket packet = new DatagramPacket(pdu.toByteArray(4),
-													pdu.getLength(),
-													address,nameServerPort);
+			InetAddress address = InetAddress.getByName(nameServerAddress);
+			GetListPDU pdu = new GetListPDU();
 
-		udpSocket = new DatagramSocket();
+			DatagramPacket packet = new DatagramPacket(pdu.toByteArray(4),
+														pdu.getSize(),
+														address,nameServerPort);
+			//Initating udpSocket
+			udpSocket = new DatagramSocket();
+			udpSocket.setSoTimeout(recieveTimeOut);
 
-		udpSocket.send(packet);
+			udpSocket.send(packet);
 
-
-		return udpSocket.isConnected();
+		} catch(IOException e) {
+		    System.out.println("Could not connect");
+		    return false;
+		}
+		return true;
 	}
 
 
-	public void getNameServerList() {
 
-		SListPDU pdu = new SListPDU();
+	//Problem with address, becuase its signed bit, change dat to unsigned
+	//Should return arraylist???
+	public void getNameServerList() throws IOException {
 
-		DatagramPacket packet = new DatagramPacket(pdu.toByteArray(4),
-													pdu.getLength());
-		udpSocket.receive(packet);
+	    try {
 
-		//udpSocket.
-		//while loop till end of data
-		 // collect data
-		//done
-		//return data
 
-		udpSocket.disconnect();
+	        SListPDU pdu = new SListPDU();
 
+	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(100),
+													pdu.getSize());
+
+	        udpSocket.receive(packet);
+
+	        System.out.println("OP-code: "+packet.getData()[0]);
+
+
+//	        packet = new DatagramPacket(pdu.toByteArray(1337),
+//                       pdu.getLength());
+//	        udpSocket.receive(packet);
+
+	        System.out.println("Sekvensnr: "+ packet.getData()[1]);
+
+	        //udpSocket.getS
+
+          packet = new DatagramPacket(pdu.toByteArray(1337),
+                       pdu.getSize());
+          udpSocket.receive(packet);
+
+          System.out.println("Sekvensnr: "+(char)packet.getData()[1]);
+
+
+	    }catch(SocketTimeoutException e) {
+	        System.out.println("Could not download list, timed out. (MSG)");
+
+	        return;
+	    }catch (IOException e) {
+
+	        return;
+	    }
 		return;
 	}
 

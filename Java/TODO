@@ -1,0 +1,8 @@
+
+1. Messageque for the model to send to controller and therefrom to the gui.
+  - Should be used in,
+    -Network
+
+
+2. Network.java
+   Max size of pud should be 1500 bytes, becuase of internet thread.

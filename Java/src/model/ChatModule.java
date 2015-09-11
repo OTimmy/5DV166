@@ -6,4 +6,6 @@ package model;
  */
 public class ChatModule {
 
+    //Should initate queMessage of all related problems
+
 }
