@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
 import model.network.pdu.types.GetListPDU;
 import model.network.pdu.types.SListPDU;
 
-
+//YES
 // http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
 // https://docs.oracle.com/javase/tutorial/networking/datagrams/
 /**
