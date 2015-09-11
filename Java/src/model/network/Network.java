@@ -9,8 +9,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-import network.pdu.types.GetListPDU;
-import network.pdu.types.SListPDU;
+import model.network.pdu.types.GetListPDU;
+import model.network.pdu.types.SListPDU;
 
 
 // http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
@@ -28,7 +28,7 @@ public class Network {
 	private final int nameServerPort = 1337;
 
 	private DatagramSocket udpSocket;
-	
+
 	private PrintWriter msgOut;
 	private OutputStream socketOut;
 	private InputStream socketIn;
@@ -36,28 +36,28 @@ public class Network {
 	//Should throw exceptions, and it should be handled in Listener.
 	public void connect(String address, int port, String nickName) { //Change address type to InetAddress??
 		try {
-
-			socket = new DatagramSocket();
-
-			//TEST Send pdu
-			byte[] pduGETLIST = new byte[2];
-			pduGETLIST[0] = 3;
-			pduGETLIST[1] = 0;
-
-			//SENDING packet
-			InetAddress inetAddress = InetAddress.getByName(address);
-			packet = new DatagramPacket(pduGETLIST,pduGETLIST.length,inetAddress,port);
-			socket.send(packet);
-
-			//RECEIVING packet
-			byte[] pduSLIST = new byte[16];
-			packet = new DatagramPacket(pduSLIST,pduSLIST.length);
-			  //method blocks untill it receive packet.
-			socket.receive(packet);
-			socket.
-
-
-			System.out.println(pduSLIST[0]);
+//
+//			socket = new DatagramSocket();
+//
+//			//TEST Send pdu
+//			byte[] pduGETLIST = new byte[2];
+//			pduGETLIST[0] = 3;
+//			pduGETLIST[1] = 0;
+//
+//			//SENDING packet
+//			InetAddress inetAddress = InetAddress.getByName(address);
+//			packet = new DatagramPacket(pduGETLIST,pduGETLIST.length,inetAddress,port);
+//			socket.send(packet);
+//
+//			//RECEIVING packet
+//			byte[] pduSLIST = new byte[16];
+//			packet = new DatagramPacket(pduSLIST,pduSLIST.length);
+//			  //method blocks untill it receive packet.
+//			socket.receive(packet);
+//			socket.
+//
+//
+//			System.out.println(pduSLIST[0]);
 
 		} catch (IOException e){
 			// TODO Auto-generated catch block
@@ -71,38 +71,39 @@ public class Network {
 		InetAddress address = InetAddress.getByName(nameServerAddress);
 		GetListPDU pdu = new GetListPDU();
 
-		DatagramPacket packet = new DatagramPacket(pdu.toByteArrat(),
-													pdu.toByteArrat().length,
+		DatagramPacket packet = new DatagramPacket(pdu.toByteArray(4),
+													pdu.getLength(),
 													address,nameServerPort);
 
-		DatagramSocket datagramSocket = new DatagramSocket();
-		
-		datagramSocket.send(packet);
-		 udpSocket.r
+		udpSocket = new DatagramSocket();
 
-		return datagramSocket.isConnected();
+		udpSocket.send(packet);
+
+
+		return udpSocket.isConnected();
 	}
 
 
 	public void getNameServerList() {
-		
+
 		SListPDU pdu = new SListPDU();
-		DatagramPacket packet = new DatagramPacket(pdu.,pduSLIST.length); 
-		udpSocket.receive(pakcet);
+
+		DatagramPacket packet = new DatagramPacket(pdu.toByteArray(4),
+													pdu.getLength());
+		udpSocket.receive(packet);
+
+		//udpSocket.
 		//while loop till end of data
 		 // collect data
 		//done
 		//return data
-		datagramSocket.receive(arg0);
-		packet.re
-		
-		
-		datagramSocket.disconnect();
+
+		udpSocket.disconnect();
 
 		return;
 	}
-	
-	
+
+
 	public void conncetToClientServer() {
 
 	}
@@ -111,8 +112,6 @@ public class Network {
 	public void getClientServerData() {
 
 	}
-
-	public void
 
 	public void disconnect() {
 

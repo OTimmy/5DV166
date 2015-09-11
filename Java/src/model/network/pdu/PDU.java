@@ -1,5 +1,8 @@
 package model.network.pdu;
 
-public class PDU {
+public abstract class PDU {
+
+	public abstract byte[] toByteArray(int size);
+	public abstract int getLength();
 
 }
