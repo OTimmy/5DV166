@@ -4,7 +4,7 @@ import model.network.pdu.*;
 
 public class SListPDU extends PDU{
 	private int size;
- //works
+ 
 	@Override
 	public byte[] toByteArray(int size) {
 		this.size = size;
@@ -23,9 +23,8 @@ public class SListPDU extends PDU{
 		return size;
 	}
 
-	public int getNrServers() {
-	    
-	    return 0;
+	public int getSequenceNr(byte[] bytes) {
+	    return bytes[1];
 	}
 
 	public String getAddress() {
