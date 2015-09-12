@@ -22,13 +22,31 @@ public class SListPDU extends PDU{
 	public int getSize() {
 		return size;
 	}
-
+	
 	public int getSequenceNr(byte[] bytes) {
 	    return bytes[1];
 	}
-
-	public String getAddress() {
-	    return null;
+	
+	public int getNrOfServers(byte[] bytes) {
+		return bytes[2];
 	}
+	
+	public String getAddress() {
+		
+		return null;
+	}
+	
+	public int getPort() {
+		return 0;
+	}
+	
+	public int nrOfClients() {
+		return 0;
+	}
+	
+	public String getServerName() {
+		return null;
+	}
+	
 
 }
