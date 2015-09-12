@@ -4,7 +4,7 @@ import model.network.pdu.*;
 
 public class SListPDU extends PDU{
 	private int size;
- //asd
+ //asds
 	@Override
 	public byte[] toByteArray(int size) {
 		this.size = size;
