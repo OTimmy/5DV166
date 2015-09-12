@@ -8,14 +8,14 @@ public class SListPDU extends PDU{
 	@Override
 	public byte[] toByteArray(int size) {
 		this.size = size;
-		byte[] pdu = new byte[size];
+		byte[] bytes = new byte[size];
 
 		//necessary?
 		for(int i = 0; i < size; i++) {
-			pdu[i] = 0;
+			bytes[i] = 0;
 		}
 
-		return pdu;
+		return bytes;
 	}
 
 	@Override
