@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -18,6 +19,7 @@ import model.network.pdu.types.SListPDU;
 //YES
 // http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
 // https://docs.oracle.com/javase/tutorial/networking/datagrams/
+// http://examples.javacodegeeks.com/core-java/net/inetaddress/get-hostname-from-ip-address/
 /**
  * @author c12ton
  * @version 2015.09.16
@@ -61,35 +63,53 @@ public class Network {
 		return true;
 	}
 
+   //getServerAddress
 
+   //getServerClinets
 
+   //
 	//Problem with address, becuase its signed bit, change dat to unsigned
 	//Should return arraylist???
-	public void getNameServerList() throws IOException {
-
+	public void getNameServerList() {
 	    try {
 
-
 	        SListPDU pdu = new SListPDU();
-
 	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
-													pdu.getSize());
-
+	                                                   pdu.getSize());
 	        udpSocket.receive(packet);
 
 	        System.out.println("OP-code: "+packet.getData()[0]);
-
 	        System.out.println("Sekvensnr: "+ packet.getData()[1]);
+	        int value = (packet.getData()[3]<<8 | packet.getData()[4]);
+	        System.out.println("Antalet:" + value);
+	        //int ip = (int) packet.getData()[6] & 0xff;
+	        //String ip = "";//s((int) packet.getData()[4] & 0xff) + ".";
 
-	        System.out.println("Sekvensnr: "+(char)packet.getData()[1]);
+	        String ip = "";
 
+	        for(int i = 4; i < 8; i++) {
+	            ip += ((int) packet.getData()[i] & 0xff);
+
+	            if(i < 7) {
+	                ip += ".";
+	            }
+	        }
+	        InetAddress inetAddr = InetAddress.getByName(ip);
+	        //InetAddress inetAddr = InetAddress.getByName("130.239.42");
+
+	        String host = inetAddr.getHostName();
+
+	        System.out.println("Host:" + host);
+	        Socket socket = new Socket(ip,0);
+	        System.out.println(socket.isConnected());
 
 	    }catch(SocketTimeoutException e) {
 	        System.out.println("Could not download list, timed out. (MSG)");
 
 	        return;
 	    }catch (IOException e) {
-
+	        e.printStackTrace();
+	        System.out.println("Unknown host stuff");
 	        return;
 	    }
 		return;

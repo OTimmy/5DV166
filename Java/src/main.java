@@ -16,12 +16,8 @@ public class main {
 			//network.conncetToNameServer();
 			System.out.println(network.conncetToNameServer());
 
-			try {
                 network.getNameServerList();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+
 			// TODO Auto-generated catch block
 		//network.connect(("itchy.cs.umu.se"), 1337, "Name");
 
