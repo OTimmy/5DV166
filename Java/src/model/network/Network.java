@@ -37,38 +37,6 @@ public class Network {
 	private OutputStream socketOut;
 	private InputStream socketIn;
 
-	//Should throw exceptions, and it should be handled in Listener.
-//	public void connect(String address, int port, String nickName) { //Change address type to InetAddress??
-//		try {
-////
-////			socket = new DatagramSocket();
-////
-////			//TEST Send pdu
-////			byte[] pduGETLIST = new byte[2];
-////			pduGETLIST[0] = 3;
-////			pduGETLIST[1] = 0;
-////
-////			//SENDING packet
-////			InetAddress inetAddress = InetAddress.getByName(address);
-////			packet = new DatagramPacket(pduGETLIST,pduGETLIST.length,inetAddress,port);
-////			socket.send(packet);
-////
-////			//RECEIVING packet
-////			byte[] pduSLIST = new byte[16];
-////			packet = new DatagramPacket(pduSLIST,pduSLIST.length);
-////			  //method blocks untill it receive packet.
-////			socket.receive(packet);
-////			socket.
-////
-////
-////			System.out.println(pduSLIST[0]);
-//
-//		} catch (IOException e){
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} //catch (ACKException e)
-//	}
-
 	//return false, if connection is not established
 	public boolean conncetToNameServer() {
 		//settings
@@ -77,7 +45,7 @@ public class Network {
 			InetAddress address = InetAddress.getByName(nameServerAddress);
 			GetListPDU pdu = new GetListPDU();
 
-			DatagramPacket packet = new DatagramPacket(pdu.toByteArray(4),
+			DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
 														pdu.getSize(),
 														address,nameServerPort);
 			//Initating udpSocket
@@ -104,27 +72,16 @@ public class Network {
 
 	        SListPDU pdu = new SListPDU();
 
-	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(100),
+	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
 													pdu.getSize());
 
 	        udpSocket.receive(packet);
 
 	        System.out.println("OP-code: "+packet.getData()[0]);
 
-
-//	        packet = new DatagramPacket(pdu.toByteArray(1337),
-//                       pdu.getLength());
-//	        udpSocket.receive(packet);
-
 	        System.out.println("Sekvensnr: "+ packet.getData()[1]);
 
-	        //udpSocket.getS
-
-          packet = new DatagramPacket(pdu.toByteArray(1337),
-                       pdu.getSize());
-          udpSocket.receive(packet);
-
-          System.out.println("Sekvensnr: "+(char)packet.getData()[1]);
+	        System.out.println("Sekvensnr: "+(char)packet.getData()[1]);
 
 
 	    }catch(SocketTimeoutException e) {
