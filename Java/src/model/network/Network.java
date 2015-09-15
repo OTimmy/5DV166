@@ -78,30 +78,24 @@ public class Network {
 	                                                   pdu.getSize());
 	        udpSocket.receive(packet);
 
-	        System.out.println("OP-code: "+packet.getData()[0]);
-	        System.out.println("Sekvensnr: "+ packet.getData()[1]);
-	        int value = (packet.getData()[3]<<8 | packet.getData()[4]);
-	        System.out.println("Antalet:" + value);
-	        //int ip = (int) packet.getData()[6] & 0xff;
-	        //String ip = "";//s((int) packet.getData()[4] & 0xff) + ".";
+	        //God no!!!!
+	        int nrTrys = 0;
+	        for(nrTrys = 0; (pdu.parse(packet.getData()) == false) &&
+	                nrTrys < 1; nrTrys++) {
 
-	        pdu.parser(packet.getData());
-	        
-	        String ip = "";
+                packet = new DatagramPacket(pdu.toByteArray(), pdu.getSize());
+                udpSocket.receive(packet);
 
-	        for(int i = 4; i < 8; i++) {
-	            ip += ((int) packet.getData()[i] & 0xff);
-
-	            if(i < 7) {
-	                ip += ".";
-	            }
 	        }
-	        InetAddress inetAddr = InetAddress.getByName(ip);
-	        //InetAddress inetAddr = InetAddress.getByName("130.239.42");
 
-	        String host = inetAddr.getHostName();
+	        if(nrTrys < 1) {
 
-	        System.out.println("Host:" + host);
+	            //pdu.getNameList
+	            //pdu.getStuff
+
+	        } else {
+	            System.out.println("Package didn't ge trough (MSG)");
+	        }
 
 	    }catch(SocketTimeoutException e) {
 	        System.out.println("Could not download list, timed out. (MSG)");

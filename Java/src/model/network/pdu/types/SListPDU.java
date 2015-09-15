@@ -12,16 +12,17 @@ import model.network.pdu.*;
  */
 public class SListPDU implements PDU{
 	private final int pduSize = 1500;
-	private ArrayList<Integer> sequenceNr;
-	private ArrayList<String> hostNames;
+
+	private ArrayList<Integer> sequenceNrs;
+	private ArrayList<String> addresses;
 	private ArrayList<Integer> ports;
 	private ArrayList<Integer> nrClients;
 	private ArrayList<String> serverNames;
 
 	public SListPDU() {
 
-	    sequenceNr  = new ArrayList<Integer>();
-        hostNames   = new ArrayList<String>();
+	    sequenceNrs  = new ArrayList<Integer>();
+	    addresses   = new ArrayList<String>();
         ports       = new ArrayList<Integer>();
         nrClients   = new ArrayList<Integer>();
         serverNames = new ArrayList<String>();
@@ -41,56 +42,80 @@ public class SListPDU implements PDU{
 
 	/**
 	 * Parser and store data in appropiate list.
+	 * @return false if parsing failed.
 	 */
-	public void parser(byte[] bytes) {
+	public boolean parse(byte[] bytes) {
 
-	    //serverName length = 0;
-	                        //nr of servers
 
-		int index = 0;
-		int nrOfChatservers   = (int) ((bytes [0 + 2] << 8)+ bytes[0 + 3]);
-	    for(int i = 1; i <= nrOfChatservers;i++) {
-		
-	        int sequenceNr        = (int) bytes[index+1];
-            int port              = (int) ((bytes [index + 8] << 8)+ bytes[index + 9]);
-	        int nrOfClients       = (int) bytes [index + 10];                
-	        int nameLength        = (int) bytes[index + 11]; 
-	        	        
-	        index += 11 + nameLength;
-	        
-	        
-	        System.out.println("--------------------");
-	        System.out.println("index: "+index);
-	        
-	        
-	        //System.out.println("Next index val: "+ index);
-	        
-	        
-	        
+		int index = 4;
+		int nrOfChatServers   = (int) ((bytes [2] << 8)+ bytes[3]);
+
+		if(nrOfChatServers > 0) {
+		    sequenceNrs.add((int) bytes[1]);
+		}
+
+		for(int i = 1; i <= nrOfChatServers;i++) {
+
+
+            String serverAddress = "";
+		    for(int j = index; j < index + 4; j++) {
+	                serverAddress += "" + ((int) bytes[j] & 0xff);
+	                if( j < (index + 3)) {
+	                    serverAddress += ".";
+	                }
+	        }
+
+
+            int port        = (int) ((bytes [index + 4] << 8)+ bytes[index + 5]); //replace with ++?
+	        int nrOfClients = (int) bytes [index + 6];
+	        int nameLength  = (int) bytes[index + 7];
+
+	        //start index for server name
+	        index += 8;
+
+	        // Getting servers name
+	        String serverName =  "";
+	        for(int j = index; j < (index + nameLength);j++) {
+	            serverName += (char) bytes[j];
+	        }
+
+	        //index += nameLength +  (4 - nameLength % 4) % 4;
+	        //index += 4 * ((4 - nameLength % 4) % 4);
+	        index += 4 * (nameLength/4 + (nameLength%4>0?1:0));
+
+
+
+	        addresses.add(serverAddress);
+	        ports.add(port);
+	        nrClients.add(nrOfClients);
+	        serverNames.add(serverName);
+
+	        // Not the correct number of servers
+	        if(index >= bytes.length) {
+	            return false;
+	        }
+
 	    }
-//	        //Address
-//	        for(int j = i + 4; j < i + 8; j++ ) {
-//
-//	        }
-//	        
-//	        //server name
-//	        for(int j = i + 12; j < i + nameLength; j++) {
-//	        	
-//	        }
-//	        System.out.println("s");
-//	        i += nameLength;
-	     // 
-//
-//	    }
+
+		for(String name: serverNames) {
+		    System.out.println("Name:"+name);
+		}
+
+	    for(String address: addresses) {
+	            System.out.println("address:"+address);
+	    }
+
+
+	    return true;
 	}
 
 
-	public ArrayList getSequenceNr() {
-	    return sequenceNr;
+	public ArrayList getSequenceNrs() {
+	    return sequenceNrs;
 	}
 
 	public ArrayList getaddresses() {
-		return hostNames;
+		return addresses;
 	}
 
 	public ArrayList getPorts() {
