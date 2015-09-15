@@ -43,56 +43,45 @@ public class SListPDU implements PDU{
 	 * Parser and store data in appropiate list.
 	 */
 	public void parser(byte[] bytes) {
-	    int sequenceIndx   = 0;
-	    int nrOfChatIndex  = 2;
-
-	    int addressStart   = 4;
-	    int addressEnd     = 8;
 
 	    //serverName length = 0;
 	                        //nr of servers
-	    //Alt1:
 
-	    //for i = 1; i < nrOfServers; i++
-
-
-	    //Alt2
-
-	    for(int i = 1; i < bytes.length; i++) {
-
-
-
-
-	        int sequenceNr = (int) bytes[sequenceIndx];
-	        int nrOfChats  = (int) bytes[nrOfChatIndex];
-
-	        for(address = i; j < i + 4; j++ ) {
-
-	        }
-
-
-
-	        //serverNameLength = length
-
-
-
-
+		int index = 0;
+		int nrOfChatservers   = (int) ((bytes [0 + 2] << 8)+ bytes[0 + 3]);
+	    for(int i = 1; i <= nrOfChatservers;i++) {
+		
+	        int sequenceNr        = (int) bytes[index+1];
+            int port              = (int) ((bytes [index + 8] << 8)+ bytes[index + 9]);
+	        int nrOfClients       = (int) bytes [index + 10];                
+	        int nameLength        = (int) bytes[index + 11]; 
+	        	        
+	        index += 11 + nameLength;
+	        
+	        
+	        System.out.println("--------------------");
+	        System.out.println("index: "+index);
+	        
+	        
+	        //System.out.println("Next index val: "+ index);
+	        
+	        
+	        
 	    }
-
-	    //sequence nr
-
-
-
-	    //nrOfServers
-	    //address
-	    //getport
-
-
-
-
-
-
-
+//	        //Address
+//	        for(int j = i + 4; j < i + 8; j++ ) {
+//
+//	        }
+//	        
+//	        //server name
+//	        for(int j = i + 12; j < i + nameLength; j++) {
+//	        	
+//	        }
+//	        System.out.println("s");
+//	        i += nameLength;
+	     // 
+//
+//	    }
 	}
 
 

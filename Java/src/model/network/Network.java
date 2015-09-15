@@ -85,6 +85,8 @@ public class Network {
 	        //int ip = (int) packet.getData()[6] & 0xff;
 	        //String ip = "";//s((int) packet.getData()[4] & 0xff) + ".";
 
+	        pdu.parser(packet.getData());
+	        
 	        String ip = "";
 
 	        for(int i = 4; i < 8; i++) {
@@ -100,8 +102,6 @@ public class Network {
 	        String host = inetAddr.getHostName();
 
 	        System.out.println("Host:" + host);
-	        Socket socket = new Socket(ip,0);
-	        System.out.println(socket.isConnected());
 
 	    }catch(SocketTimeoutException e) {
 	        System.out.println("Could not download list, timed out. (MSG)");
