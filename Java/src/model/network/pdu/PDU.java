@@ -2,22 +2,10 @@ package model.network.pdu;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import model.network.pdu.types.SListPDU;
 
-//import jdk.nashorn.internal.runtime.regexp.joni.constants.OPCode;
-
-import com.sun.org.apache.xpath.internal.compiler.OpCodes;
 
 public abstract class PDU {
-
-    private final static int OP_CODE_INDEX = 0;
-
-
-    public OpCode op;
 
     public static PDU fromInputStream(InputStream inStream) throws IOException {
         int length = inStream.available();
@@ -28,12 +16,36 @@ public abstract class PDU {
 		OpCode op = OpCode.getOpCodeBy(bytes[0]);
 		
         switch(op) {
+		case ACK:
+			break;
+		case ALIVE:
+			break;
+		case CHNICK:
+			break;
+		case JOIN:
+			break;
+		case MESSAGE:
+			break;
+		case NICKS:
+			break;
+		case NOTREG:
+			break;
+		case QUIT:
+			break;
+		case REG:
+			break;
+		
+		case SLIST: return new SListPDU(bytes);
+		
+		case UCNICK:
+			break;
+		case UJOIN:
+			break;
+		case ULEAVE:
+			break;
+		default:
+			break;
 
-        	case GETLIST:
-        
-        	case SLIST: return (new  SListPDU(bytes));
-        		
-        	case MESSAGE:
         }
 
         return null;
