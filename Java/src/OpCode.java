@@ -1,4 +1,4 @@
-package model.network.pdu;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ public enum OpCode {
     	}
     }
     
-    public static OpCode getOpCodeBy(byte value) {
+    public OpCode getOpCodeBy(byte value) {
     	return lookup.get(value);
     }
     

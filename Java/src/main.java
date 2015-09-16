@@ -1,9 +1,13 @@
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import controller.Listener;
 
 import model.network.*;
+import model.network.pdu.OpCode;
 
 
 
@@ -23,8 +27,19 @@ public class main {
 //                Listener listener = new Listener();
 //			// TODO Auto-generated catch block
 //		//network.connect(("itchy.cs.umu.se"), 1337, "Name");
-	    System.out.println("asda");
-	    OpCode as;
-	    System.out.println((int) OpCode.SLIST.value);
+		//OpCode as = OpCode.values().length;
+		
+		
+		OpCode op = OpCode.getOpCodeBy((byte) 1);
+		
+		System.out.println(op.value);
+		
+		switch(op) {
+		case ACK:
+				System.out.println("Bull shiit");
+			break;
+		}
+		
+	    
 	}
 }

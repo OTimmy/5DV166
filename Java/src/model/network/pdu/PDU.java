@@ -2,21 +2,19 @@ package model.network.pdu;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import jdk.nashorn.internal.runtime.regexp.joni.constants.OPCode;
+import model.network.pdu.types.SListPDU;
+
+//import jdk.nashorn.internal.runtime.regexp.joni.constants.OPCode;
 
 import com.sun.org.apache.xpath.internal.compiler.OpCodes;
 
 public abstract class PDU {
 
     private final static int OP_CODE_INDEX = 0;
-//    private final int REG = 0;
-//    private final int ACK = 1;
-//    private final int ALIVE = 2;
-//    private final int GETLIST = 3;
-//    private final int SLIST = 4;
-//    private final int NOTREG = 100;
-//    private final int MESSAGE = 10;
 
 
     public OpCode op;
@@ -27,22 +25,16 @@ public abstract class PDU {
 
         inStream.read(bytes,0,length);
 
-        OpC
+		OpCode op = OpCode.getOpCodeBy(bytes[0]);
+		
+        switch(op) {
 
-        if(bytes[0] == OpCode.ACK.value) {
-
-        } else if (bytes[0] == OpCode.REG.value) {
-
+        	case GETLIST:
+        
+        	case SLIST: return (new  SListPDU(bytes));
+        		
+        	case MESSAGE:
         }
-
-        switch(bytes[0]) {
-        case op.ACK.value:
-            break;
-        default:
-            break;
-
-        }
-
 
         return null;
     }

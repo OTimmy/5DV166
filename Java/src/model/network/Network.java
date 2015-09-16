@@ -56,16 +56,9 @@ public class Network extends ErrorManager{
 		return true;
 	}
 
-   //getServerAddress
-
-   //getServerClinets
-
-	//Should return arraylist???
-	///getNameList, should be looped by a thread
-	public void watchUDPSocket() {
+	private void watchUDPSocket() {
 	    try {
-
-	        SListPDU pdu = new SListPDU();
+	    	
 	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
 	                                                   pdu.getSize());
 	        udpSocket.receive(packet);
@@ -81,7 +74,7 @@ public class Network extends ErrorManager{
 
 	}
 
-
+	
 
 
 	//public void get
@@ -91,7 +84,7 @@ public class Network extends ErrorManager{
 
 
 
-
+	
 
 
 
