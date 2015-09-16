@@ -6,6 +6,14 @@
 
 2. Network.java
    Max size of pud should be 1500 bytes, becuase of internet thread.
-   
+
 3. ErrorListener
    Implement consumer and producere, where as  produce produce error messages, and consumer ( at controller) prints messages.
+
+4. hostname
+   // http://examples.javacodegeeks.com/core-java/net/inetaddress/get-hostname-from-ip-address/
+
+5. Input stream, (fromInputStream function)
+  http://stackoverflow.com/questions/2091454/byte-to-inputstream-or-outputstream
+
+6. Think of how data should be returned, for example the data from slist.

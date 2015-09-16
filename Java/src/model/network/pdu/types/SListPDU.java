@@ -10,7 +10,7 @@ import model.network.pdu.*;
  * Supply a empty pdu sutiable for the name-server.
  * And parse the returned data.
  */
-public class SListPDU implements PDU{
+public class SListPDU extends PDU{
 	private final int pduSize = 1500;
 
 	private ArrayList<Integer> sequenceNrs;
@@ -19,7 +19,8 @@ public class SListPDU implements PDU{
 	private ArrayList<Integer> nrClients;
 	private ArrayList<String> serverNames;
 
-	public SListPDU() {
+	public SListPDU(byte[] bytes) {
+
 
 	    sequenceNrs  = new ArrayList<Integer>();
 	    addresses   = new ArrayList<String>();
@@ -27,14 +28,10 @@ public class SListPDU implements PDU{
         nrClients   = new ArrayList<Integer>();
         serverNames = new ArrayList<String>();
 
+        parse(bytes);
+
 	}
 
-
-	public byte[] toByteArray() {
-		byte[] bytes = new byte[pduSize];
-
-		return bytes;
-	}
 
 	public int getSize() {
 		return pduSize;
@@ -44,7 +41,7 @@ public class SListPDU implements PDU{
 	 * Parser and store data in appropiate list.
 	 * @return false if parsing failed.
 	 */
-	public boolean parse(byte[] bytes) {
+	private boolean parse(byte[] bytes) {
 
 
 		int index = 4;
@@ -79,8 +76,6 @@ public class SListPDU implements PDU{
 	        }
 
 	        index += nameLength +  (4 - nameLength % 4) % 4;
-	        //index += 4 * ((4 - nameLength % 4) % 4);
-	        //index += 4 * (nameLength/4 + (nameLength%4>0?1:0));
 
 	        addresses.add(serverAddress);
 	        ports.add(port);
@@ -127,5 +122,9 @@ public class SListPDU implements PDU{
 		return null;
 	}
 
+    @Override
+    public byte[] toByteArray() {
+        return null;
+    }
 
 }

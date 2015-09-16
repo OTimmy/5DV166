@@ -2,10 +2,9 @@ package model.network.pdu.types;
 
 import model.network.pdu.PDU;
 
-public class GetListPDU implements PDU{
+public class GetListPDU extends PDU{
     private final int  size = 4;
 
-	@Override
 	public byte[] toByteArray() {
 	    byte[] bytes = new byte[size];
 		bytes[0] = 3; //getList code
@@ -17,7 +16,7 @@ public class GetListPDU implements PDU{
 		return bytes;
 	}
 
-	@Override
+
 	public int getSize() {
 		return size;
 	}

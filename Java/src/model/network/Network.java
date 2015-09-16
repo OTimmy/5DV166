@@ -8,20 +8,13 @@ import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 
 import controller.ErrorManager;
 
 import model.network.pdu.types.GetListPDU;
 import model.network.pdu.types.SListPDU;
 
-//YES
-// http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
-// https://docs.oracle.com/javase/tutorial/networking/datagrams/
-// http://examples.javacodegeeks.com/core-java/net/inetaddress/get-hostname-from-ip-address/
+
 /**
  * @author c12ton
  * @version 2015.09.16
@@ -33,7 +26,7 @@ public class Network extends ErrorManager{
 
 	private final String nameServerAddress = "itchy.cs.umu.se";
 	private final int nameServerPort = 1337;
-	private final int recieveTimeOut = 400;
+	private final int recieveTimeOut = 400;  //in ms
 
 	private DatagramSocket udpSocket;
 
@@ -41,9 +34,9 @@ public class Network extends ErrorManager{
 	private OutputStream socketOut;
 	private InputStream socketIn;
 
-	
+
 	//return false, if connection is not established
-	public boolean conncetToNameServer() {		
+	public boolean conncetToNameServer() {
 		try {
 
 			InetAddress address = InetAddress.getByName(nameServerAddress);
@@ -54,8 +47,6 @@ public class Network extends ErrorManager{
 														address,nameServerPort);
 			//Initating udpSocket
 			udpSocket = new DatagramSocket();
-			udpSocket.setSoTimeout(recieveTimeOut);
-
 			udpSocket.send(packet);
 
 		} catch(IOException e) {
@@ -70,7 +61,8 @@ public class Network extends ErrorManager{
    //getServerClinets
 
 	//Should return arraylist???
-	public void getNameServerList() {
+	///getNameList, should be looped by a thread
+	public void watchUDPSocket() {
 	    try {
 
 	        SListPDU pdu = new SListPDU();
@@ -78,33 +70,53 @@ public class Network extends ErrorManager{
 	                                                   pdu.getSize());
 	        udpSocket.receive(packet);
 
-	        //God no!!!!
-	        int nrTrys = 0;
-	        for(nrTrys = 0; (pdu.parse(packet.getData()) == false) &&
-	                nrTrys < 1; nrTrys++) {
-
-                packet = new DatagramPacket(pdu.toByteArray(), pdu.getSize());
-                udpSocket.receive(packet);
-
-	        }
-	        
-	        reportError("Hola");
-	        
-	        if(nrTrys < 1) {
-	            //pdu.getNameList
-	            //pdu.getStuff
-
-	        } else {
-	            reportError("Package didn't ge trough");
-	        }
 
 	    }catch (IOException e) {
 	    	reportError(e.toString());
 	    }
-	
+
 	}
 
-	public void conncetToClientServer() {
+	private void sendGetList() {
+
+	}
+
+
+
+
+	//public void get
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	public void conncetToClientServer(String address, int port) {
 
 	}
 
@@ -134,5 +146,5 @@ public class Network extends ErrorManager{
 	public void changeNick(String nick) {
 
 	}
-	
+
 }
