@@ -13,6 +13,8 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
+import controller.ErrorManager;
+
 import model.network.pdu.types.GetListPDU;
 import model.network.pdu.types.SListPDU;
 
@@ -26,7 +28,7 @@ import model.network.pdu.types.SListPDU;
  * Manage all network related stuff.
  *
  */
-public class Network {
+public class Network extends ErrorManager{
 
 
 	private final String nameServerAddress = "itchy.cs.umu.se";
@@ -39,9 +41,9 @@ public class Network {
 	private OutputStream socketOut;
 	private InputStream socketIn;
 
+	
 	//return false, if connection is not established
-	public boolean conncetToNameServer() {
-		//settings
+	public boolean conncetToNameServer() {		
 		try {
 
 			InetAddress address = InetAddress.getByName(nameServerAddress);
@@ -57,7 +59,7 @@ public class Network {
 			udpSocket.send(packet);
 
 		} catch(IOException e) {
-		    System.out.println("Could not connect");
+		    reportError(e.toString());
 		    return false;
 		}
 		return true;
@@ -67,8 +69,6 @@ public class Network {
 
    //getServerClinets
 
-   //
-	//Problem with address, becuase its signed bit, change dat to unsigned
 	//Should return arraylist???
 	public void getNameServerList() {
 	    try {
@@ -87,28 +87,22 @@ public class Network {
                 udpSocket.receive(packet);
 
 	        }
-
+	        
+	        reportError("Hola");
+	        
 	        if(nrTrys < 1) {
-
 	            //pdu.getNameList
 	            //pdu.getStuff
 
 	        } else {
-	            System.out.println("Package didn't ge trough (MSG)");
+	            reportError("Package didn't ge trough");
 	        }
 
-	    }catch(SocketTimeoutException e) {
-	        System.out.println("Could not download list, timed out. (MSG)");
-
-	        return;
 	    }catch (IOException e) {
-	        e.printStackTrace();
-	        System.out.println("Unknown host stuff");
-	        return;
+	    	reportError(e.toString());
 	    }
-		return;
+	
 	}
-
 
 	public void conncetToClientServer() {
 
@@ -122,7 +116,6 @@ public class Network {
 	public void disconnect() {
 
 	}
-
 
 
 	/**
@@ -141,5 +134,5 @@ public class Network {
 	public void changeNick(String nick) {
 
 	}
+	
 }
-

@@ -65,7 +65,6 @@ public class SListPDU implements PDU{
 	                }
 	        }
 
-
             int port        = (int) ((bytes [index + 4] << 8)+ bytes[index + 5]); //replace with ++?
 	        int nrOfClients = (int) bytes [index + 6];
 	        int nameLength  = (int) bytes[index + 7];
@@ -79,11 +78,9 @@ public class SListPDU implements PDU{
 	            serverName += (char) bytes[j];
 	        }
 
-	        //index += nameLength +  (4 - nameLength % 4) % 4;
+	        index += nameLength +  (4 - nameLength % 4) % 4;
 	        //index += 4 * ((4 - nameLength % 4) % 4);
-	        index += 4 * (nameLength/4 + (nameLength%4>0?1:0));
-
-
+	        //index += 4 * (nameLength/4 + (nameLength%4>0?1:0));
 
 	        addresses.add(serverAddress);
 	        ports.add(port);

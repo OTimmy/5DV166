@@ -6,3 +6,6 @@
 
 2. Network.java
    Max size of pud should be 1500 bytes, becuase of internet thread.
+   
+3. ErrorListener
+   Implement consumer and producere, where as  produce produce error messages, and consumer ( at controller) prints messages.
