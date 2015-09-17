@@ -17,3 +17,13 @@
   http://stackoverflow.com/questions/2091454/byte-to-inputstream-or-outputstream
 
 6. Think of how data should be returned, for example the data from slist.
+   - What so ever informaiton, should be printed , even though it's not complete.
+     And a thread should be running in a aloop til every thing is collected.
+
+7. Network class, should manage the classes NetworkUDP. Like to start threads
+   And stop them, and return data.
+
+8. GUI should say x/total number of servers, while printing servers
+
+
+9. Sequence number, figure out how to apply it correctly, and if every pdu that's been sent has one, or theres only one per getlist??

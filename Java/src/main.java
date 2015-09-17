@@ -28,18 +28,8 @@ public class main {
 //			// TODO Auto-generated catch block
 //		//network.connect(("itchy.cs.umu.se"), 1337, "Name");
 		//OpCode as = OpCode.values().length;
-		
-		
-		OpCode op = OpCode.getOpCodeBy((byte) 1);
-		
-		System.out.println(op.value);
-		
-		switch(op) {
-		case ACK:
-				System.out.println("Bull shiit");
-			break;
-		}
-		
-	    
+
+
+
 	}
 }

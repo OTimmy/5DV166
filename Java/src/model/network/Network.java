@@ -1,143 +1,75 @@
 package model.network;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.util.ArrayList;
 
 import controller.ErrorManager;
 
-import model.network.pdu.types.GetListPDU;
+import model.network.pdu.PDU;
 import model.network.pdu.types.SListPDU;
+// TODO UDP, client should print the current avalible servers, eventhough it's not the correct amount.
+//      And if any new sers should arrive later, it will diplsay them. But untill that, gui should point it out, that it's waiting for more servers
 
 
 /**
+ * <h1>Network</h2>
+ *
+ * Manage the network for the client with the name-server and server.
+ *
  * @author c12ton
- * @version 2015.09.16
- * Manage all network related stuff.
+ * @version 0.0
  *
  */
 public class Network extends ErrorManager{
 
 
-	private final String nameServerAddress = "itchy.cs.umu.se";
-	private final int nameServerPort = 1337;
-	private final int recieveTimeOut = 400;  //in ms
-
-	private DatagramSocket udpSocket;
-
-	private PrintWriter msgOut;
-	private OutputStream socketOut;
-	private InputStream socketIn;
+    private NetworkUDP udp;
+    private Thread watchUDPThread;
+    //private Thread tcp.............
 
 
-	//return false, if connection is not established
-	public boolean conncetToNameServer() {
-		try {
-
-			InetAddress address = InetAddress.getByName(nameServerAddress);
-			GetListPDU pdu = new GetListPDU();
-
-			DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
-														pdu.getSize(),
-														address,nameServerPort);
-			//Initating udpSocket
-			udpSocket = new DatagramSocket();
-			udpSocket.send(packet);
-
-		} catch(IOException e) {
-		    reportError(e.toString());
-		    return false;
-		}
-		return true;
+	Network(String NameServerAddress,int port) {
+	    udp = new NetworkUDP(NameServerAddress,port);
 	}
 
-	private void watchUDPSocket() {
-	    try {
-	    	
-	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
-	                                                   pdu.getSize());
-	        udpSocket.receive(packet);
+	public ArrayList getServerData() {
 
+	    if( udp.requestSList() == true) {
+	        try {
 
-	    }catch (IOException e) {
-	    	reportError(e.toString());
+	            InputStream inStream =
+	                               new ByteArrayInputStream(udp.getSListBytes());
+	            SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
+	            return pdu.getServerData();
+
+	        } catch (IOException e) {
+	            reportError(e.getMessage());
+	        }
 	    }
 
+	    return null;
 	}
 
-	private void sendGetList() {
+	public int getNrOfServers() {
+	    if(udp.getSListBytes() != null) {
+	        return udp.getSListBytes()[3];
+	    }
 
+	    return 0;
 	}
 
-	
+	public void startUDPWatchThread() {
 
-
-	//public void get
-
-
-
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public void conncetToClientServer(String address, int port) {
 
 	}
 
-
-	public void getClientServerData() {
-
+	public void stopAllThreads() {
+	    //thread.terminate
+	    //thread.join()
 	}
 
-	public void disconnect() {
-
-	}
-
-
-	/**
-	 * @return true if message was successfully transmitted,
-	 * else false.
-	 */
-	public boolean trySendMessage() {
-		return false;
-	}
-
-	public void readMessage() {
-
-	}
-
-
-	public void changeNick(String nick) {
-
-	}
 
 }
