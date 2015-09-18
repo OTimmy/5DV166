@@ -1,6 +1,5 @@
 package model.network;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +12,6 @@ import model.network.pdu.types.SListPDU;
 // TODO UDP, client should print the current avalible servers, eventhough it's not the correct amount.
 //      And if any new sers should arrive later, it will diplsay them. But untill that, gui should point it out, that it's waiting for more servers
 
-
 /**
  * <h1>Network</h2>
  *
@@ -23,7 +21,7 @@ import model.network.pdu.types.SListPDU;
  * @version 0.0
  *
  */
-public class Network extends ErrorManager{
+public class Network extends ErrorManager {
 
 
     private NetworkUDP udp;
@@ -35,6 +33,10 @@ public class Network extends ErrorManager{
 	    udp = new NetworkUDP(NameServerAddress,port);
 	}
 
+	/**
+	 * Trying to retrive the SLIST, if no correct responed is retrived, then null
+	 * will be returned. 
+	 */
 	public ArrayList getServerData() {
 
 	    if( udp.requestSList() == true) {
@@ -52,10 +54,11 @@ public class Network extends ErrorManager{
 
 	    return null;
 	}
-
+   
 	public int getNrOfServers() {
-	    if(udp.getSListBytes() != null) {
-	        return udp.getSListBytes()[3];
+		byte[] bytes = udp.getSListBytes();
+	    if(bytes != null) {
+	        return (int) ((bytes[2] << 8)+ bytes[3]); 
 	    }
 
 	    return 0;
@@ -63,13 +66,10 @@ public class Network extends ErrorManager{
 
 	public void startUDPWatchThread() {
 
-
 	}
 
 	public void stopAllThreads() {
 	    //thread.terminate
 	    //thread.join()
 	}
-
-
 }
