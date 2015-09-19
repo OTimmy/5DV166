@@ -22,14 +22,12 @@ import model.network.pdu.types.SListPDU;
  *
  */
 public class Network extends ErrorManager {
-
-
+	
     private NetworkUDP udp;
     private Thread watchUDPThread;
-    //private Thread tcp.............
 
 
-	Network(String NameServerAddress,int port) {
+	public Network(String NameServerAddress,int port) {
 	    udp = new NetworkUDP(NameServerAddress,port);
 	}
 
@@ -38,7 +36,7 @@ public class Network extends ErrorManager {
 	 * will be returned. 
 	 */
 	public ArrayList getServerData() {
-
+		
 	    if( udp.requestSList() == true) {
 	        try {
 
@@ -57,19 +55,32 @@ public class Network extends ErrorManager {
    
 	public int getNrOfServers() {
 		byte[] bytes = udp.getSListBytes();
-	    if(bytes != null) {
+	    
+		if(bytes != null) {
 	        return (int) ((bytes[2] << 8)+ bytes[3]); 
 	    }
 
 	    return 0;
 	}
-
-	public void startUDPWatchThread() {
-
+	
+	public void startWatchUDPThread() {
+	
+		watchUDPThread = new Thread() {
+			public void run() {
+				//while true
+				udp.watchUDP();
+			}
+		};
+		
+		watchUDPThread.start();
 	}
-
+	
+	/**
+	 * 
+	 */
 	public void stopAllThreads() {
-	    //thread.terminate
+	   // watchUDPThread.
+		//thread.terminate
 	    //thread.join()
 	}
 }

@@ -31,8 +31,10 @@ public class NetworkUDP extends ErrorManager{
         this.address = address;
         this.port = port;
         this.packet = new DatagramPacket(new byte[UDP_BUFF],UDP_BUFF);
+        
     }
 
+    //TODO sync this method, because of socket
     /**
      *  Sends GETLIST PDU.
      */
@@ -55,7 +57,8 @@ public class NetworkUDP extends ErrorManager{
 
         return true;
     }
-
+    
+    //TODO Sync this method, because of socket and packet
     public byte[] getSListBytes() {
         DatagramPacket packet = this.packet;
         this.packet = null;
@@ -66,23 +69,25 @@ public class NetworkUDP extends ErrorManager{
 
         return null;
     }
-
+    
+    
+    //TODO sync this method.
     /**
      *  Retrives packet from name server.
      */
     public void watchUDP() {
-        while(true) {
+        while(true) {  //remove this!
             try {
 
                 DatagramPacket packet = new DatagramPacket(new byte[UDP_BUFF],
                                                            UDP_BUFF);
                 socket.receive(packet);
                 this.packet = packet;
+                System.out.println("DONE");
 
             }catch (IOException e) {
                 reportError(e.toString());
             }
         }
     }
-
 }

@@ -18,18 +18,7 @@ public class main {
 	 */
 	public static void main(String[] args) {
 
-//
-//		Network network = new Network();
-//			//network.conncetToNameServer();
-//			System.out.println(network.conncetToNameServer());
-//
-//                network.getNameServerList();
-//                Listener listener = new Listener();
-//			// TODO Auto-generated catch block
-//		//network.connect(("itchy.cs.umu.se"), 1337, "Name");
-		//OpCode as = OpCode.values().length;
-
-
+		Listener listener = new Listener();
 
 	}
 }

@@ -8,13 +8,15 @@ import model.network.pdu.types.SListPDU;
 public abstract class PDU {
 
     public static PDU fromInputStream(InputStream inStream) throws IOException {
-        int length = inStream.available();
+    	
+    	int length = inStream.available();
         byte[] bytes = new byte[length];
-
+       
         inStream.read(bytes,0,length);
+        System.out.println("Bytes value: " + bytes[0]);
 
 		OpCode op = OpCode.getOpCodeBy(bytes[0]);
-		
+		 
         switch(op) {
 		case ACK:
 			break;
@@ -35,13 +37,13 @@ public abstract class PDU {
 		case REG:
 			break;
 		
-		case SLIST: return new SListPDU(bytes);
+		case SLIST: ;//return new SListPDU(bytes);
 		
 		case UCNICK:
 			break;
 		case UJOIN:
 			break;
-		case ULEAVE:
+		case ULEAVE:  System.out.println("HOLLA!");
 			break;
 		default:
 			break;

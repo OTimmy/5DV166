@@ -8,12 +8,11 @@ import model.network.pdu.*;
  * @author c12ton
  * @version 0.0
  *
- * Supply a empty pdu sutiable for the name-server.
  * And parse the returned data.
  */
 public class SListPDU extends PDU{
 	private final int pduSize = 1500;
-
+	//static sequence hashtable?? Or arrayList? 
 	private int currentSequence;
 	private ArrayList<ServerData> servers;
 
@@ -23,13 +22,11 @@ public class SListPDU extends PDU{
 
 	}
 
-
 	/**
 	 * Parser and store data in appropiate list.
 	 * @return false if parsing failed.
 	 */
-	private boolean parse(byte[] bytes) {
-
+	private void parse(byte[] bytes) {
 
 		int index = 4;
 		int nrOfChatServers   = (int) ((bytes [2] << 8)+ bytes[3]);
@@ -38,9 +35,9 @@ public class SListPDU extends PDU{
 //		if(nrOfChatServers > 0) {
 //		    sequenceNrs.add((int) bytes[1]);
 //		}
-
-		for(int i = 1; i <= nrOfChatServers;i++) {
-
+		
+		while(index < bytes.length) {
+		
             String address = "";
 		    for(int j = index; j < index + 4; j++) {
 	                address += "" + ((int) bytes[j] & 0xff);
@@ -65,13 +62,8 @@ public class SListPDU extends PDU{
 	        index += nameLength +  (4 - nameLength % 4) % 4;
 
 	        servers.add(new ServerData(serverName,address,port,nrOfClients));
-	        if(index >= bytes.length) {
-	            return false;
-	        }
-
+	       
 	    }
-
-	    return true;
 	}
 
 	public ArrayList getServerData() {
