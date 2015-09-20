@@ -27,3 +27,11 @@
 
 
 9. Sequence number, figure out how to apply it correctly, and if every pdu that's been sent has one, or theres only one per getlist??
+
+10. When refres is made, a thread will be running a while loop tills any new data arrives, from the thread reciving from udp socket. Or that the correct number of servers is accounted for.
+
+11. What if multiple refresh actions are made?? Should previous thread terminate?? And restart??
+   -- If multiple are made, then previous refresh should be cancelled before any new one is made. 
+   
+12. Thread should be notified if any data is ready to be printed...
+

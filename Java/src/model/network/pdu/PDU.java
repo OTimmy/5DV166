@@ -36,14 +36,12 @@ public abstract class PDU {
 			break;
 		case REG:
 			break;
-		
-		case SLIST: ;//return new SListPDU(bytes);
-		
+		case SLIST: return new SListPDU(bytes);
 		case UCNICK:
 			break;
 		case UJOIN:
 			break;
-		case ULEAVE:  System.out.println("HOLLA!");
+		case ULEAVE: 
 			break;
 		default:
 			break;

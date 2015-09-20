@@ -29,6 +29,17 @@ public class Listener implements ActionListener{
 		net.getServerData();
 	}
 	
+	//Thread will start this??
+	private void refreshAction() {
+		//while(nrOfServers < 
+		//while( not new data && !dissrupt??)
+		 // data = getServerData;
+		//while(data == null) {    
+			//data = net.getServiceData();
+		//}
+		//return data;
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		

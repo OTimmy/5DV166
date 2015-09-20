@@ -58,7 +58,6 @@ public class NetworkUDP extends ErrorManager{
         return true;
     }
     
-    //TODO Sync this method, because of socket and packet
     public byte[] getSListBytes() {
         DatagramPacket packet = this.packet;
         this.packet = null;
@@ -71,7 +70,6 @@ public class NetworkUDP extends ErrorManager{
     }
     
     
-    //TODO sync this method.
     /**
      *  Retrives packet from name server.
      */

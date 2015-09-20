@@ -43,8 +43,11 @@ public class Network extends ErrorManager {
 	            InputStream inStream =
 	                               new ByteArrayInputStream(udp.getSListBytes());
 	            SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
-	            return pdu.getServerData();
-
+	            
+	            if(pdu != null) {
+	            	return pdu.getServerData();
+	            }
+	            
 	        } catch (IOException e) {
 	            reportError(e.getMessage());
 	        }
