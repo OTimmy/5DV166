@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 
 import model.network.pdu.types.GetListPDU;
 
@@ -32,6 +33,13 @@ public class NetworkUDP extends ErrorManager{
         this.port = port;
         this.packet = new DatagramPacket(new byte[UDP_BUFF],UDP_BUFF);
         
+        try {
+			socket = new DatagramSocket();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			reportError(e.getMessage());
+		}
+        
     }
 
     //TODO sync this method, because of socket
@@ -47,7 +55,7 @@ public class NetworkUDP extends ErrorManager{
             DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
                                                         pdu.getSize(),
                                                         address,port);
-            socket = new DatagramSocket();
+            
             socket.send(packet);
 
         } catch(IOException e) {
