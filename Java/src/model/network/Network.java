@@ -9,8 +9,6 @@ import controller.ErrorManager;
 
 import model.network.pdu.PDU;
 import model.network.pdu.types.SListPDU;
-// TODO UDP, client should print the current avalible servers, eventhough it's not the correct amount.
-//      And if any new sers should arrive later, it will diplsay them. But untill that, gui should point it out, that it's waiting for more servers
 
 /**
  * <h1>Network</h2>
@@ -22,7 +20,7 @@ import model.network.pdu.types.SListPDU;
  *
  */
 public class Network extends ErrorManager {
-	
+
     private NetworkUDP udp;
     private Thread watchUDPThread;
 
@@ -33,53 +31,58 @@ public class Network extends ErrorManager {
 
 	/**
 	 * Trying to retrive the SLIST, if no correct responed is retrived, then null
-	 * will be returned. 
+	 * will be returned.
 	 */
-	public ArrayList getServerData() {
-		
+	public ArrayList getServers() {
+
 	    if( udp.requestSList() == true) {
 	        try {
 
 	            InputStream inStream =
 	                               new ByteArrayInputStream(udp.getSListBytes());
 	            SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
-	            
+
+	            //If no new pdu is avalible.
 	            if(pdu != null) {
-	            	return pdu.getServerData();
+	                //copy original, then nullify it. Before sending.
+	                ArrayList servers = (ArrayList) pdu.getServerData().clone();
+	                pdu = null;
+	            	return servers;
 	            }
-	            
+
 	        } catch (IOException e) {
+	            e.printStackTrace();
 	            reportError(e.getMessage());
 	        }
 	    }
 
 	    return null;
 	}
-   
+
 	public int getNrOfServers() {
 		byte[] bytes = udp.getSListBytes();
-	    
+
 		if(bytes != null) {
-	        return (int) ((bytes[2] << 8)+ bytes[3]); 
+	        return (int) ((bytes[2] << 8)+ bytes[3]);
 	    }
 
 	    return 0;
 	}
-	
+
 	public void startWatchUDPThread() {
-	
+
 		watchUDPThread = new Thread() {
 			public void run() {
-				//while true
+
 				udp.watchUDP();
 			}
 		};
-		
+
 		watchUDPThread.start();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public void stopAllThreads() {
 	   // watchUDPThread.
