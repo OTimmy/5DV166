@@ -12,7 +12,7 @@ import model.network.pdu.*;
  */
 public class SListPDU extends PDU{
 	private final int pduSize = 1500;
-	//static sequence hashtable?? Or arrayList? 
+	//static sequence hashtable?? Or arrayList?
 	private int currentSequence;
 	private ArrayList<ServerData> servers;
 
@@ -32,12 +32,8 @@ public class SListPDU extends PDU{
 		int nrOfChatServers   = (int) ((bytes [2] << 8)+ bytes[3]);
 		currentSequence = (int) bytes[1];
 
-//		if(nrOfChatServers > 0) {
-//		    sequenceNrs.add((int) bytes[1]);
-//		}
-		
 		while(index < bytes.length) {
-		
+
             String address = "";
 		    for(int j = index; j < index + 4; j++) {
 	                address += "" + ((int) bytes[j] & 0xff);
@@ -46,7 +42,7 @@ public class SListPDU extends PDU{
 	                }
 	        }
 
-            int port        = (int) ((bytes [index + 4] << 8)+ bytes[index + 5]); //replace with ++?
+            int port        = (int) ((bytes [index + 4] << 8)+ bytes[index + 5]);
 	        int nrOfClients = (int) bytes [index + 6];
 	        int nameLength  = (int) bytes[index + 7];
 
@@ -62,7 +58,7 @@ public class SListPDU extends PDU{
 	        index += nameLength +  (4 - nameLength % 4) % 4;
 
 	        servers.add(new ServerData(serverName,address,port,nrOfClients));
-	       
+
 	    }
 	}
 
