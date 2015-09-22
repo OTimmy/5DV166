@@ -19,7 +19,6 @@ public class SListPDU extends PDU{
 	public SListPDU(byte[] bytes) {
 	    servers = new ArrayList<ServerData>();
         parse(bytes);
-
 	}
 
 	/**
@@ -29,10 +28,9 @@ public class SListPDU extends PDU{
 	private void parse(byte[] bytes) {
 
 		int index = 4;
-		int nrOfChatServers   = (int) ((bytes [2] << 8)+ bytes[3]);
 		currentSequence = (int) bytes[1];
 
-		while(index < bytes.length) {
+		while(index < bytes.length) {  //UGLY look for a better solution!
 
             String address = "";
 		    for(int j = index; j < index + 4; j++) {
@@ -58,7 +56,6 @@ public class SListPDU extends PDU{
 	        index += nameLength +  (4 - nameLength % 4) % 4;
 
 	        servers.add(new ServerData(serverName,address,port,nrOfClients));
-
 	    }
 	}
 
