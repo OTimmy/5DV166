@@ -27,12 +27,15 @@ public class NetworkUDP extends ErrorManager{
     private DatagramSocket socket;
     private DatagramPacket packet;
 
+    private Object lock;
+
 
     public NetworkUDP(String address,int port) {
 
         this.address = address;
         this.port = port;
-        this.packet = new DatagramPacket(new byte[UDP_BUFF],UDP_BUFF);
+        packet = new DatagramPacket(new byte[UDP_BUFF],UDP_BUFF);
+        lock = new Object();
 
         try {
 			socket = new DatagramSocket();
@@ -48,6 +51,7 @@ public class NetworkUDP extends ErrorManager{
     public boolean requestSList() {
         try {
 
+            System.out.println("Sending package");
             InetAddress address = InetAddress.getByName(this.address);
             GetListPDU pdu = new GetListPDU();
             DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
@@ -55,16 +59,29 @@ public class NetworkUDP extends ErrorManager{
                                                         address,port);
             socket.send(packet);
 
+            synchronized(lock) {
+                System.out.println("Waiting on packet");
+                lock.wait();
+                System.out.println("Done waiting on packet");
+            }
+
+
         } catch(IOException e) {
             e.printStackTrace();
             reportError(e.getMessage());
+            return false;
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
             return false;
         }
 
         return true;
     }
 
+
     public byte[] getSListBytes() {
+
         DatagramPacket packet = this.packet;
         this.packet = null;
 
@@ -79,13 +96,19 @@ public class NetworkUDP extends ErrorManager{
      *  Retrives packet from name server.
      */
     public void watchUDP() {
-        while(true) {  //remove this!
+        while(true) {
             try {
 
                 DatagramPacket packet = new DatagramPacket(new byte[UDP_BUFF],
                                                            UDP_BUFF);
+                System.out.println("Waiting socket");
                 socket.receive(packet);
-                this.packet = packet;
+
+                synchronized(lock) {
+
+                    this.packet = packet;
+                    lock.notify();
+                }
 
             }catch (IOException e) {
                 e.printStackTrace();

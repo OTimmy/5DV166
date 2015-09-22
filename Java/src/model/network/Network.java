@@ -59,6 +59,7 @@ public class Network extends ErrorManager {
 	    return null;
 	}
 
+
 	public int getNrOfServers() {
 		byte[] bytes = udp.getSListBytes();
 
