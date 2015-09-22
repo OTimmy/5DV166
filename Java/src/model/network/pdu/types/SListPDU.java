@@ -30,7 +30,7 @@ public class SListPDU extends PDU{
 		int index = 4;
 		currentSequence = (int) bytes[1];
 
-		while(index < bytes.length) {  //UGLY look for a better solution!
+		while(index + 4 < bytes.length) { 
 
             String address = "";
 		    for(int j = index; j < index + 4; j++) {
