@@ -24,7 +24,7 @@ public class Network extends ErrorHandler {
     private NetworkUDP udp;
     private int nrOfServers;
     private Listener<ServerData>serverListener;
-    private Listener<String>errorListener;
+    private ErrorHandler errorHandler;
 
 
 	public Network(String NameServerAddress,int port) {
@@ -71,7 +71,4 @@ public class Network extends ErrorHandler {
 
 	}
 
-	public void addErrorListener(Listener<String> listener) {
-	    errorListener = listener;
-	}
 }
