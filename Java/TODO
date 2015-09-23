@@ -35,3 +35,4 @@
    
 12. Thread should be notified if any data is ready to be printed...
 
+13. Add Observer pattern.

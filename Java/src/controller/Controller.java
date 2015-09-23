@@ -5,6 +5,8 @@ import java.awt.event.ActionListener;
 
 import model.network.Network;
 import model.network.ServerData;
+//TODO A error listener should be sent trought the constructor of Network, and it should be sent to the next class and so on??
+
 
 /**
  * <h1>Listener.java</h1>
@@ -37,6 +39,8 @@ public class Controller implements ActionListener{
 		           System.out.println(t.getName());
 		           /*gui component to print*/
 		       };
+		       
+		       //public void error()
 		});
 
 		return net;
@@ -51,6 +55,12 @@ public class Controller implements ActionListener{
           t.start();
      }
 
+    private void initErrorHandler() {
+ 
+    	
+    }
+    
+    
 	private void refreshAction() {
 	    if(!net.requestServers()) {
 	        //ERROR
@@ -67,13 +77,17 @@ public class Controller implements ActionListener{
 	 *
 	 */
 	public class ErrorListener extends ErrorHandler {
-
-		private void Startwatch() {
-			while(true) {
-				for(String msg:getErrorList()) {
-					System.out.println("msg:" +msg);
-				}
-			}
+		public ErrorListener() {
+		   	
+			Listener<String> listener = new Listener<String>() {
+	    		@Override
+	    		public void update(String t) {
+	    			/*gui.printError*/	
+	    			System.out.println("Error: " +t);
+	    		}
+	    	};
+	    	
+	    	addListener(listener);
 		}
 	}
 }

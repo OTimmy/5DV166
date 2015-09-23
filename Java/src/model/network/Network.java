@@ -26,7 +26,6 @@ public class Network extends ErrorHandler {
     private Listener<ServerData>serverListener;
     private ErrorHandler errorHandler;
 
-
 	public Network(String NameServerAddress,int port) {
 	    udp = new NetworkUDP(NameServerAddress,port);
 	    nrOfServers = 0;
@@ -70,5 +69,4 @@ public class Network extends ErrorHandler {
 	public void addTCPListener() {
 
 	}
-
 }
