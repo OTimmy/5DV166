@@ -27,7 +27,7 @@ public class NetworkUDP extends ErrorManager{
     private DatagramSocket socket;
     private DatagramPacket packet;
 
-    private Object lock;
+    private final Object lock;
 
 
     public NetworkUDP(String address,int port) {
@@ -40,7 +40,6 @@ public class NetworkUDP extends ErrorManager{
         try {
 			socket = new DatagramSocket();
 		} catch (SocketException e) {
-		    e.printStackTrace();
 			reportError(e.getMessage());
 		}
     }
@@ -51,45 +50,40 @@ public class NetworkUDP extends ErrorManager{
     public boolean requestSList() {
         try {
 
-            System.out.println("Sending package");
             InetAddress address = InetAddress.getByName(this.address);
             GetListPDU pdu = new GetListPDU();
             DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
                                                         pdu.getSize(),
                                                         address,port);
+
             socket.send(packet);
-
-            synchronized(lock) {
-                System.out.println("Waiting on packet");
-                lock.wait();
-                System.out.println("Done waiting on packet");
-            }
-
-
+  
         } catch(IOException e) {
             e.printStackTrace();
             reportError(e.getMessage());
             return false;
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return false;
-        }
+        } 
 
         return true;
     }
 
-
     public byte[] getSListBytes() {
-
-        DatagramPacket packet = this.packet;
-        this.packet = null;
-
-        if(packet != null) {
-            return packet.getData();
-        }
-
-        return null;
+    	DatagramPacket packet;
+    	synchronized(lock) {
+    		
+    		if(this.packet == null) {
+				try {
+					lock.wait(); //wait tills a new packet is received. Release lock
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}   
+    		}
+    		
+    		packet = this.packet;
+    		this.packet = null;    			
+    	}
+    	
+    	return packet.getData();
     }
 
     /**
@@ -105,11 +99,10 @@ public class NetworkUDP extends ErrorManager{
                 socket.receive(packet);
 
                 synchronized(lock) {
-
                     this.packet = packet;
                     lock.notify();
                 }
-
+                                               
             }catch (IOException e) {
                 e.printStackTrace();
                 reportError(e.toString());

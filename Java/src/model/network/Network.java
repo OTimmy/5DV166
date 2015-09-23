@@ -29,33 +29,29 @@ public class Network extends ErrorManager {
 	    udp = new NetworkUDP(NameServerAddress,port);
 	}
 
+	public boolean sendRequestServers() {
+		return udp.requestSList();
+	}
+	
 	/**
 	 * Trying to retrive the SLIST, if no correct responed is retrived, then null
 	 * will be returned.
 	 */
 	public ArrayList getServers() {
+	    try {
 
-	    if( udp.requestSList() == true) {
-	        try {
+	        InputStream inStream = new ByteArrayInputStream(udp.getSListBytes());
+	        SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
 
-	            InputStream inStream =
-	                               new ByteArrayInputStream(udp.getSListBytes());
-	            SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
-
-	            //If no new pdu is avalible.
-	            if(pdu != null) {
-	                //copy original, then nullify it. Before sending.
-	                ArrayList servers = (ArrayList) pdu.getServerData().clone();
-	                pdu = null;
-	            	return servers;
-	            }
-
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	            reportError(e.getMessage());
+	        if(pdu != null) {
+	            return pdu.getServerData();
 	        }
-	    }
 
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        reportError(e.getMessage());
+	    }
+	    
 	    return null;
 	}
 
@@ -63,11 +59,7 @@ public class Network extends ErrorManager {
 	public int getNrOfServers() {
 		byte[] bytes = udp.getSListBytes();
 
-		if(bytes != null) {
-	        return (int) ((bytes[2] << 8)+ bytes[3]);
-	    }
-
-	    return 0;
+	    return (int) ((bytes[2] << 8)+ bytes[3]);
 	}
 
 	public void startWatchUDPThread() {

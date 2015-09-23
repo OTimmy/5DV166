@@ -24,6 +24,7 @@ public class Listener implements ActionListener{
 		net = initNetwork("itchy.cs.umu.se",1337);
 
 		refreshAction();
+		refreshAction();
 
 	}
 
@@ -38,15 +39,17 @@ public class Listener implements ActionListener{
 		return net;
 	}
 
-	//Thread will start this?? YES
+
 	private void refreshAction(/*gui component to print*/) {
 	    ArrayList<ServerData> servers = net.getServers();
 
-	    int cntNrOfServers = servers.size();
 	    int nrOfServers = net.getNrOfServers();
-
-	    while(cntNrOfServers <= nrOfServers) {
-
+	    int cntNrOfServers = 0;
+	    
+	    System.out.println("Nr of server:"+ nrOfServers);
+	    
+	    while(cntNrOfServers < nrOfServers) {
+	    	
 	        for(ServerData server:servers) {
 	            System.out.println("Name:"+ server.getName());
 	            //Print server stuff to gui.
