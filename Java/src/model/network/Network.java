@@ -3,9 +3,9 @@ package model.network;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
-import controller.ErrorManager;
+import controller.ErrorHandler;
+import controller.Listener;
 
 import model.network.pdu.PDU;
 import model.network.pdu.types.SListPDU;
@@ -19,67 +19,59 @@ import model.network.pdu.types.SListPDU;
  * @version 0.0
  *
  */
-public class Network extends ErrorManager {
+public class Network extends ErrorHandler {
 
     private NetworkUDP udp;
-    private Thread watchUDPThread;
+    private int nrOfServers;
+    private Listener<ServerData>serverListener;
+    private Listener<String>errorListener;
 
 
 	public Network(String NameServerAddress,int port) {
 	    udp = new NetworkUDP(NameServerAddress,port);
+	    nrOfServers = 0;
 	}
 
-	public boolean sendRequestServers() {
-		return udp.requestSList();
+	public boolean requestServers() {
+		return udp.sendGetList();
 	}
-	
+
 	/**
-	 * Trying to retrive the SLIST, if no correct responed is retrived, then null
-	 * will be returned.
+	 * Read packet from udp, and updates listener with latest servers.
 	 */
-	public ArrayList getServers() {
+	public void updateServers() {
 	    try {
+	        while(true) {
 
-	        InputStream inStream = new ByteArrayInputStream(udp.getSListBytes());
-	        SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
+	            byte[] bytes = udp.getSListPacketData();
+	            InputStream inStream = new ByteArrayInputStream(bytes);
+	            SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
+	            nrOfServers = (int) ((bytes[2] << 8)+ bytes[3]);
 
-	        if(pdu != null) {
-	            return pdu.getServerData();
+	            /*listener.update*/
+	            for(ServerData server:pdu.getServerData()) {
+	                serverListener.update(server);
+	            }
 	        }
-
 	    } catch (IOException e) {
 	        e.printStackTrace();
 	        reportError(e.getMessage());
 	    }
-	    
-	    return null;
 	}
-
 
 	public int getNrOfServers() {
-		byte[] bytes = udp.getSListBytes();
-
-	    return (int) ((bytes[2] << 8)+ bytes[3]);
+	    return nrOfServers;
 	}
 
-	public void startWatchUDPThread() {
-
-		watchUDPThread = new Thread() {
-			public void run() {
-
-				udp.watchUDP();
-			}
-		};
-
-		watchUDPThread.start();
+	public void addUDPListener(Listener<ServerData> listener) {
+	    serverListener = listener;
 	}
 
-	/**
-	 *
-	 */
-	public void stopAllThreads() {
-	   // watchUDPThread.
-		//thread.terminate
-	    //thread.join()
+	public void addTCPListener() {
+
+	}
+
+	public void addErrorListener(Listener<String> listener) {
+	    errorListener = listener;
 	}
 }

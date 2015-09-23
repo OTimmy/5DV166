@@ -11,7 +11,7 @@ import model.network.pdu.*;
  * And parse the returned data.
  */
 public class SListPDU extends PDU{
-	private final int pduSize = 1500;
+	private final int pduSize = 40;
 	//static sequence hashtable?? Or arrayList?
 	private int currentSequence;
 	private ArrayList<ServerData> servers;
@@ -29,9 +29,9 @@ public class SListPDU extends PDU{
 
 		int index = 4;
 		currentSequence = (int) bytes[1];
+		int nrOfServers = (int) ((bytes[2] << 8)+ bytes[3]);
 
-		while(index + 4 < bytes.length) { 
-
+		for(int i = 0; i < nrOfServers && index + 4 < bytes.length; i++) {
             String address = "";
 		    for(int j = index; j < index + 4; j++) {
 	                address += "" + ((int) bytes[j] & 0xff);
@@ -59,14 +59,13 @@ public class SListPDU extends PDU{
 	    }
 	}
 
-	public ArrayList getServerData() {
+	public ArrayList<ServerData> getServerData() {
 	    return servers;
 	}
 
 	public int getSize() {
 	    return pduSize;
 	}
-
 
     @Override
     public byte[] toByteArray() {
