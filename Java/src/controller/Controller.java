@@ -18,11 +18,10 @@ import model.network.ServerData;
 public class Controller implements ActionListener{
 
     private Network net;
-    private ErrorListener errListener;
-	public Controller() {
+    public Controller() {
 
-	    errListener = new ErrorListener();
 		net = initNetwork("itchy.cs.umu.se",1337);
+		initErrorHandler();
 		startNetUDPThread();
 		refreshAction();
 	}
@@ -38,8 +37,8 @@ public class Controller implements ActionListener{
 		       public void update(ServerData t) {
 		           System.out.println(t.getName());
 		           /*gui component to print*/
-		       };
-		       
+		       }
+
 		       //public void error()
 		});
 
@@ -56,14 +55,19 @@ public class Controller implements ActionListener{
      }
 
     private void initErrorHandler() {
- 
-    	
+        net.addErrListener(new controller.Listener<String>() {
+            @Override
+            public void update(String t) {
+                System.out.println("Error:"+t);
+            }
+        });
     }
-    
-    
+
+
 	private void refreshAction() {
 	    if(!net.requestServers()) {
 	        //ERROR
+	        System.out.println("Failed to request servers");
 	    }
 	}
 
@@ -72,22 +76,4 @@ public class Controller implements ActionListener{
 
         // TODO Auto-generated method stub
     }
-
-	/**
-	 *
-	 */
-	public class ErrorListener extends ErrorHandler {
-		public ErrorListener() {
-		   	
-			Listener<String> listener = new Listener<String>() {
-	    		@Override
-	    		public void update(String t) {
-	    			/*gui.printError*/	
-	    			System.out.println("Error: " +t);
-	    		}
-	    	};
-	    	
-	    	addListener(listener);
-		}
-	}
 }

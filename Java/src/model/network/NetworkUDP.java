@@ -8,7 +8,7 @@ import java.net.SocketException;
 
 import model.network.pdu.types.GetListPDU;
 
-import controller.ErrorHandler;
+import controller.Listener;
 
 /**
  * Connects to the name server, request SLIST, and give any .
@@ -16,11 +16,11 @@ import controller.ErrorHandler;
  * @author c12ton
  * @version v0.0
  */
-public class NetworkUDP extends ErrorHandler{
-
+public class NetworkUDP {
 
     private final int UDP_BUFF = 16;
 
+    private Listener<String>errListener;
     private String address;
     private int port;
     private DatagramSocket socket;
@@ -35,7 +35,7 @@ public class NetworkUDP extends ErrorHandler{
         try {
 			socket = new DatagramSocket();
 		} catch (SocketException e) {
-			reportError(e.getMessage());
+			e.printStackTrace();
 		}
     }
 
@@ -54,7 +54,6 @@ public class NetworkUDP extends ErrorHandler{
 
         } catch(IOException e) {
             e.printStackTrace();
-            reportError(e.getMessage());
             return false;
         }
 
@@ -77,10 +76,13 @@ public class NetworkUDP extends ErrorHandler{
 
             }catch (IOException e) {
                 e.printStackTrace();
-                reportError(e.toString());
             }
 
         return packet.getData();
 
+    }
+
+    public void addListener(Listener<String> listener) {
+        this.errListener = listener;
     }
 }

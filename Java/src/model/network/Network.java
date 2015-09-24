@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import controller.ErrorHandler;
 import controller.Listener;
 
 import model.network.pdu.PDU;
@@ -19,15 +18,18 @@ import model.network.pdu.types.SListPDU;
  * @version 0.0
  *
  */
-public class Network extends ErrorHandler {
+public class Network {
 
     private NetworkUDP udp;
+    private NetworkTCP tcp;
     private int nrOfServers;
     private Listener<ServerData>serverListener;
-    private ErrorHandler errorHandler;
+    private Listener<String>errListener;
+
 
 	public Network(String NameServerAddress,int port) {
 	    udp = new NetworkUDP(NameServerAddress,port);
+	    tcp = new NetworkTCP();
 	    nrOfServers = 0;
 	}
 
@@ -54,7 +56,7 @@ public class Network extends ErrorHandler {
 	        }
 	    } catch (IOException e) {
 	        e.printStackTrace();
-	        reportError(e.getMessage());
+	        errListener.update(e.getMessage());
 	    }
 	}
 
@@ -62,11 +64,24 @@ public class Network extends ErrorHandler {
 	    return nrOfServers;
 	}
 
+
+	public void connectToServer(String address, int port) {
+	    tcp.connect(address, port);
+	}
+
+
 	public void addUDPListener(Listener<ServerData> listener) {
 	    serverListener = listener;
 	}
 
 	public void addTCPListener() {
 
+	    //tcp.addErrListener(Listener);
+	}
+
+	public void addErrListener(Listener<String> errListener) {
+	    this.errListener = errListener;
+	    udp.addListener(errListener);
+	    tcp.addListener(errListener);
 	}
 }
