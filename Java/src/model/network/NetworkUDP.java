@@ -69,9 +69,7 @@ public class NetworkUDP {
         DatagramPacket packet = new DatagramPacket(new byte[UDP_BUFF], UDP_BUFF);
 
         try {
-                System.out.println("Receive");
                 socket.receive(packet);
-                System.out.println("Done");
 
 
             }catch (IOException e) {

@@ -3,13 +3,16 @@ package model.network;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import controller.Listener;
 
+/**
+ * @author c12ton
+ * Manage network with server trough tcp.
+ *
+ *
+ */
 public class NetworkTCP {
 
     private Socket socket;
@@ -18,11 +21,12 @@ public class NetworkTCP {
     private InputStream in;
 
 
-    public void connect(String address,int port) {
+    public void connect(String address,int port, String nickName) {
         try {
             socket = new Socket(address,port);
             out = socket.getOutputStream();
             in = socket.getInputStream();
+            //sendPDU(bytes)
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -30,9 +34,7 @@ public class NetworkTCP {
         }
     }
 
-
-
-    public void sendPDU() {
+    public void sendPDU(byte[] bytes) {
 
     }
 
@@ -48,22 +50,12 @@ public class NetworkTCP {
         }
     }
 
+    public void readInputStream() {
 
+    }
 
     public void addListener(Listener<String> errListener) {
         this.errListener = errListener;
     }
-
-
-
-
-
-
-    /*Connect to tcp servers*/
-
-    /*Download pdu from tcp*/
-
-    /*getPDU*/
-
 
 }

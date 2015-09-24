@@ -56,13 +56,14 @@ public class Controller implements ActionListener{
 
     private void initErrorHandler() {
         net.addErrListener(new controller.Listener<String>() {
+            //report(String msg,int type)
             @Override
             public void update(String t) {
                 System.out.println("Error:"+t);
+                //switch(type)
             }
         });
     }
-
 
 	private void refreshAction() {
 	    if(!net.requestServers()) {
@@ -73,7 +74,7 @@ public class Controller implements ActionListener{
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
         // TODO Auto-generated method stub
     }
+
 }

@@ -23,7 +23,7 @@ public class Network {
     private NetworkUDP udp;
     private NetworkTCP tcp;
     private int nrOfServers;
-    private Listener<ServerData>serverListener;
+    private Listener<ServerData>udpListener;
     private Listener<String>errListener;
 
 
@@ -32,6 +32,8 @@ public class Network {
 	    tcp = new NetworkTCP();
 	    nrOfServers = 0;
 	}
+
+	//UDP-related
 
 	public boolean requestServers() {
 		return udp.sendGetList();
@@ -49,9 +51,9 @@ public class Network {
 	            SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
 	            nrOfServers = (int) ((bytes[2] << 8)+ bytes[3]);
 
-	            /*listener.update*/
+	            /*Update list*/
 	            for(ServerData server:pdu.getServerData()) {
-	                serverListener.update(server);
+	                udpListener.update(server);
 	            }
 	        }
 	    } catch (IOException e) {
@@ -64,18 +66,25 @@ public class Network {
 	    return nrOfServers;
 	}
 
+	//TCP-related
 
 	public void connectToServer(String address, int port) {
-	    tcp.connect(address, port);
+	    tcp.connect(address, port,"nick");
 	}
 
+	public void updateServer() {
+
+	}
+
+	public void sendToServer() {
+
+	}
 
 	public void addUDPListener(Listener<ServerData> listener) {
-	    serverListener = listener;
+	    udpListener = listener;
 	}
 
 	public void addTCPListener() {
-
 	    //tcp.addErrListener(Listener);
 	}
 
@@ -84,4 +93,9 @@ public class Network {
 	    udp.addListener(errListener);
 	    tcp.addListener(errListener);
 	}
+
+//	public void addListener(Listener<ServerData> udpListener,Listener<String> errListener) {
+//
+//
+//	}
 }
