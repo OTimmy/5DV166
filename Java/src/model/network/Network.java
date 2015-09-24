@@ -33,16 +33,20 @@ public class Network {
 	    nrOfServers = 0;
 	}
 
+	public void udpConnectToNameServer() {
+		
+	}
+	
 	//UDP-related
 
-	public boolean requestServers() {
+	public boolean udpRequestServers() {
 		return udp.sendGetList();
 	}
 
 	/**
 	 * Read packet from udp, and updates listener with latest servers.
 	 */
-	public void updateServers() {
+	public void udpUpdateServers() {
 	    try {
 	        while(true) {
 
@@ -62,30 +66,47 @@ public class Network {
 	    }
 	}
 
-	public int getNrOfServers() {
+	public int udpGetNrOfServers() {
 	    return nrOfServers;
 	}
-
+	
+	
+	
 	//TCP-related
-
+	
+	/**
+	 * @param ip address for server and its port.
+	 * @return List of clients or null if unsuccessful.
+	 * 
+	 */
 	public void connectToServer(String address, int port) {
 	    tcp.connect(address, port,"nick");
+	    tcp.getPacket();
+	    //NickPDU = PDU.fromInputStream(packet);
+	    //return NickPdu.getList();
 	}
 
+	public void sendMessage(String msg) {
+
+	}
+
+	public void notifications() {
+		
+	}
+	
 	public void updateServer() {
-
+		while(true) {
+			
+		}
 	}
 
-	public void sendToServer() {
-
-	}
 
 	public void addUDPListener(Listener<ServerData> listener) {
 	    udpListener = listener;
 	}
 
 	public void addTCPListener() {
-	    //tcp.addErrListener(Listener);
+	   
 	}
 
 	public void addErrListener(Listener<String> errListener) {
@@ -93,9 +114,4 @@ public class Network {
 	    udp.addListener(errListener);
 	    tcp.addListener(errListener);
 	}
-
-//	public void addListener(Listener<ServerData> udpListener,Listener<String> errListener) {
-//
-//
-//	}
 }

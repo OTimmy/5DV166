@@ -5,8 +5,6 @@ import java.awt.event.ActionListener;
 
 import model.network.Network;
 import model.network.ServerData;
-//TODO A error listener should be sent trought the constructor of Network, and it should be sent to the next class and so on??
-
 
 /**
  * <h1>Listener.java</h1>
@@ -38,8 +36,6 @@ public class Controller implements ActionListener{
 		           System.out.println(t.getName());
 		           /*gui component to print*/
 		       }
-
-		       //public void error()
 		});
 
 		return net;
@@ -48,33 +44,37 @@ public class Controller implements ActionListener{
     private void startNetUDPThread() {
         Thread t = new Thread() {
              public void run() {
-                 net.updateServers();
+                 net.udpUpdateServers();
              }
           };
           t.start();
      }
 
+	private void refreshAction() {
+	    if(!net.udpRequestServers()) {
+	        System.out.println("Failed to request servers");
+	    }
+	}
+	
+    
+   private void connectServer(String address,int port) {
+	   net.connectToServer(address, port);
+   }
+   
+   
     private void initErrorHandler() {
         net.addErrListener(new controller.Listener<String>() {
-            //report(String msg,int type)
             @Override
             public void update(String t) {
                 System.out.println("Error:"+t);
-                //switch(type)
             }
         });
     }
 
-	private void refreshAction() {
-	    if(!net.requestServers()) {
-	        //ERROR
-	        System.out.println("Failed to request servers");
-	    }
-	}
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub
     }
-
 }

@@ -70,8 +70,6 @@ public class NetworkUDP {
 
         try {
                 socket.receive(packet);
-
-
             }catch (IOException e) {
                 e.printStackTrace();
             }

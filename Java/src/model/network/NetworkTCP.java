@@ -27,18 +27,15 @@ public class NetworkTCP {
 
     public boolean connect(String address,int port, String nick) {
         try {
-            //TODO Implement timeout for socket and inStream, just for connecting.
-            socket = new Socket(address,port);
+            
+        	socket = new Socket(address,port);
 
             outStream = socket.getOutputStream();
             inStream = socket.getInputStream();
 
-            socket.setSoTimeout(timeOut);
             JoinPDU joinPDU = new JoinPDU(nick);
             sendPDU(joinPDU);
-            getPacket();
-            socket.setSoTimeout(0); //Reset timeout
-
+           
         } catch (IOException e) {
             e.printStackTrace();
             errListener.update(e.getMessage()); //Socket
@@ -47,13 +44,13 @@ public class NetworkTCP {
         return true;
     }
 
-    public byte[] getNickList() {
-        return null;
-    }
-
 
     public void disconnect() {
         try {
+        	
+        	//QUIT PDU
+        	
+        	
             outStream.close();
             inStream.close();
             socket.close();
