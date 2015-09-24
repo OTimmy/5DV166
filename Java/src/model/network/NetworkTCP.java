@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import model.network.pdu.PDU;
 import model.network.pdu.types.JoinPDU;
 
 import controller.Listener;
@@ -12,50 +13,77 @@ import controller.Listener;
 /**
  * @author c12ton
  * Manage network with server trough tcp.
- *
- *
  */
 public class NetworkTCP {
 
+    private final int pduBuffSize = 65539; //MAX
+    private final int timeOut = 250;
+
     private Socket socket;
     private Listener<String> errListener;
-    private OutputStream out;
-    private InputStream in;
+    private OutputStream outStream;
+    private InputStream inStream;
 
 
-    public void connect(String address,int port, String nick) {
+    public boolean connect(String address,int port, String nick) {
         try {
+            //TODO Implement timeout for socket and inStream, just for connecting.
             socket = new Socket(address,port);
-            out = socket.getOutputStream();
-            in = socket.getInputStream();
 
+            outStream = socket.getOutputStream();
+            inStream = socket.getInputStream();
+
+            socket.setSoTimeout(timeOut);
             JoinPDU joinPDU = new JoinPDU(nick);
-            out.write(joinPDU.toByteArray(), 0, joinPDU.getSize());
+            sendPDU(joinPDU);
+            getPacket();
+            socket.setSoTimeout(0); //Reset timeout
 
         } catch (IOException e) {
             e.printStackTrace();
             errListener.update(e.getMessage()); //Socket
+            return false;
         }
+        return true;
     }
 
-    public void sendPDU(byte[] bytes) {
-
+    public byte[] getNickList() {
+        return null;
     }
+
 
     public void disconnect() {
         try {
-            //inStream.close();
-            //outStream.close();
+            outStream.close();
+            inStream.close();
             socket.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             errListener.update(e.getMessage());
         }
     }
 
-    public void readInputStream() {
+    public void sendPDU(PDU pdu) {
+        try {
+            outStream.write(pdu.toByteArray(),0,pdu.getSize());
+        } catch (IOException e) {
+            e.printStackTrace();
+            errListener.update(e.getMessage());
+        }
+    }
 
+    /**
+     * @return pdu packet
+     */
+    public byte[] getPacket() {
+        byte[] bytes = new byte[pduBuffSize];
+        try {
+            inStream.read(bytes, 0, bytes.length);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return bytes;
     }
 
     public void addListener(Listener<String> errListener) {

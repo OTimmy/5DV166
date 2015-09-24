@@ -55,5 +55,4 @@ public abstract class PDU {
 
     public abstract int getSize();
 
-
 }
