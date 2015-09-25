@@ -1,14 +1,14 @@
 /*
- * server.h
+ * name_server.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 15/9-15.
+ * Last update: 16/9-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
- * server.h is the header file for the server program.
+ * name_server.h is the header file for the name_server.c file.
  */
 
-#ifndef SERVER_H_
-#define SERVER_H_
+#ifndef NAME_SERVER_H_
+#define NAME_SERVER_H_
 
 /* --- Standard headers --- */
 #include <stdlib.h>
@@ -43,19 +43,6 @@
 /* --- Functions --- */
 //#include <stdarg.h>
 
-typedef struct {
-    uint8_t op;
-    uint8_t name_len;
-    uint16_t tcp_port;
-    char *name;
-} pdu_reg;
-
-typedef struct {
-    uint8_t op;
-    uint8_t nrof_clients;
-    uint16_t id;
-} pdu_alive;
-
 /*
  * compare: Compares two values and determines which is bigger.
  * Params: p1 = pointer to first value.
@@ -63,19 +50,8 @@ typedef struct {
  * Returns: < 0 if (p1 < p2), == 0 if (p1 == p2) and > 0 if (p1 > p2).
  * Notes:
  */
-//int compare(const void *p1, const void *p2);
+void register_at_name_server(char *ns_name, char *ns_port, pdu_reg reg);
+int connect_to_name_server(char *ns_name, char *ns_port);
 
-/* ===== WORK IN PROGRESS ===== */
-/*
- * fatal_error: Exits the program (with unsuccessful exit status) after
- *      printing some error messages.
- * Params: pmsg = string to print with perror, denoting what failed.
- *         msg = string to print to stderr, describing the issue. E.g.
- *               "Usage: %s [-t type] start1 [start2 ...] name\n". (%s=argv[0])
- * Returns:
- * Notes: Frees dynamically allocated resources given function.
- */
-void fatal_error(char *pmsg, char *msg);
-
-#endif /* SERVER_H_ */
+#endif /* NAME_SERVER_H_ */
 
