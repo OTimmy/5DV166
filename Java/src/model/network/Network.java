@@ -23,95 +23,80 @@ public class Network {
     private NetworkUDP udp;
     private NetworkTCP tcp;
     private int nrOfServers;
-    private Listener<ServerData>udpListener;
-    private Listener<String>errListener;
+    private Listener listener;
 
-
-	public Network(String NameServerAddress,int port) {
+	public Network(String NameServerAddress, int port) {
 	    udp = new NetworkUDP(NameServerAddress,port);
 	    tcp = new NetworkTCP();
 	    nrOfServers = 0;
 	}
 
-	public void udpConnectToNameServer() {
-		
-	}
-	
 	//UDP-related
 
-	public boolean udpRequestServers() {
+	public void ConnectToNameServer(String address, int port) {
+	    /*Stop watch servers*/
+	    /*init udp*/
+	    /*set watch servers to true*/
+	}
+
+
+	public boolean requestServers() {
 		return udp.sendGetList();
 	}
 
 	/**
 	 * Read packet from udp, and updates listener with latest servers.
 	 */
-	public void udpUpdateServers() {
-	    try {
-	        while(true) {
+	public void watchServers() {
+	    while(true) { //Call synchronized method watchCondition
 
-	            byte[] bytes = udp.getSListPacketData();
-	            InputStream inStream = new ByteArrayInputStream(bytes);
-	            SListPDU pdu = (SListPDU) PDU.fromInputStream(inStream);
-	            nrOfServers = (int) ((bytes[2] << 8)+ bytes[3]);
+            SListPDU pdu = (SListPDU) udp.getPDU();
+            if(pdu == null) {
+                System.out.println("FUUUK");
+            }
+            nrOfServers = (int) ((pdu.toByteArray()[2] << 8)+ pdu.toByteArray()[3]);
 
-	            /*Update list*/
-	            for(ServerData server:pdu.getServerData()) {
-	                udpListener.update(server);
-	            }
-	        }
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	        errListener.update(e.getMessage());
-	    }
+            /*Update list*/
+            for(ServerData server:pdu.getServerData()) {
+                listener.addServer(server);
+            }
+        }
 	}
 
-	public int udpGetNrOfServers() {
+	public int getNrOfServers() {
 	    return nrOfServers;
 	}
-	
-	
-	
+
 	//TCP-related
-	
 	/**
 	 * @param ip address for server and its port.
 	 * @return List of clients or null if unsuccessful.
-	 * 
+	 *
 	 */
-	public void connectToServer(String address, int port) {
+	public void ConnectToServer(String address, int port) {
 	    tcp.connect(address, port,"nick");
-	    tcp.getPacket();
-	    //NickPDU = PDU.fromInputStream(packet);
-	    //return NickPdu.getList();
+	    tcp.getPDU(); //Should contain a list of nicks
 	}
 
-	public void sendMessage(String msg) {
+	public void SendMessage(String msg) {
 
 	}
 
-	public void notifications() {
-		
-	}
-	
-	public void updateServer() {
+	public void watchServer() {
 		while(true) {
-			
+		    System.out.println("waiting");
+		    PDU pdu = tcp.getPDU();
+		    System.out.println("fuuuk");
+		    if(pdu != null) {
+		        System.out.println("asdasd");
+		        /*determine type of packet*/
+
+		        /*Call corresponding listener*/
+		    }
 		}
 	}
 
-
-	public void addUDPListener(Listener<ServerData> listener) {
-	    udpListener = listener;
-	}
-
-	public void addTCPListener() {
-	   
-	}
-
-	public void addErrListener(Listener<String> errListener) {
-	    this.errListener = errListener;
-	    udp.addListener(errListener);
-	    tcp.addListener(errListener);
+	public void addListener(Listener listener) {
+	    this.listener = listener;
 	}
 }

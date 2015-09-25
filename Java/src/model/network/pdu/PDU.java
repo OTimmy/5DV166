@@ -7,12 +7,11 @@ import model.network.pdu.types.SListPDU;
 
 public abstract class PDU {
 
+    private final static int pduBuffSize = 65539;
     public static PDU fromInputStream(InputStream inStream) throws IOException {
+        byte[] bytes = new byte[pduBuffSize];
 
-    	int length = inStream.available();
-        byte[] bytes = new byte[length];
-
-        inStream.read(bytes,0,length);
+        inStream.read(bytes,0,bytes.length);
 
 		OpCode op = OpCode.getOpCodeBy(bytes[0]);
 
@@ -50,6 +49,9 @@ public abstract class PDU {
         return null;
     }
 
+    public static int pduSize() {
+        return pduBuffSize;
+    }
 
     public abstract byte[] toByteArray();
 

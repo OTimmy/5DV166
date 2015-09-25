@@ -1,11 +1,14 @@
 package model.network;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import model.network.pdu.PDU;
 import model.network.pdu.types.GetListPDU;
 
 import controller.Listener;
@@ -18,9 +21,7 @@ import controller.Listener;
  */
 public class NetworkUDP {
 
-    private final int UDP_BUFF = 16;
-
-    private Listener<String>errListener;
+    private Listener listener;
     private String address;
     private int port;
     private DatagramSocket socket;
@@ -36,9 +37,10 @@ public class NetworkUDP {
 			socket = new DatagramSocket();
 		} catch (SocketException e) {
 			e.printStackTrace();
+			listener.reportErr(e.getMessage());
 		}
     }
-
+    //Change sendGetList to connect??
     /**
      *  Sends GETLIST PDU.
      */
@@ -54,6 +56,7 @@ public class NetworkUDP {
 
         } catch(IOException e) {
             e.printStackTrace();
+            listener.reportErr(e.getMessage());
             return false;
         }
 
@@ -64,21 +67,25 @@ public class NetworkUDP {
      *  Retrieves packet from name server.
      *  @return packet from name-server
      */
-    public byte[] getSListPacketData() {
+    public PDU getPDU() {
 
-        DatagramPacket packet = new DatagramPacket(new byte[UDP_BUFF], UDP_BUFF);
-
+        DatagramPacket packet = new DatagramPacket(new byte[PDU.pduSize()], PDU.pduSize());
+        InputStream inStream;
+        PDU SList = null;
         try {
-                socket.receive(packet);
-            }catch (IOException e) {
-                e.printStackTrace();
-            }
 
-        return packet.getData();
+                socket.receive(packet);
+                inStream = new ByteArrayInputStream(packet.getData());
+                SList = PDU.fromInputStream(inStream);
+        }catch (IOException e) {
+                e.printStackTrace();
+        }
+
+        return SList;
 
     }
 
-    public void addListener(Listener<String> listener) {
-        this.errListener = listener;
+    public void addListener(Listener listener) {
+        this.listener = listener;
     }
 }

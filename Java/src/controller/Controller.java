@@ -19,8 +19,9 @@ public class Controller implements ActionListener{
     public Controller() {
 
 		net = initNetwork("itchy.cs.umu.se",1337);
-		initErrorHandler();
 		startNetUDPThread();
+		connectServer("",1);
+		startNetTCPThread();
 		refreshAction();
 	}
 
@@ -31,11 +32,42 @@ public class Controller implements ActionListener{
 	private Network initNetwork(String address,int port) {
 		Network net = new Network(address,port);
 
-		net.addUDPListener(new controller.Listener<ServerData>() {
-		       public void update(ServerData t) {
-		           System.out.println(t.getName());
-		           /*gui component to print*/
-		       }
+		net.addListener(new controller.Listener() {
+
+            @Override
+            public void addServer(ServerData t) {
+
+                System.out.println("Server: "+t.getName());
+            }
+
+            @Override
+            public void updateServer(ServerData t) {
+                System.out.println("Update server");
+            }
+
+            @Override
+            public void reportErr(String error) {
+                // TODO Auto-generated method stub
+                System.out.println("FUUUU");
+            }
+
+            @Override
+            public void notificationLeave(String nick) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void notificationJoin(String nick) {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void removeAllServers() {
+                // TODO Auto-generated method stub
+
+            }
 		});
 
 		return net;
@@ -44,32 +76,33 @@ public class Controller implements ActionListener{
     private void startNetUDPThread() {
         Thread t = new Thread() {
              public void run() {
-                 net.udpUpdateServers();
+                 net.watchServers();
              }
           };
           t.start();
      }
 
+    private void startNetTCPThread() {
+        Thread t = new Thread() {
+            public void run() {
+                net.watchServer();
+            }
+        };
+        t.start();
+    }
+
 	private void refreshAction() {
-	    if(!net.udpRequestServers()) {
+	    if(!net.requestServers()) {
 	        System.out.println("Failed to request servers");
 	    }
 	}
-	
-    
+
+
    private void connectServer(String address,int port) {
-	   net.connectToServer(address, port);
+	  // if(net.connectToServer(address, port) == true) {
+       net.ConnectToServer("scratchy.cs.umu.se", 1234);
+	  // }
    }
-   
-   
-    private void initErrorHandler() {
-        net.addErrListener(new controller.Listener<String>() {
-            @Override
-            public void update(String t) {
-                System.out.println("Error:"+t);
-            }
-        });
-    }
 
 
 
