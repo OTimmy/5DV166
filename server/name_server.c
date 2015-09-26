@@ -27,8 +27,9 @@
 #include <errno.h>
 //#include <dirent.h>
 //#include <sys/param.h> /* E.g. MAXPATHLEN for getcwd() */
-//#include <fcntl.h> /* File control */
+//#include <fcntl.h> /* File control (including sockets) */
 //#include <sys/stat.h> /* Stat function */
+#include <sys/select.h>
 /* --- Signals and threads --- */
 //#include <signal.h>
 //#include <setjmp.h>
@@ -36,6 +37,8 @@
 /* --- Sockets --- */
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+//#include <endian.h>
 #include <netdb.h>
 /* --- Functions --- */
 //#include <stdarg.h>
@@ -43,6 +46,8 @@
 /* --- Local headers --- */
 #include "server.h"
 #include "name_server.h"
+
+// 2 comments !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 /*    n = sendto(sockfd,buffer,8, 0,NULL,0);
 /*    n = recvfrom(sockfd,buffer,4, 0,NULL,NULL);*/
@@ -71,18 +76,21 @@ size_t reg_arr_size(pdu_reg reg)
 
 void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len)
 {
-    size_t i = array_len;
+    size_t i = 0;
     memcpy(&reg_array[i], &reg.op, sizeof(reg.op));
-    i -= sizeof(reg.op);
+    i += sizeof(reg.op);
     memcpy(&reg_array[i], &reg.name_len, sizeof(reg.name_len));
-    i -= sizeof(reg.name_len);
+    i += sizeof(reg.name_len);
+    reg.tcp_port = htons(reg.tcp_port);
     memcpy(&reg_array[i], &reg.tcp_port, sizeof(reg.tcp_port));
-    i -= sizeof(reg.tcp_port);
+    i += sizeof(reg.tcp_port);
     memcpy(&reg_array[i], reg.name, strlen(reg.name));
-    i -= strlen(reg.name);
-    memset(&reg_array[i], 0, i);
+    i += strlen(reg.name);
+    memset(&reg_array[i], 0, array_len - i);
     return;
 }
+
+
 
 /*
  * register_at_name_server: Registers at the given name server with the given
@@ -105,14 +113,17 @@ void register_at_name_server(char *ns_name, char *ns_port, pdu_reg reg)
     size_t reg_arr_len = reg_arr_size(reg);
     uint8_t reg_array[reg_arr_len];
     reg_to_array(reg_array, reg, reg_arr_len);
-    //for (int i =0; i<16; i++)
-    //{
-    //    printf("%c\n", reg_array[i]);
-    //}
-    //fflush(stdout);
+
+    /* Setup select() to monitor the name server socket, with a timeout */
+    struct timeval timeout = {6, 0};
+    struct timeval count_down;
+    fd_set changed_fds;
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(sockfd, &read_fds);
 
     /* Register at name server */
-    for EVER // break if some global var set? if some signal sent?
+    for EVER // break if some global var set? if some signal sent?????????????
     {
         err = send(sockfd, reg_array, reg_arr_len, 0);
         if (err < 0)
@@ -120,52 +131,72 @@ void register_at_name_server(char *ns_name, char *ns_port, pdu_reg reg)
             perror("send (reg)");
             exit(EXIT_FAILURE);
         }
-        //select non block? 6sec
-        err = recv(sockfd, buffer, sizeof(buffer), 0); // MSG_DONTWAIT);
-        if (err < 0)
+        count_down = timeout; /* Reset timeout period for monitoring */
+        changed_fds = read_fds; /* Reset file descriptors to monitor */
+        if (select(sockfd + 1, &changed_fds, NULL, NULL, &count_down) < 0)
         {
-            if (EAGAIN == errno || EWOULDBLOCK == errno) /* Timed out */
-            {
-                continue; /* No additional sleep */
-            }
-            else
-            {
-                perror("recv (reg)");
-                exit(EXIT_FAILURE);
-            }
+            perror("select (reg)");
+            exit(EXIT_FAILURE);
         }
-        sleep(6);
+        else
+        {
+            err = recv(sockfd, buffer, sizeof(buffer), MSG_DONTWAIT);
+            if (err < 0)
+            {
+                /* select() timed out and no ACK was received */
+                if (EAGAIN == errno || EWOULDBLOCK == errno)
+                {
+                    continue; /* No additional sleep */
+                }
+                else
+                {
+                    perror("recv (reg)");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            sleep(6);
+        }
 
         /* Stay alive and update number of connected clients */
         while (ACK_OP == buffer[0]) /* Otherwise a NOTREG was received */
         {
             buffer[0] = ALIVE_OP;
-            buffer[1] = nrof_clients;
+            buffer[1] = nrof_clients; // thread safe!!!!!!!!!!!!!!!!!!!!!!!!!!
             err = send(sockfd, buffer, sizeof(buffer), 0);
             if (err < 0)
             {
                 perror("send (alive)");
                 exit(EXIT_FAILURE);
             }
-            //select non block? 6sec
-            err = recv(sockfd, buffer, sizeof(buffer), 0); // MSG_DONTWAIT);
-            if (err < 0)
+            count_down = timeout; /* Reset timeout period for monitoring */
+            changed_fds = read_fds; /* Reset file descriptors to monitor */
+            if (select(sockfd + 1, &changed_fds, NULL, NULL, &count_down) < 0)
             {
-                if (EAGAIN == errno || EWOULDBLOCK == errno) /* Timed out */
-                {
-                    buffer[0] = ACK_OP; /* To send another alive pdu */
-                    continue; /* No additional sleep */
-                }
-                else
-                {
-                    perror("recv (alive)");
-                    exit(EXIT_FAILURE);
-                }
+                perror("select (alive)");
+                exit(EXIT_FAILURE);
             }
-            sleep(6); /* Only called if a message was received */
+            else
+            {
+                err = recv(sockfd, buffer, sizeof(buffer), MSG_DONTWAIT);
+                if (err < 0)
+                {
+                    /* select() timed out and no ACK was received */
+                    if (EAGAIN == errno || EWOULDBLOCK == errno)
+                    {
+                        buffer[0] = ACK_OP; /* To send another alive pdu */
+                        continue; /* No additional sleep */
+                    }
+                    else
+                    {
+                        perror("recv (alive)");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                sleep(6); /* Only called if a message was received */
+            }
         }
     }
-
+    close(sockfd);
     return;
 }
 
@@ -225,7 +256,6 @@ int connect_to_name_server(char *ns_name, char *ns_port)
         exit(EXIT_FAILURE);
     }
     freeaddrinfo(result);
-
     return sockfd;
 }
 
