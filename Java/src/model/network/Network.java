@@ -116,7 +116,7 @@ public class Network {
 	
 			System.out.println("waiting");
 		    PDU pdu = tcp.getPDU();
-		    System.out.println("fuuuk");
+		    System.out.println("done");
 		    if(pdu != null) {
 		        System.out.println("asdasd");
 		        /*determine type of packet*/

@@ -14,7 +14,7 @@ public abstract class PDU {
         if(inStream != null) {
         	inStream.read(bytes,0,bytes.length);
         	OpCode op = OpCode.getOpCodeBy(bytes[0]);
-
+        	
         	switch(op) {
         	case ACK:
         		break;
@@ -26,7 +26,7 @@ public abstract class PDU {
         		break;
         	case MESSAGE:
         		break;
-        	case NICKS:
+        	case NICKS: System.out.println("Name:"+(char) bytes[4]);
         		break;
         	case NOTREG:
         		break;

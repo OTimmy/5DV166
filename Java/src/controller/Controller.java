@@ -22,7 +22,7 @@ public class Controller implements ActionListener{
 		initNetworkListener(net);
 		//temp
 		net.connectToNameServer("itchy.cs.umu.se", 1337);
-		net.ConnectToServer("scratchy.cs.umu.se", 1234);
+		//net.ConnectToServer("for.cs.umu.se", 51515);
 		//View
 	}
 
@@ -87,11 +87,15 @@ public class Controller implements ActionListener{
     }
     
    private void connectServer(String address,int port) {
-       net.ConnectToServer("scratchy.cs.umu.se", 12324);
+       net.ConnectToServer("scratchy.cs.umu.se", 1234);
    }
    
     @Override
     public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub
+    	
+    	//loads of else if statements
+    	
+    	
     }
 }
