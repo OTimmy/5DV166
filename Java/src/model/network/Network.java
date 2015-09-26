@@ -1,174 +1,134 @@
 package model.network;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
+import controller.Listener;
 
-import model.network.pdu.types.GetListPDU;
+import model.network.pdu.PDU;
 import model.network.pdu.types.SListPDU;
 
-//YES
-// http://stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
-// https://docs.oracle.com/javase/tutorial/networking/datagrams/
 /**
+ * <h1>Network</h2>
+ *
+ * Manage the network for the client with the name-server and server.
+ *
  * @author c12ton
- * @version 2015.09.16
- * Manage all network related stuff.
+ * @version 0.0
  *
  */
 public class Network {
 
+    private NetworkUDP udp;
+    private NetworkTCP tcp;
+    private int nrOfServers;
+    private Listener listener;
+    private Thread udpThread;
+    private Thread tcpThread;
+    
+	public Network() { 
+	    udp = new NetworkUDP();
+	    tcp = new NetworkTCP();
+	    nrOfServers = 0;
+	}
 
-	private final String nameServerAddress = "itchy.cs.umu.se";
-	private final int nameServerPort = 1337;
-	private final int recieveTimeOut = 400;
-
-	private DatagramSocket udpSocket;
-
-	private PrintWriter msgOut;
-	private OutputStream socketOut;
-	private InputStream socketIn;
-
-	//Should throw exceptions, and it should be handled in Listener.
-//	public void connect(String address, int port, String nickName) { //Change address type to InetAddress??
-//		try {
-////
-////			socket = new DatagramSocket();
-////
-////			//TEST Send pdu
-////			byte[] pduGETLIST = new byte[2];
-////			pduGETLIST[0] = 3;
-////			pduGETLIST[1] = 0;
-////
-////			//SENDING packet
-////			InetAddress inetAddress = InetAddress.getByName(address);
-////			packet = new DatagramPacket(pduGETLIST,pduGETLIST.length,inetAddress,port);
-////			socket.send(packet);
-////
-////			//RECEIVING packet
-////			byte[] pduSLIST = new byte[16];
-////			packet = new DatagramPacket(pduSLIST,pduSLIST.length);
-////			  //method blocks untill it receive packet.
-////			socket.receive(packet);
-////			socket.
-////
-////
-////			System.out.println(pduSLIST[0]);
-//
-//		} catch (IOException e){
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} //catch (ACKException e)
-//	}
-
-	//return false, if connection is not established
-	public boolean conncetToNameServer() {
-		//settings
-		try {
-
-			InetAddress address = InetAddress.getByName(nameServerAddress);
-			GetListPDU pdu = new GetListPDU();
-
-			DatagramPacket packet = new DatagramPacket(pdu.toByteArray(4),
-														pdu.getSize(),
-														address,nameServerPort);
-			//Initating udpSocket
-			udpSocket = new DatagramSocket();
-			udpSocket.setSoTimeout(recieveTimeOut);
-
-			udpSocket.send(packet);
-
-		} catch(IOException e) {
-		    System.out.println("Could not connect");
-		    return false;
+	//UDP-related
+	public boolean connectToNameServer(String address, int port) {
+		udp.connect(address, port);
+		
+		if(udp.isConnected()) {
+			watchServerList();
 		}
-		return true;
+		
+		return udp.isConnected();
 	}
-
-
-
-	//Problem with address, becuase its signed bit, change dat to unsigned
-	//Should return arraylist???
-	public void getNameServerList() throws IOException {
-
-	    try {
-
-
-	        SListPDU pdu = new SListPDU();
-
-	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(100),
-													pdu.getSize());
-
-	        udpSocket.receive(packet);
-
-	        System.out.println("OP-code: "+packet.getData()[0]);
-
-
-//	        packet = new DatagramPacket(pdu.toByteArray(1337),
-//                       pdu.getLength());
-//	        udpSocket.receive(packet);
-
-	        System.out.println("Sekvensnr: "+ packet.getData()[1]);
-
-	        //udpSocket.getS
-
-          packet = new DatagramPacket(pdu.toByteArray(1337),
-                       pdu.getSize());
-          udpSocket.receive(packet);
-
-          System.out.println("Sekvensnr: "+(char)packet.getData()[1]);
-
-
-	    }catch(SocketTimeoutException e) {
-	        System.out.println("Could not download list, timed out. (MSG)");
-
-	        return;
-	    }catch (IOException e) {
-
-	        return;
-	    }
-		return;
+	
+	public void disconnectNameServer() {
+		udp.disconnect();
+		try {
+			udpThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			listener.reportErr(e.getMessage());
+		}
 	}
-
-
-	public void conncetToClientServer() {
-
+	
+	public void refreshServers() {
+		udp.sendGetList();
 	}
-
-
-	public void getClientServerData() {
-
-	}
-
-	public void disconnect() {
-
-	}
-
-
 
 	/**
-	 * @return true if message was successfully transmitted,
-	 * else false.
+	 * Read packet from udp, and updates listener with latest servers.
 	 */
-	public boolean trySendMessage() {
-		return false;
+	private void watchServerList() {
+		udpThread = new Thread() {
+			public void run() {
+			
+				while(udp.isConnected()) { 
+
+					SListPDU pdu = (SListPDU) udp.getPDU();
+					//This might be wrong way of doing it. 
+					nrOfServers = (int) ((pdu.toByteArray()[2] << 8) 
+							| (pdu.toByteArray()[3] & 0xff));
+
+					/*Update list*/
+					for(ServerData server:pdu.getServerData()) {
+						listener.addServer(server);
+					}
+				}
+			}
+		};
+		udpThread.start();
 	}
 
-	public void readMessage() {
+	public int getNrOfServers() {
+	    return nrOfServers;
+	}
+
+	//TCP-related
+	/**
+	 * @param ip address for server and its port.
+	 * @return List of clients or null if unsuccessful.
+	 *
+	 */
+	public boolean ConnectToServer(String address, int port) {
+	    tcp.connect(address, port, "nick");
+	    if(tcp.isConnected()) {
+	    	watchServer();
+	    }
+		return tcp.isConnected();
+	}
+
+	public void disconnectServer() {
+		tcp.disconnect();
+		try {
+			tcpThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			listener.reportErr(e.getMessage());
+		}
+	}
+	
+	public void SendMessage(String msg) {
 
 	}
 
+	private void watchServer() {
+		while(tcp.isConnected()) { 
+	
+			System.out.println("waiting");
+		    PDU pdu = tcp.getPDU();
+		    System.out.println("done");
+		    if(pdu != null) {
+		        System.out.println("asdasd");
+		        /*determine type of packet*/
 
-	public void changeNick(String nick) {
+		        /*Call corresponding listener*/
+		    }
+		}
+	}
 
+	public void addListener(Listener listener) {
+	    this.listener = listener;
+	    tcp.addListener(listener);
+	    udp.addListener(listener);
 	}
 }
-

@@ -1,0 +1,37 @@
+!SESSION 2015-09-24 12:12:57.635 -----------------------------------------------
+eclipse.buildId=debbuild
+java.version=1.7.0_79
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86_64
+
+!ENTRY org.eclipse.mylyn.tasks.core 1 0 2015-09-24 12:13:10.522
+!MESSAGE Migrating task repository credentials from keyring.
+
+!ENTRY com.vectrace.MercurialEclipse 1 0 2015-09-24 12:13:10.628
+!MESSAGE checking encoding (ascii)...
+checking Python executable (/usr/bin/python)
+checking Python version (2.7.9)
+checking Python lib (/usr/lib/python2.7)...
+checking installed modules (/usr/lib/python2.7/dist-packages/mercurial)...
+checking templates (/usr/share/mercurial/templates)...
+checking commit editor...
+checking username...
+no username found, using 'c12ton@harry.cs.umu.se' instead
+no problems detected
+
+!ENTRY com.vectrace.MercurialEclipse 4 0 2015-09-24 12:13:10.720
+!MESSAGE . Command line: hg -y showconfig ui.username, error code: 1
+!STACK 1
+. Command line: hg -y showconfig ui.username, error code: 1
+	at com.vectrace.MercurialEclipse.commands.AbstractShellCommand.executeToStream(AbstractShellCommand.java:448)
+	at com.vectrace.MercurialEclipse.commands.AbstractShellCommand.executeToBytes(AbstractShellCommand.java:387)
+	at com.vectrace.MercurialEclipse.commands.AbstractShellCommand.executeToString(AbstractShellCommand.java:605)
+	at com.vectrace.MercurialEclipse.commands.AbstractShellCommand.executeToString(AbstractShellCommand.java:601)
+	at com.vectrace.MercurialEclipse.commands.HgConfigClient.getHgConfigLines(HgConfigClient.java:30)
+	at com.vectrace.MercurialEclipse.commands.HgConfigClient.getHgConfigLine(HgConfigClient.java:22)
+	at com.vectrace.MercurialEclipse.team.MercurialUtilities.getDefaultUserName(MercurialUtilities.java:256)
+	at com.vectrace.MercurialEclipse.preferences.PreferenceInitializer$1.run(PreferenceInitializer.java:132)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+!SUBENTRY 1 com.vectrace.MercurialEclipse 4 1 2015-09-24 12:13:10.721
+!MESSAGE . Command line: hg -y showconfig ui.username

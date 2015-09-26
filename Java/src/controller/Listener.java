@@ -1,9 +1,18 @@
 package controller;
 
-/**
- * @author c12ton
- * @version 2015.09.06
- */
-public class Listener {
+import model.network.ServerData;
+
+public interface Listener {
+    public void addServer(ServerData t);                 //synchronized
+
+    public void clearServers();
+
+    public void updateServer(ServerData t);              //synchronized
+
+    public void reportErr(String error);        //synchronized
+
+    public void notificationLeave(String nick);
+
+    public void notificationJoin(String nick);
 
 }

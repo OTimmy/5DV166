@@ -6,3 +6,33 @@
 
 2. Network.java
    Max size of pud should be 1500 bytes, becuase of internet thread.
+
+3. ErrorListener
+   Implement consumer and producere, where as  produce produce error messages, and consumer ( at controller) prints messages.
+
+4. hostname
+   // http://examples.javacodegeeks.com/core-java/net/inetaddress/get-hostname-from-ip-address/
+
+5. Input stream, (fromInputStream function)
+  http://stackoverflow.com/questions/2091454/byte-to-inputstream-or-outputstream
+
+6. Think of how data should be returned, for example the data from slist.
+   - What so ever informaiton, should be printed , even though it's not complete.
+     And a thread should be running in a aloop til every thing is collected.
+
+7. Network class, should manage the classes NetworkUDP. Like to start threads
+   And stop them, and return data.
+
+8. GUI should say x/total number of servers, while printing servers
+
+
+9. Sequence number, figure out how to apply it correctly, and if every pdu that's been sent has one, or theres only one per getlist??
+
+10. When refres is made, a thread will be running a while loop tills any new data arrives, from the thread reciving from udp socket. Or that the correct number of servers is accounted for.
+
+11. What if multiple refresh actions are made?? Should previous thread terminate?? And restart??
+   -- If multiple are made, then previous refresh should be cancelled before any new one is made. 
+   
+12. Thread should be notified if any data is ready to be printed...
+
+13. Add Observer pattern.
