@@ -1,8 +1,5 @@
 package model.network;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 import controller.Listener;
 
@@ -24,43 +21,62 @@ public class Network {
     private NetworkTCP tcp;
     private int nrOfServers;
     private Listener listener;
-
-	public Network(String NameServerAddress, int port) {
-	    udp = new NetworkUDP(NameServerAddress,port);
+    private Thread udpThread;
+    private Thread tcpThread;
+    
+	public Network() { 
+	    udp = new NetworkUDP();
 	    tcp = new NetworkTCP();
 	    nrOfServers = 0;
 	}
 
 	//UDP-related
-
-	public void ConnectToNameServer(String address, int port) {
-	    /*Stop watch servers*/
-	    /*init udp*/
-	    /*set watch servers to true*/
+	public boolean connectToNameServer(String address, int port) {
+		udp.connect(address, port);
+		
+		if(udp.isConnected()) {
+			watchServerList();
+		}
+		
+		return udp.isConnected();
 	}
-
-
-	public boolean requestServers() {
-		return udp.sendGetList();
+	
+	public void disconnectNameServer() {
+		udp.disconnect();
+		try {
+			udpThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			listener.reportErr(e.getMessage());
+		}
+	}
+	
+	public void refreshServers() {
+		udp.sendGetList();
 	}
 
 	/**
 	 * Read packet from udp, and updates listener with latest servers.
 	 */
-	public void watchServers() {
-	    while(true) { //Call synchronized method watchCondition
+	private void watchServerList() {
+		udpThread = new Thread() {
+			public void run() {
+			
+				while(udp.isConnected()) { 
 
-            SListPDU pdu = (SListPDU) udp.getPDU();
-            if(pdu == null) {
-                System.out.println("FUUUK");
-            }
-            nrOfServers = (int) ((pdu.toByteArray()[2] << 8)+ pdu.toByteArray()[3]);
+					SListPDU pdu = (SListPDU) udp.getPDU();
+					//This might be wrong way of doing it. 
+					nrOfServers = (int) ((pdu.toByteArray()[2] << 8) 
+							| (pdu.toByteArray()[3] & 0xff));
 
-            /*Update list*/
-            for(ServerData server:pdu.getServerData()) {
-                listener.addServer(server);
-            }
-        }
+					/*Update list*/
+					for(ServerData server:pdu.getServerData()) {
+						listener.addServer(server);
+					}
+				}
+			}
+		};
+		udpThread.start();
 	}
 
 	public int getNrOfServers() {
@@ -73,18 +89,32 @@ public class Network {
 	 * @return List of clients or null if unsuccessful.
 	 *
 	 */
-	public void ConnectToServer(String address, int port) {
-	    tcp.connect(address, port,"nick");
-	    tcp.getPDU(); //Should contain a list of nicks
+	public boolean ConnectToServer(String address, int port) {
+	    tcp.connect(address, port, "nick");
+	    if(tcp.isConnected()) {
+	    	watchServer();
+	    }
+		return tcp.isConnected();
 	}
 
+	public void disconnectServer() {
+		tcp.disconnect();
+		try {
+			tcpThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			listener.reportErr(e.getMessage());
+		}
+	}
+	
 	public void SendMessage(String msg) {
 
 	}
 
-	public void watchServer() {
-		while(true) {
-		    System.out.println("waiting");
+	private void watchServer() {
+		while(tcp.isConnected()) { 
+	
+			System.out.println("waiting");
 		    PDU pdu = tcp.getPDU();
 		    System.out.println("fuuuk");
 		    if(pdu != null) {
@@ -98,5 +128,7 @@ public class Network {
 
 	public void addListener(Listener listener) {
 	    this.listener = listener;
+	    tcp.addListener(listener);
+	    udp.addListener(listener);
 	}
 }

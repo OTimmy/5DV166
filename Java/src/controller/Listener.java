@@ -5,7 +5,7 @@ import model.network.ServerData;
 public interface Listener {
     public void addServer(ServerData t);                 //synchronized
 
-    public void removeAllServers();
+    public void clearServers();
 
     public void updateServer(ServerData t);              //synchronized
 

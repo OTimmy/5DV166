@@ -16,21 +16,21 @@ import model.network.ServerData;
 public class Controller implements ActionListener{
 
     private Network net;
-    public Controller() {
-
-		net = initNetwork("itchy.cs.umu.se",1337);
-		startNetUDPThread();
-		connectServer("",1);
-		startNetTCPThread();
-		refreshAction();
+    public Controller(Network net) {
+    	//Model 
+    	this.net = net;
+		initNetworkListener(net);
+		//temp
+		net.connectToNameServer("itchy.cs.umu.se", 1337);
+		net.ConnectToServer("scratchy.cs.umu.se", 1234);
+		//View
 	}
 
 	/**
 	 * Initate network at given addresses and ports.
 	 * Start a watch on UDP of the receiving end.
 	 */
-	private Network initNetwork(String address,int port) {
-		Network net = new Network(address,port);
+	private Network initNetworkListener(Network net) {
 
 		net.addListener(new controller.Listener() {
 
@@ -38,6 +38,7 @@ public class Controller implements ActionListener{
             public void addServer(ServerData t) {
 
                 System.out.println("Server: "+t.getName());
+               
             }
 
             @Override
@@ -64,48 +65,31 @@ public class Controller implements ActionListener{
             }
 
             @Override
-            public void removeAllServers() {
+            public void clearServers() {
                 // TODO Auto-generated method stub
-
             }
 		});
 
 		return net;
 	}
 
-    private void startNetUDPThread() {
-        Thread t = new Thread() {
-             public void run() {
-                 net.watchServers();
-             }
-          };
-          t.start();
-     }
 
-    private void startNetTCPThread() {
-        Thread t = new Thread() {
-            public void run() {
-                net.watchServer();
-            }
-        };
-        t.start();
+    private void connectToNameServer(String address, int port) {
+ 	  net.connectToNameServer(address, port);
     }
-
-	private void refreshAction() {
-	    if(!net.requestServers()) {
-	        System.out.println("Failed to request servers");
-	    }
-	}
-
-
+    
+    private void disconnectNameServer() {
+    	net.disconnectNameServer();
+    }
+    
+    private void refreshServerList() {
+    	net.refreshServers();
+    }
+    
    private void connectServer(String address,int port) {
-	  // if(net.connectToServer(address, port) == true) {
-       net.ConnectToServer("scratchy.cs.umu.se", 1234);
-	  // }
+       net.ConnectToServer("scratchy.cs.umu.se", 12324);
    }
-
-
-
+   
     @Override
     public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub

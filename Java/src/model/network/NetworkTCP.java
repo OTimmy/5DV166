@@ -21,7 +21,7 @@ public class NetworkTCP {
     private Listener listener;
     private OutputStream outStream;
     private InputStream inStream;
-
+    private boolean connected;
 
     public boolean connect(String address,int port, String nick) {
         try {
@@ -39,19 +39,20 @@ public class NetworkTCP {
             listener.reportErr(e.getMessage());
             return false;
         }
-
+        
+        connected = true;
         return true;
     }
 
     /**
      * Quit by sending QuitPDU, then close out,in stream and the socket.
      */
-    public void disconnect() {
+    public synchronized void disconnect() {
         try {
 
             QuitPDU quitPDU = new QuitPDU();
             outStream.write(quitPDU.toByteArray(), 0, quitPDU.getSize());
-
+            outStream.flush();
             outStream.close();
             inStream.close();
             socket.close();
@@ -59,11 +60,17 @@ public class NetworkTCP {
             e.printStackTrace();
             listener.reportErr(e.getMessage());
         }
+        connected = false;
+    }
+    
+    public synchronized boolean isConnected() {
+    	return connected;
     }
 
     public void sendPDU(PDU pdu) {
         try {
             outStream.write(pdu.toByteArray(),0,pdu.getSize());
+            outStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
             listener.reportErr(e.getMessage());
@@ -78,7 +85,8 @@ public class NetworkTCP {
         try {
             return PDU.fromInputStream(inStream);
         } catch (IOException e) {
-            e.printStackTrace();
+           // e.printStackTrace();
+        	System.out.println("Exception shit");
             listener.reportErr(e.getMessage());
         }
 
