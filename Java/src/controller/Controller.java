@@ -44,7 +44,7 @@ public class Controller implements ActionListener{
 
 			@Override
 			public void update(ServerData t) {
-				System.out.println("Updating server");
+				System.out.println("Server name: " + t.getName());
 			}
 			
 		});
