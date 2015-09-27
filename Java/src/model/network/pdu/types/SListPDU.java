@@ -28,7 +28,6 @@ public class SListPDU extends PDU{
 	private void parse(byte[] bytes) {
 
 		int index = 4;
-		//currentSequence = (int) bytes[1];
 		int nrOfServers = (int) ((bytes[2] << 8)+ bytes[3]);
 
 		for(int i = 0; i < nrOfServers; i++) {
@@ -71,4 +70,9 @@ public class SListPDU extends PDU{
     public byte[] toByteArray() {
         return bytes;
     }
+
+	@Override
+	public byte getOpCode() {
+		return OpCode.SLIST.value;
+	}
 }

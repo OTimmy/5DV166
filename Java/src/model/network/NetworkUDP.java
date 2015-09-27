@@ -24,7 +24,6 @@ import controller.Listener;
 public class NetworkUDP {
 
 	private Listener<String>errorListener;
-    private Listener listener;
     private DatagramSocket socket;
     private String address;
     private int port;
@@ -35,7 +34,7 @@ public class NetworkUDP {
 			socket = new DatagramSocket();			
 		} catch (SocketException e) {
 			e.printStackTrace();
-			listener.reportErr(e.getMessage());
+			errorListener.update(e.getMessage());
 		}
     }
     
@@ -68,8 +67,8 @@ public class NetworkUDP {
 			socket.send(packet);
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			errorListener.update(e.getMessage());
 			return false;
 		}
         return true;
@@ -86,7 +85,8 @@ public class NetworkUDP {
      */
     public PDU getPDU() {
     	
-    		DatagramPacket packet = new DatagramPacket(new byte[PDU.pduSize()], PDU.pduSize());
+    		DatagramPacket packet = new DatagramPacket(new byte[PDU.pduSize()],
+    												   PDU.pduSize());
     		InputStream inStream;
     		PDU pdu = null;
     		try {
@@ -96,18 +96,16 @@ public class NetworkUDP {
                  
     		}catch (IOException e) {
                 e.printStackTrace();    
-                listener.reportErr(e.getMessage());
+                errorListener.update(e.getMessage());
                 disconnect();
     		}
     		
     	return pdu;
     }
 
-    public void addErrorListener() {
-    	
+    
+    public void addErrorListener(Listener<String> errorListener) {
+    	this.errorListener = errorListener;
     }
     
-    public void addListener(Listener listener) {
-        this.listener = listener;
-    }
 }

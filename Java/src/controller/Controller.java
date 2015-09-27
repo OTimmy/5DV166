@@ -30,39 +30,34 @@ public class Controller implements ActionListener{
 	 * Initate network at given addresses and ports.
 	 * Start a watch on UDP of the receiving end.
 	 */
-	private Network initNetworkListener(Network net) {
+	private void initNetworkListener(Network net) {
 
-		net.addListener(new controller.Listener() {
+		net.addErrorListener(new controller.Listener<String>() {
 
-            @Override
-            public void addServer(ServerData t) {
-                System.out.println("Server: "+t.getName());               
-            }
-
-            @Override
-            public void updateServer(ServerData t) {
-                System.out.println("Update server");
-            }
-
-            @Override
-            public void reportErr(String error) {
-                System.out.println("FUUUU");
-            }
-
-            @Override
-            public void notificationLeave(String nick) {
-            }
-
-            @Override
-            public void notificationJoin(String nick) {
-            }
-
-            @Override
-            public void clearServers() {
-            }
+			@Override
+			public void update(String t) {
+				System.out.println("Error");
+			}
 		});
+		
+		net.addServerListener(new controller.Listener<ServerData>() {
 
-		return net;
+			@Override
+			public void update(ServerData t) {
+				System.out.println("Updating server");
+			}
+			
+		});
+		
+		net.addMessageListener(new controller.Listener<String>() {
+
+			@Override
+			public void update(String t) {
+				System.out.println("Message received");
+			}
+			
+		});
+		
 	}
 
 

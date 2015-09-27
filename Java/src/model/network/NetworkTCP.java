@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 import model.network.pdu.types.JoinPDU;
 import model.network.pdu.types.QuitPDU;
@@ -18,7 +19,7 @@ import controller.Listener;
 public class NetworkTCP {
 
     private Socket socket;
-    private Listener listener;
+    private Listener<String> errorListener;
     private OutputStream outStream;
     private InputStream inStream;
     private boolean connected;
@@ -31,12 +32,12 @@ public class NetworkTCP {
             outStream = socket.getOutputStream();
             inStream = socket.getInputStream();
 
-            JoinPDU joinPDU = new JoinPDU(nick);
+            JoinPDU joinPDU = new JoinPDU(nick,OpCode.JOIN.value);
             sendPDU(joinPDU);
 
         } catch (IOException e) {
             e.printStackTrace();
-            listener.reportErr(e.getMessage());
+            errorListener.update(e.getMessage());
             return false;
         }
         
@@ -58,7 +59,7 @@ public class NetworkTCP {
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
-            listener.reportErr(e.getMessage());
+            errorListener.update(e.getMessage());
         }
         connected = false;
     }
@@ -73,7 +74,7 @@ public class NetworkTCP {
             outStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
-            listener.reportErr(e.getMessage());
+            errorListener.update(e.getMessage());
         }
     }
 
@@ -87,13 +88,13 @@ public class NetworkTCP {
         } catch (IOException e) {
            // e.printStackTrace();
         	System.out.println("Exception shit");
-            listener.reportErr(e.getMessage());
+            errorListener.update(e.getMessage());
         }
 
         return null;
     }
 
-    public void addListener(Listener listener) {
-        this.listener = listener;
+    public void addErrorListener(Listener<String> erroLlistener) {
+        this.errorListener = errorListener;
     }
 }

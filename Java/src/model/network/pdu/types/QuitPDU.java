@@ -23,5 +23,9 @@ public class QuitPDU extends PDU{
         return bytes.length;
     }
 
+	@Override
+	public byte getOpCode() {
+		return OpCode.QUIT.value;
+	}
 
 }

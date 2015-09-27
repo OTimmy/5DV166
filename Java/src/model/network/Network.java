@@ -20,7 +20,9 @@ public class Network {
     private NetworkUDP udp;
     private NetworkTCP tcp;
     private int nrOfServers;
-    private Listener listener;
+    private Listener<String> errorListener;
+    private Listener<ServerData> serverListener;
+    private Listener<String> msgListener;
     private Thread udpThread;
     private Thread tcpThread;
     
@@ -47,7 +49,7 @@ public class Network {
 			udpThread.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			listener.reportErr(e.getMessage());
+			errorListener.update(e.getMessage());
 		}
 	}
 	
@@ -71,7 +73,7 @@ public class Network {
 
 					/*Update list*/
 					for(ServerData server:pdu.getServerData()) {
-						listener.addServer(server);
+						serverListener.update(server);
 					}
 				}
 			}
@@ -103,7 +105,7 @@ public class Network {
 			tcpThread.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			listener.reportErr(e.getMessage());
+			errorListener.update(e.getMessage());
 		}
 	}
 	
@@ -116,19 +118,27 @@ public class Network {
 	
 			System.out.println("waiting");
 		    PDU pdu = tcp.getPDU();
+		    //pdu.getClass()
 		    System.out.println("done");
 		    if(pdu != null) {
 		        System.out.println("asdasd");
 		        /*determine type of packet*/
-
 		        /*Call corresponding listener*/
 		    }
 		}
 	}
 
-	public void addListener(Listener listener) {
-	    this.listener = listener;
-	    tcp.addListener(listener);
-	    udp.addListener(listener);
+	public void addServerListener(Listener<ServerData> serverListener) {
+		this.serverListener = serverListener;
+	}
+	
+	public void addErrorListener(Listener<String> errorListener) {
+	    this.errorListener = errorListener;
+	    tcp.addErrorListener(errorListener);
+	    udp.addErrorListener(errorListener);
+	}
+	
+	public void addMessageListener(Listener<String> msgListener) {
+		this.msgListener = msgListener;
 	}
 }
