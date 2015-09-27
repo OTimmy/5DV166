@@ -1,3 +1,9 @@
+-----------------IMPORTANT-----------------------
+---
+---     Remove interface methods from listener interface, and implements
+---     methods like addErrorListener,addMessageListener etc...
+------------------------------------------------
+
 
 1. Messageque for the model to send to controller and therefrom to the gui.
   - Should be used in,

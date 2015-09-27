@@ -8,9 +8,10 @@ import model.network.pdu.PDU;
 
 public class JoinPDU extends PDU{
     private byte[] bytes;
-
-    public JoinPDU(String nick) {
-
+    private byte opCode;
+    
+    public JoinPDU(String nick,byte opCode) {
+    	this.opCode = opCode;
         byte[] nickbytes = nick.getBytes(StandardCharsets.UTF_8);
         ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.JOIN.value,
                                                        (byte) nickbytes.length);
@@ -27,4 +28,9 @@ public class JoinPDU extends PDU{
     public int getSize() {
         return bytes.length;
     }
+
+	@Override
+	public byte getOpCode() {
+		return opCode;
+	}
 }

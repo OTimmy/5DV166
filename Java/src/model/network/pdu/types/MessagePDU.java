@@ -5,9 +5,10 @@ import java.util.Date;
 import model.network.pdu.PDU;
 
 public class MessagePDU extends PDU{
-
-	public MessagePDU(String message) {
-		
+	
+	private byte opCode;
+	public MessagePDU(String message, byte opCode) {
+		this.opCode = opCode;
 	}
 	
 	public MessagePDU(String message, String nickname,Date timestamp) {
@@ -22,6 +23,11 @@ public class MessagePDU extends PDU{
 	@Override
 	public int getSize() {
 		return 0;
+	}
+
+	@Override
+	public byte getOpCode() {
+		return opCode;
 	}
 
 }

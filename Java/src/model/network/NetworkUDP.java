@@ -23,6 +23,7 @@ import controller.Listener;
  */
 public class NetworkUDP {
 
+	private Listener<String>errorListener;
     private Listener listener;
     private DatagramSocket socket;
     private String address;
@@ -102,6 +103,10 @@ public class NetworkUDP {
     	return pdu;
     }
 
+    public void addErrorListener() {
+    	
+    }
+    
     public void addListener(Listener listener) {
         this.listener = listener;
     }

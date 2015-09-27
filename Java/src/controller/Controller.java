@@ -36,9 +36,7 @@ public class Controller implements ActionListener{
 
             @Override
             public void addServer(ServerData t) {
-
-                System.out.println("Server: "+t.getName());
-               
+                System.out.println("Server: "+t.getName());               
             }
 
             @Override
@@ -48,25 +46,19 @@ public class Controller implements ActionListener{
 
             @Override
             public void reportErr(String error) {
-                // TODO Auto-generated method stub
                 System.out.println("FUUUU");
             }
 
             @Override
             public void notificationLeave(String nick) {
-                // TODO Auto-generated method stub
-
             }
 
             @Override
             public void notificationJoin(String nick) {
-                // TODO Auto-generated method stub
-
             }
 
             @Override
             public void clearServers() {
-                // TODO Auto-generated method stub
             }
 		});
 
@@ -91,11 +83,7 @@ public class Controller implements ActionListener{
    }
    
     @Override
-    public void actionPerformed(ActionEvent e) {
-        // TODO Auto-generated method stub
-    	
-    	//loads of else if statements
-    	
-    	
+    public void actionPerformed(ActionEvent e) {  	
+    	//loads of else if statements    	
     }
 }

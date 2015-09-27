@@ -56,5 +56,6 @@ public abstract class PDU {
     public abstract byte[] toByteArray();
 
     public abstract int getSize();
-
+    
+    public abstract byte getOpCode();
 }
