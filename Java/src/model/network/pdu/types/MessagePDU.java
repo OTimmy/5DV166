@@ -3,14 +3,11 @@ package model.network.pdu.types;
 import java.util.Date;
 
 import model.network.MessageData;
+import model.network.pdu.Checksum;
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 
 public class MessagePDU extends PDU{
-
-
-    private final int nickLenghtIndex = 2;
-    private final int msgLenghtIndex = 4;
 
     private final int timeEnd = 12;
 
@@ -23,21 +20,20 @@ public class MessagePDU extends PDU{
         msgData = parseIn(bytes);
     }
 
-	public MessagePDU(String message, String nickname,Date timestamp) {
-	    bytes = parseOut();
+	public MessagePDU(String message) {
+	    bytes = parseOut(message);
 
 	}
 
 	public MessageData parseIn(byte[] bytes) {
 
-
-	    if(!checkPad(bytes)) {
-	        return null;
-	    }
-
-	    int nickLength = (int) bytes[nickLenghtIndex];
-	    int msgLength = (int) (bytes[msgLenghtIndex]<<8) |
-	            ( bytes[msgLenghtIndex+1] & 0xff);
+		
+		if(Checksum.computeChecksum(bytes) != 0  && !checkPad(bytes) ) {
+			return null;
+		}
+		
+	    int nickLength = (int) bytes[2];
+	    int msgLength = (int) (bytes[4]<<8) | ( bytes[5] & 0xff);
 
 	    int index = 8;
 
@@ -52,20 +48,39 @@ public class MessagePDU extends PDU{
 	    }
 
 	    String nick = "";
-	    for(; index < nickLength + msgLength + timeEnd; index++) {
+	    for(; index < (nickLength + msgLength + timeEnd); index++) {
 	        nick += bytes[index];
 	    }
-
+	    
+	    
 	    return new MessageData(nick,msg,timeStamp);
 	}
 
-	private byte[] parseOut() {
+	private byte[] parseOut(String msg) {
         byte bytes[] = new byte[PDU.pduSize()];
 	    bytes[0] = OpCode.MESSAGE.value;
+	    bytes[4] = (byte) (msg.length() & 0xff);
+	    bytes[5] = (byte) ((msg.length() >> 8) & 0xff);
+	    bytes[6] = 0;
+	    bytes[7] = 0;
+	    
+	    bytes[12] = 0;
+	    bytes[13] = 0;
+	    bytes[14] = 0;
+	    bytes[15] = 0;
+	    
+	    //Write message to byte
+	    int msgEnd = msg.length() +  (4 - msg.length() % 4) % 4 + 12;
+	    int index = 12;
+	    for(int i = 0; index < msgEnd;i++,index++) {
+	    	bytes[index] = (byte) msg.charAt(i);
+	    }
+	    
+	    bytes[3] = 0;
+	    byte sum = Checksum.computeChecksum(bytes);
 
-
-
-
+	    bytes[3] = sum;
+	    
 	    return bytes;
 	}
 
@@ -80,7 +95,7 @@ public class MessagePDU extends PDU{
 
 	@Override
 	public int getSize() {
-		return 0;
+		return PDU.pduSize();
 	}
 
 	@Override

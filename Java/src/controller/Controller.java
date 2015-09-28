@@ -3,6 +3,7 @@ package controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import model.network.MessageData;
 import model.network.Network;
 import model.network.ServerData;
 
@@ -49,11 +50,11 @@ public class Controller implements ActionListener{
 
 		});
 
-		net.addMessageListener(new controller.Listener<String>() {
+		net.addMessageListener(new controller.Listener<MessageData>() {
 
 			@Override
-			public void update(String t) {
-				System.out.println("Message received");
+			public void update(MessageData t) {
+				System.out.println("Message received: "+t.getMsg());
 			}
 
 		});

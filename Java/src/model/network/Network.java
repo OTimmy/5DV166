@@ -5,6 +5,7 @@ import controller.Listener;
 
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
+import model.network.pdu.types.MessagePDU;
 import model.network.pdu.types.SListPDU;
 
 /**
@@ -23,7 +24,7 @@ public class Network {
     private int nrOfServers;
     private Listener<String> errorListener;
     private Listener<ServerData> serverListener;
-    private Listener<String> msgListener;
+    private Listener<MessageData> msgListener;
     private Thread udpThread;
     private Thread tcpThread;
 
@@ -38,7 +39,12 @@ public class Network {
 		udp.connect(address, port);
 
 		if(udp.isConnected()) {
-			watchServerList();
+			udpThread = new Thread() {
+				public void run() {
+					watchServerList();	
+				}
+			};
+			udpThread.start();
 		}
 
 		return udp.isConnected();
@@ -62,24 +68,18 @@ public class Network {
 	 * Read packet from udp, and updates listener with latest servers.
 	 */
 	private void watchServerList() {
-		udpThread = new Thread() {
-			public void run() {
-
-				while(udp.isConnected()) {
-
-					SListPDU pdu = (SListPDU) udp.getPDU();
-					//This might be wrong way of doing it.
-					nrOfServers = (int) ((pdu.toByteArray()[2] << 8)
-							| (pdu.toByteArray()[3] & 0xff));
-
-					/*Update list*/
-					for(ServerData server:pdu.getServerData()) {
-						serverListener.update(server);
-					}
-				}
-			}
-		};
-		udpThread.start();
+        while(udp.isConnected()) {			
+            
+        	SListPDU pdu = (SListPDU) udp.getPDU();
+			//This might be wrong way of doing it.
+            nrOfServers = (int) ((pdu.toByteArray()[2] << 8)
+                              | (pdu.toByteArray()[3] & 0xff));
+            
+            /*Update list*/
+            for(ServerData server:pdu.getServerData()) {
+                serverListener.update(server);
+            }
+        }
 	}
 
 	public int getNrOfServers() {
@@ -95,7 +95,13 @@ public class Network {
 	public boolean ConnectToServer(String address, int port) {
 	    tcp.connect(address, port, "nick");
 	    if(tcp.isConnected()) {
-	    	watchServer();
+	    	tcpThread = new Thread() {
+	    		public void run() {
+	    			watchServer();
+	    		}
+	    	};
+	    	tcpThread.run();
+	    	
 	    }
 		return tcp.isConnected();
 	}
@@ -111,24 +117,25 @@ public class Network {
 	}
 
 	public void SendMessage(String msg) {
-
+		tcp.sendPDU(new MessagePDU(msg));
 	}
-
+	
 	private void watchServer() {
 		while(tcp.isConnected()) {
 
 			System.out.println("waiting");
 		    PDU pdu = tcp.getPDU();
-		    //pdu.getClass()
+
 		    System.out.println("done");
 		    if(pdu != null) {
 		        OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
 		        switch(op) {
-		        case NICKS:
-
+		        
+		        case NICKS:      	
 		            break;
+		            
 		        case MESSAGE:
-		            /*Call this listener*/
+		        	msgListener.update(((MessagePDU) pdu).getMessageData());
 		            break;
 
 		        case UJOIN:
@@ -138,6 +145,8 @@ public class Network {
 		    }
 		}
 	}
+	
+
 
 	public void addServersUsersListListener() {
 
@@ -146,8 +155,6 @@ public class Network {
 	public void addUserJoinListener(Listener<String> listener) {
 
 	}
-
-
 
 	public void addServerListener(Listener<ServerData> serverListener) {
 		this.serverListener = serverListener;
@@ -159,7 +166,7 @@ public class Network {
 	    udp.addErrorListener(errorListener);
 	}
 
-	public void addMessageListener(Listener<String> msgListener) {
+	public void addMessageListener(Listener<MessageData> msgListener) {
 		this.msgListener = msgListener;
 	}
 }
