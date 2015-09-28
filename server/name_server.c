@@ -88,7 +88,23 @@ void *register_at_name_server(void *thread_data_ns)
     /* Register at name server */
     for EVER // break if some global var set? if some signal sent?????????????
     {
+printf("\nPackage size: %d\n", (int) reg_arr_len);
+printf("REG OP: %d\n", reg_array[0]);
+printf("Name length: %d\n", reg_array[1]);
+printf("TCP port: %d\n", (reg_array[2] << 8) | (reg_array[3] & 0xFF));
+printf("Server name (0's for padding):\n");
+for (int i=4; i<reg_arr_len; i++)
+{
+    if  (reg_array[i] == '\0')
+    {
+        printf("0");
+    }
+    else
+    printf("%c", reg_array[i]);
+}
+printf("\n\n");
         err = send(sockfd, reg_array, reg_arr_len, 0);
+printf("Bytes sent as REG: %d\n", err);
         if (err < 0)
         {
             perror("send (reg)");
@@ -104,6 +120,7 @@ void *register_at_name_server(void *thread_data_ns)
         else
         {
             err = recv(sockfd, buffer, sizeof(buffer), MSG_DONTWAIT);
+printf("Bytes received as REG-ACK: %d\n", err);
             if (err < 0)
             {
                 /* select() timed out and no ACK was received */
@@ -125,7 +142,12 @@ void *register_at_name_server(void *thread_data_ns)
         {
             buffer[0] = ALIVE_OP;
             buffer[1] = nrof_clients; // thread safe!!!!!!!!!!!!!!!!!!!!!!!!!!
+printf("\nALIVE: %d, ", buffer[0]);
+printf("%d, ", buffer[1]);
+printf("%d, ", buffer[2]);
+printf("%d\n", buffer[3]);
             err = send(sockfd, buffer, sizeof(buffer), 0);
+printf("Bytes sent to ALIVE: %d\n", err);
             if (err < 0)
             {
                 perror("send (alive)");
@@ -141,6 +163,7 @@ void *register_at_name_server(void *thread_data_ns)
             else
             {
                 err = recv(sockfd, buffer, sizeof(buffer), MSG_DONTWAIT);
+printf("Bytes received as ALIVE-ACK: %d\n", err);
                 if (err < 0)
                 {
                     /* select() timed out and no ACK was received */
@@ -155,6 +178,10 @@ void *register_at_name_server(void *thread_data_ns)
                         exit(EXIT_FAILURE);
                     }
                 }
+printf("ACK: %d, ", buffer[0]);
+printf("%d, ", buffer[1]);
+printf("%d, ", buffer[2]);
+printf("%d\n", buffer[3]);
                 sleep(6); /* Only called if a message was received */
             }
         }

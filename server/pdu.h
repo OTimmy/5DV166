@@ -22,9 +22,9 @@
 //#include <stdbool.h>
 //#include <stdint.h> /* Subset of inttypes.h */
 #include <inttypes.h> /* Fixed width integers */
-#include <sys/types.h>
+//#include <sys/types.h>
 //#include <limits.h>
-//#include <stddef.h>
+#include <stddef.h>
 //#include <ctype.h> /* E.g. isalnum(), tolower() */
 /* --- System calls --- */
 //#include <unistd.h>

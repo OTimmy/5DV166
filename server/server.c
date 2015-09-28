@@ -10,7 +10,7 @@
 /*
  * Compile: gcc -g -std=gnu99 -Wall -pedantic -pthread -o server server.c globals.c pdu.c name_server.c -lpthread
  * Memcheck: valgrind --tool=memcheck --leak-check=yes --show-reachable=yes -v ./server
- * Run: ./server
+ * Run: ./server "Server name here!"
  */
 
 //                                                          with timeout
@@ -25,6 +25,9 @@
 // ??, kinda, guess, soon (tm).
 // quite safe (don't allways quit), naah.
 // yeah.
+
+// uchnick, freeall?
+// main 2 threads (or admin client), ack to alive func, nrof_clients getter.
 
 /* --- Standard headers --- */
 #include <stdlib.h>
@@ -75,6 +78,14 @@ int client_conn_port = 51515; // func to search up. if bind fails.
 // limits number of clients to 255.
 //message_queue;
 
+/*
+ * main: Runs a chat server. It registers at a name server where clients can
+ *      find it and then waits for clients to connect. It then relays messages
+ *      received from clients back to all clients.
+ * Params: (from command line) [server name].
+ * Returns: EXIT_FAILURE if error occurred, otherwise EXIT_SUCCESS.
+ * Notes:
+ */
 int main(int argc, char *argv[])
 {
     struct timespec start_time, end_time;
@@ -82,7 +93,7 @@ int main(int argc, char *argv[])
 
     double proc_runtime = 0;
     clock_t proc_start_time, proc_end_time;
-    proc_start_time = clock();  /* Start process timer */
+    proc_start_time = clock(); /* Start process timer */
 
     /* Initialize variables (could be extended to be done dynamically) */
     char name_server_address[] = "itchy.cs.umu.se";

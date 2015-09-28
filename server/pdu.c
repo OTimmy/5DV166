@@ -1,7 +1,7 @@
 /*
  * pdu.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 28/9-15.
+ * Last update: 29/9-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * pdu.c contains functions for using the PDU data types.
@@ -17,10 +17,10 @@
 /* --- Data types --- */
 //#include <stdbool.h>
 //#include <stdint.h> /* Subset of inttypes.h */
-#include <inttypes.h> /* Fixed width integers */
+//#include <inttypes.h> /* Fixed width integers */
 //#include <sys/types.h>
 //#include <limits.h>
-//#include <stddef.h>
+#include <stddef.h>
 //#include <ctype.h> /* E.g. isalnum(), tolower() */
 /* --- System calls --- */
 //#include <unistd.h>
@@ -90,6 +90,7 @@ size_t reg_arr_size(pdu_reg reg)
 void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len)
 {
     size_t i = 0;
+    size_t name_len = strlen(reg.name);
     memcpy(&reg_array[i], &reg.op, sizeof(reg.op));
     i += sizeof(reg.op);
     memcpy(&reg_array[i], &reg.name_len, sizeof(reg.name_len));
@@ -97,8 +98,8 @@ void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len)
     reg.tcp_port = htons(reg.tcp_port);
     memcpy(&reg_array[i], &reg.tcp_port, sizeof(reg.tcp_port));
     i += sizeof(reg.tcp_port);
-    memcpy(&reg_array[i], reg.name, strlen(reg.name));
-    i += strlen(reg.name);
+    memcpy(&reg_array[i], reg.name, name_len);
+    i += name_len;
     memset(&reg_array[i], 0, array_len - i);
     return;
 }
