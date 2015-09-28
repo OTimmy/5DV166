@@ -18,7 +18,9 @@ public class SListPDU extends PDU{
 	public SListPDU(byte[] bytes) {
 	    this.bytes = bytes;
 	    servers = new ArrayList<ServerData>();
-        parse(bytes);
+	    System.out.println("Letter:"+(char) bytes[12]);
+	    parse(bytes);
+
 	}
 
 	/**
@@ -42,7 +44,7 @@ public class SListPDU extends PDU{
             int port        =  (int) (( bytes[index +4] << 8) |( bytes[index +5] & 0xff ));
 	        int nrOfClients = (int) bytes [index + 6];
 	        int nameLength  = (int) bytes[index + 7];
-	        
+
 	        //start index for server name
 	        index += 8;
 	        // Getting servers name

@@ -40,7 +40,7 @@ public class NetworkTCP {
             errorListener.update(e.getMessage());
             return false;
         }
-        
+
         connected = true;
         return true;
     }
@@ -63,7 +63,7 @@ public class NetworkTCP {
         }
         connected = false;
     }
-    
+
     public synchronized boolean isConnected() {
     	return connected;
     }

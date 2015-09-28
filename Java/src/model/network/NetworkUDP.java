@@ -7,7 +7,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 
 import model.network.pdu.PDU;
 import model.network.pdu.types.GetListPDU;
@@ -27,39 +26,39 @@ public class NetworkUDP {
     private DatagramSocket socket;
     private String address;
     private int port;
-    private boolean connected;
+    private boolean connection;
 
     public NetworkUDP() {
         try {
-			socket = new DatagramSocket();			
+			socket = new DatagramSocket();
 		} catch (SocketException e) {
 			e.printStackTrace();
 			errorListener.update(e.getMessage());
 		}
     }
-    
+
     /**
-     *  Connects to name server by sending getlist PDU 
+     *  Connects to name server by sending getlist PDU
      *  to given address and port.
-     *  
-     *  @return true if successful else false. 
+     *
+     *  @return true if successful else false.
      */
     public void connect(String address,int port) {
         this.address = address;
         this.port = port;
-        connected = sendGetList();
+        connection = sendGetList();
     }
-    
+
     public synchronized void disconnect() {
-    	connected = false;
+    	connection = false;
     }
-    
+
     public boolean sendGetList() {
 
         InetAddress inetAddress;
 		try {
 			inetAddress = InetAddress.getByName(address);
-			
+
 	        GetListPDU pdu = new GetListPDU();
 	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
 	                                                    pdu.getSize(),
@@ -73,10 +72,10 @@ public class NetworkUDP {
 		}
         return true;
     }
-    
-    
+
+
     public synchronized boolean isConnected() {
-    	return connected;
+    	return connection;
     }
 
     /**
@@ -84,7 +83,7 @@ public class NetworkUDP {
      *  @return packet from name-server
      */
     public PDU getPDU() {
-    	
+
     		DatagramPacket packet = new DatagramPacket(new byte[PDU.pduSize()],
     												   PDU.pduSize());
     		InputStream inStream;
@@ -93,19 +92,19 @@ public class NetworkUDP {
                 socket.receive(packet);
                 inStream = new ByteArrayInputStream(packet.getData());
                 pdu = (SListPDU) PDU.fromInputStream(inStream);
-                 
+
     		}catch (IOException e) {
-                e.printStackTrace();    
+                e.printStackTrace();
                 errorListener.update(e.getMessage());
                 disconnect();
     		}
-    		
+
     	return pdu;
     }
 
-    
+
     public void addErrorListener(Listener<String> errorListener) {
     	this.errorListener = errorListener;
     }
-    
+
 }

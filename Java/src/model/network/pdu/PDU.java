@@ -2,7 +2,8 @@ package model.network.pdu;
 
 import java.io.IOException;
 import java.io.InputStream;
-import model.network.pdu.types.SListPDU;
+
+import model.network.pdu.types.*;
 
 
 public abstract class PDU {
@@ -10,11 +11,11 @@ public abstract class PDU {
     private final static int pduBuffSize = 65539;
     public static PDU fromInputStream(InputStream inStream) throws IOException {
         byte[] bytes = new byte[pduBuffSize];
-        
+
         if(inStream != null) {
         	inStream.read(bytes,0,bytes.length);
         	OpCode op = OpCode.getOpCodeBy(bytes[0]);
-        	
+
         	switch(op) {
         	case ACK:
         		break;
@@ -22,11 +23,8 @@ public abstract class PDU {
         		break;
         	case CHNICK:
         		break;
-        	case JOIN:
-        		break;
-        	case MESSAGE:
-        		break;
-        	case NICKS: System.out.println("Name:"+(char) bytes[4]);
+        	case MESSAGE: return new MessagePDU(bytes);
+        	case NICKS:
         		break;
         	case NOTREG:
         		break;
@@ -34,7 +32,7 @@ public abstract class PDU {
         		break;
         	case REG:
         		break;
-        	case SLIST: return new SListPDU(bytes);
+        	case SLIST:  return new SListPDU(bytes);
         	case UCNICK:
         		break;
         	case UJOIN:
@@ -56,6 +54,6 @@ public abstract class PDU {
     public abstract byte[] toByteArray();
 
     public abstract int getSize();
-    
+
     public abstract byte getOpCode();
 }

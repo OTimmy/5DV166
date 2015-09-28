@@ -17,7 +17,7 @@ public class Controller implements ActionListener{
 
     private Network net;
     public Controller(Network net) {
-    	//Model 
+    	//Model
     	this.net = net;
 		initNetworkListener(net);
 		//temp
@@ -39,46 +39,46 @@ public class Controller implements ActionListener{
 				System.out.println("Error");
 			}
 		});
-		
+
 		net.addServerListener(new controller.Listener<ServerData>() {
 
 			@Override
 			public void update(ServerData t) {
-				System.out.println("Server name: " + t.getName());
+			   System.out.println("Server name: " + t.getName());
 			}
-			
+
 		});
-		
+
 		net.addMessageListener(new controller.Listener<String>() {
 
 			@Override
 			public void update(String t) {
 				System.out.println("Message received");
 			}
-			
+
 		});
-		
+
 	}
 
 
     private void connectToNameServer(String address, int port) {
  	  net.connectToNameServer(address, port);
     }
-    
+
     private void disconnectNameServer() {
     	net.disconnectNameServer();
     }
-    
+
     private void refreshServerList() {
     	net.refreshServers();
     }
-    
+
    private void connectServer(String address,int port) {
        net.ConnectToServer("scratchy.cs.umu.se", 1234);
    }
-   
+
     @Override
-    public void actionPerformed(ActionEvent e) {  	
-    	//loads of else if statements    	
+    public void actionPerformed(ActionEvent e) {
+    	//loads of else if statements
     }
 }

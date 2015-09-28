@@ -3,6 +3,7 @@ package model.network;
 
 import controller.Listener;
 
+import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 import model.network.pdu.types.SListPDU;
 
@@ -25,8 +26,8 @@ public class Network {
     private Listener<String> msgListener;
     private Thread udpThread;
     private Thread tcpThread;
-    
-	public Network() { 
+
+	public Network() {
 	    udp = new NetworkUDP();
 	    tcp = new NetworkTCP();
 	    nrOfServers = 0;
@@ -35,14 +36,14 @@ public class Network {
 	//UDP-related
 	public boolean connectToNameServer(String address, int port) {
 		udp.connect(address, port);
-		
+
 		if(udp.isConnected()) {
 			watchServerList();
 		}
-		
+
 		return udp.isConnected();
 	}
-	
+
 	public void disconnectNameServer() {
 		udp.disconnect();
 		try {
@@ -52,7 +53,7 @@ public class Network {
 			errorListener.update(e.getMessage());
 		}
 	}
-	
+
 	public void refreshServers() {
 		udp.sendGetList();
 	}
@@ -63,12 +64,12 @@ public class Network {
 	private void watchServerList() {
 		udpThread = new Thread() {
 			public void run() {
-			
-				while(udp.isConnected()) { 
+
+				while(udp.isConnected()) {
 
 					SListPDU pdu = (SListPDU) udp.getPDU();
-					//This might be wrong way of doing it. 
-					nrOfServers = (int) ((pdu.toByteArray()[2] << 8) 
+					//This might be wrong way of doing it.
+					nrOfServers = (int) ((pdu.toByteArray()[2] << 8)
 							| (pdu.toByteArray()[3] & 0xff));
 
 					/*Update list*/
@@ -108,36 +109,56 @@ public class Network {
 			errorListener.update(e.getMessage());
 		}
 	}
-	
+
 	public void SendMessage(String msg) {
 
 	}
 
 	private void watchServer() {
-		while(tcp.isConnected()) { 
-	
+		while(tcp.isConnected()) {
+
 			System.out.println("waiting");
 		    PDU pdu = tcp.getPDU();
 		    //pdu.getClass()
 		    System.out.println("done");
 		    if(pdu != null) {
-		        System.out.println("asdasd");
-		        /*determine type of packet*/
-		        /*Call corresponding listener*/
+		        OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
+		        switch(op) {
+		        case NICKS:
+
+		            break;
+		        case MESSAGE:
+		            /*Call this listener*/
+		            break;
+
+		        case UJOIN:
+
+		            break;
+		        }
 		    }
 		}
 	}
 
+	public void addServersUsersListListener() {
+
+	}
+
+	public void addUserJoinListener(Listener<String> listener) {
+
+	}
+
+
+
 	public void addServerListener(Listener<ServerData> serverListener) {
 		this.serverListener = serverListener;
 	}
-	
+
 	public void addErrorListener(Listener<String> errorListener) {
 	    this.errorListener = errorListener;
 	    tcp.addErrorListener(errorListener);
 	    udp.addErrorListener(errorListener);
 	}
-	
+
 	public void addMessageListener(Listener<String> msgListener) {
 		this.msgListener = msgListener;
 	}
