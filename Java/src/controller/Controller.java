@@ -9,7 +9,7 @@ import model.network.ServerData;
 
 /**
  * <h1>Listener.java</h1>
- * <p> Manage the flow between the gui and the underlying model</p>
+ *  Manage the flow between the gui and the underlying model
  *
  * @author c12ton
  * @version 0.0
@@ -28,8 +28,7 @@ public class Controller implements ActionListener{
 	}
 
 	/**
-	 * Initate network at given addresses and ports.
-	 * Start a watch on UDP of the receiving end.
+	 * Initate listeners dedicated for the network.
 	 */
 	private void initNetworkListener(Network net) {
 
