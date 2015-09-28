@@ -1,7 +1,7 @@
 /*
  * server.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 15/9-15.
+ * Last update: 28/9-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.h is the header file for the server program.
@@ -11,9 +11,9 @@
 #define SERVER_H_
 
 /* --- Standard headers --- */
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h> /* -lrt (sometimes for glibc < 2.17) */
+//#include <stdlib.h>
+//#include <stdio.h>
+//#include <time.h> /* -lrt (sometimes for glibc < 2.17) */
 //#include <math.h> /* -lm */
 //#include <string.h>
 //#include <sys/wait.h>
@@ -30,31 +30,21 @@
 //#include <errno.h>
 //#include <dirent.h>
 //#include <sys/param.h> /* E.g. MAXPATHLEN for getcwd() */
-//#include <fcntl.h> /* File control */
+//#include <fcntl.h> /* File control (including sockets) */
 //#include <sys/stat.h> /* Stat function */
+//#include <sys/select.h>
 /* --- Signals and threads --- */
 //#include <signal.h>
 //#include <setjmp.h>
-//#include <pthread.h> /* -lpthread */
+//#include <pthread.h> /* -pthread &or -lpthread */
 /* --- Sockets --- */
 //#include <sys/socket.h>
 //#include <netinet/in.h>
+//#include <arpa/inet.h>
+//#include <endian.h>
 //#include <netdb.h>
 /* --- Functions --- */
 //#include <stdarg.h>
-
-typedef struct {
-    uint8_t op;
-    uint8_t name_len;
-    uint16_t tcp_port;
-    char *name;
-} pdu_reg;
-
-typedef struct {
-    uint8_t op;
-    uint8_t nrof_clients;
-    uint16_t id;
-} pdu_alive;
 
 /*
  * compare: Compares two values and determines which is bigger.

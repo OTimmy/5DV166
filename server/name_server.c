@@ -1,7 +1,7 @@
 /*
  * name_server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 23/9-15.
+ * Last update: 28/9-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * name_server.c contains functions for connecting to the name server.
@@ -33,7 +33,7 @@
 /* --- Signals and threads --- */
 //#include <signal.h>
 //#include <setjmp.h>
-//#include <pthread.h> /* -lpthread */
+//#include <pthread.h> /* -pthread &or -lpthread */
 /* --- Sockets --- */
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -44,67 +44,30 @@
 //#include <stdarg.h>
 
 /* --- Local headers --- */
-#include "server.h"
+#include "globals.h"
+#include "pdu.h"
 #include "name_server.h"
-
-// 2 comments !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-/*    n = sendto(sockfd,buffer,8, 0,NULL,0);
-/*    n = recvfrom(sockfd,buffer,4, 0,NULL,NULL);*/
-/*    uint16_t ID = (buffer[2] << 8) | (buffer[3] && 0xFF);*/
-
-#define EVER (;;)
-#define ACK_OP 1
-#define ALIVE_OP 2
-
-extern uint8_t nrof_clients;
-
-size_t pad_length(size_t len)
-{
-    return ((4 - len % 4) % 4);
-}
-
-size_t reg_arr_size(pdu_reg reg)
-{
-    size_t len = sizeof(reg.op)
-                + sizeof(reg.name_len)
-                + sizeof(reg.tcp_port)
-                + strlen(reg.name);
-    len += pad_length(len);
-    return len;
-}
-
-void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len)
-{
-    size_t i = 0;
-    memcpy(&reg_array[i], &reg.op, sizeof(reg.op));
-    i += sizeof(reg.op);
-    memcpy(&reg_array[i], &reg.name_len, sizeof(reg.name_len));
-    i += sizeof(reg.name_len);
-    reg.tcp_port = htons(reg.tcp_port);
-    memcpy(&reg_array[i], &reg.tcp_port, sizeof(reg.tcp_port));
-    i += sizeof(reg.tcp_port);
-    memcpy(&reg_array[i], reg.name, strlen(reg.name));
-    i += strlen(reg.name);
-    memset(&reg_array[i], 0, array_len - i);
-    return;
-}
-
-
 
 /*
  * register_at_name_server: Registers at the given name server with the given
  *      info and periodically updates the name server with the number of
  *      connected clients through heartbeats.
- * Params: ns_name = string with the name of the name server.
- *         ns_port = string representing the port number where the name server
- *                   accepts connections.
- *         reg = pdu_reg struct containing this servers name and open port nr.
- * Returns:
+ * Params: thread_data_ns = reg_data pointer containing the following values.
+ *      ns_name = string with the name of the name server.
+ *      ns_port = string representing the port number where the name server
+ *                accepts connections.
+ *      reg = pdu_reg struct containing this servers name and open port nr.
+ * Returns: NULL.
  * Notes:
  */
-void register_at_name_server(char *ns_name, char *ns_port, pdu_reg reg)
+void *register_at_name_server(void *thread_data_ns)
 {
+    /* Extract thread data */
+    reg_data thread_data = *(reg_data *) thread_data_ns;
+    char *ns_name = thread_data.name_server_address;
+    char *ns_port = thread_data.name_server_port;
+    pdu_reg reg = thread_data.reg;
+
     int err;
     int sockfd = connect_to_name_server(ns_name, ns_port);
     uint8_t buffer[4] = {0}; /* Same size for ACK, ALIVE and NOTREG */
@@ -197,7 +160,7 @@ void register_at_name_server(char *ns_name, char *ns_port, pdu_reg reg)
         }
     }
     close(sockfd);
-    return;
+    return NULL;
 }
 
 /*
