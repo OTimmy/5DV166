@@ -35,7 +35,7 @@ public class NetworkTCP {
 
             JoinPDU joinPDU = new JoinPDU(nick,OpCode.JOIN.value);
             sendPDU(joinPDU);
-          //  sendPDU(new MessagePDU("Holla!"));
+            sendPDU(new MessagePDU("Hallå!, skriv några oöäå tecken. Testar utf8, kan ej svara tillbaka :)"));
 
         } catch (IOException e) {
             e.printStackTrace();

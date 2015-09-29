@@ -22,23 +22,23 @@ public enum OpCode {
     ULEAVE(17),
     UCNICK(18),
     NICKS(19);
-    
+
     public final byte value;
-    
-    
+
+
     OpCode(int value) {
         this.value = (byte) value;
     }
-    
+
     private static final Map<Byte,OpCode> lookup = new HashMap<Byte,OpCode>();
     static {
     	for(OpCode op : OpCode.values()) {
     		lookup.put(op.value,op);
     	}
     }
-    
+
     public static OpCode getOpCodeBy(byte value) {
     	return lookup.get(value);
     }
-    
+
 }

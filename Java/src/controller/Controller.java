@@ -2,6 +2,7 @@ package controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import model.network.MessageData;
 import model.network.Network;
@@ -23,7 +24,7 @@ public class Controller implements ActionListener{
 		initNetworkListener(net);
 		//temp
 		net.connectToNameServer("itchy.cs.umu.se", 1337);
-		net.ConnectToServer("scratchy.cs.umu.se", 2015);
+		//net.ConnectToServer("proton.cs.umu.se", 515);
 	}
 
 	/**
@@ -43,7 +44,12 @@ public class Controller implements ActionListener{
 
 			@Override
 			public void update(ServerData t) {
-			   System.out.println("Server name: " + t.getName());
+			   if(t != null) {
+	                System.out.println("Server name: " + t.getName());
+			   } else {
+			       System.out.println("Reset servers");
+			   }
+
 			}
 
 		});
@@ -54,6 +60,16 @@ public class Controller implements ActionListener{
 			public void update(MessageData t) {
 				System.out.println("Message received: "+t.getMsg());
 			}
+
+		});
+
+
+		net.addNicksListener(new controller.Listener<ArrayList<String>>() {
+
+            @Override
+            public void update(ArrayList<String> nicks) {
+
+            }
 
 		});
 

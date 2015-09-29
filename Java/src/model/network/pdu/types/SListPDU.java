@@ -13,14 +13,14 @@ import model.network.pdu.*;
 public class SListPDU extends PDU{
 	private ArrayList<ServerData> servers;
 	private byte[] bytes;
+	private int sequenceNr;
 	//TODO currentsequence
 
 	public SListPDU(byte[] bytes) {
 	    this.bytes = bytes;
 	    servers = new ArrayList<ServerData>();
-	    System.out.println("Letter:"+(char) bytes[12]);
-	    parse(bytes);
 
+	    parse(bytes);
 	}
 
 	/**
@@ -29,8 +29,11 @@ public class SListPDU extends PDU{
 	 */
 	private void parse(byte[] bytes) {
 
+
+
+		sequenceNr = (int) ((bytes[1]));
+		int nrOfServers = (int) (((bytes[2] << 8) | (bytes[3] & 0xff)));
 		int index = 4;
-		int nrOfServers = (int) ((bytes[2] << 8)+ bytes[3]);
 
 		for(int i = 0; i < nrOfServers; i++) {
             String address = "";
@@ -68,6 +71,10 @@ public class SListPDU extends PDU{
 	    return bytes.length;
 	}
 
+	public int getSequenceNr() {
+	    return sequenceNr;
+	}
+
     @Override
     public byte[] toByteArray() {
         return bytes;
@@ -77,4 +84,6 @@ public class SListPDU extends PDU{
 	public byte getOpCode() {
 		return OpCode.SLIST.value;
 	}
+
+
 }

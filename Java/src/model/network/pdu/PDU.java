@@ -24,8 +24,7 @@ public abstract class PDU {
         	case CHNICK: System.out.println("Change nick");
         		break;
         	case MESSAGE: return new MessagePDU(bytes);
-        	case NICKS: System.out.println("YAY got nicks");
-        		break;
+        	case NICKS:   return new NicksPDU(bytes);
         	case NOTREG: System.out.println("Not reg");
         		break;
         	case QUIT: System.out.println("quit");

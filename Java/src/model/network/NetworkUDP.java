@@ -50,7 +50,8 @@ public class NetworkUDP {
     }
 
     public synchronized void disconnect() {
-    	connection = false;
+    	socket.close();
+        connection = false;
     }
 
     public boolean sendGetList() {
@@ -90,6 +91,7 @@ public class NetworkUDP {
     		PDU pdu = null;
     		try {
                 socket.receive(packet);
+
                 inStream = new ByteArrayInputStream(packet.getData());
                 pdu = (SListPDU) PDU.fromInputStream(inStream);
 

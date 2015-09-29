@@ -9,27 +9,37 @@ public class NicksPDU extends PDU{
 
     private ArrayList<String> nicks;
     public NicksPDU(byte[] bytes) {
-
+        nicks = parse(bytes);
     }
 
-
-    private ArrayList parse(byte[] bytes) {
+    private ArrayList<String> parse(byte[] bytes) {
         ArrayList<String> nicks = new ArrayList<String>();
         int nrOfNicks = (byte) bytes[2];
+        int length = (byte) ((bytes[2] << 8) | (bytes[3] & 0xff));
+        int startIndex = 4;
+        String nick = "";
 
+        for(int i = 0; i < nrOfNicks; i++) {
 
-        return null;
+            int endIndex = startIndex;
+            for(; (endIndex < length) && (bytes[endIndex] != '\0'); endIndex++) {}
+            nick = new String(bytes,startIndex,endIndex);
+            startIndex = endIndex;
+
+        }
+
+        nicks.add(nick);
+
+        return nicks;
     }
 
     @Override
     public byte[] toByteArray() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public int getSize() {
-        // TODO Auto-generated method stub
         return PDU.pduSize();
     }
 
@@ -38,12 +48,11 @@ public class NicksPDU extends PDU{
         return OpCode.NICKS.value;
     }
 
-    public void getNicks() {
-
+    public ArrayList<String> getNicks() {
+        return nicks;
     }
 
     public int getNrOfNicks() {
         return 0;
     }
-
 }

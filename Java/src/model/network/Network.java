@@ -1,6 +1,8 @@
 package model.network;
 
 
+import java.util.ArrayList;
+
 import controller.Listener;
 
 import model.network.pdu.OpCode;
@@ -27,11 +29,14 @@ public class Network {
     private Listener<MessageData> msgListener;
     private Thread udpThread;
     private Thread tcpThread;
+    private ArrayList<Integer> sequenceNumbs;
+
 
 	public Network() {
 	    udp = new NetworkUDP();
 	    tcp = new NetworkTCP();
 	    nrOfServers = 0;
+	    sequenceNumbs = new ArrayList<Integer>();
 	}
 
 	//UDP-related
@@ -62,7 +67,9 @@ public class Network {
 
 	public void refreshServers() {
 		udp.sendGetList();
-	}
+        serverListener.update(null);      //Reset serverlist
+        sequenceNumbs = new ArrayList<Integer>();  //reset list of sequence numbers
+    }
 
 	/**
 	 * Read packet from udp, and updates listener with latest servers.
@@ -71,19 +78,22 @@ public class Network {
         while(udp.isConnected()) {
 
         	SListPDU pdu = (SListPDU) udp.getPDU();
-			//This might be wrong way of doing it.
-            nrOfServers = (int) ((pdu.toByteArray()[2] << 8)
-                              | (pdu.toByteArray()[3] & 0xff));
 
-            /*Update list*/
-            for(ServerData server:pdu.getServerData()) {
-                serverListener.update(server);
+            int expectSequenceNr = 0;  //default value
+            if(sequenceNumbs.size() > 0) {
+
+                expectSequenceNr = sequenceNumbs.get(sequenceNumbs.size()
+                                                         -1).intValue() + 1;
+            }
+
+            if(expectSequenceNr == pdu.getSequenceNr()) {
+                sequenceNumbs.add(pdu.getSequenceNr());
+                /*Update list*/
+                for(ServerData server:pdu.getServerData()) { //send whole array list instead, and after ever update remove previouse servers
+                    serverListener.update(server);
+                }
             }
         }
-	}
-
-	public int getNrOfServers() {
-	    return nrOfServers;
 	}
 
 	//TCP-related
@@ -133,7 +143,7 @@ public class Network {
 		        switch(op) {
 
 		        case NICKS:
-		            System.out.println("YAY got nicks");
+		            nicksListener.update();
 		            break;
 
 		        case MESSAGE:
@@ -141,7 +151,6 @@ public class Network {
 		            break;
 
 		        case UJOIN:
-
 		            break;
 		        }
 		    }
@@ -171,4 +180,11 @@ public class Network {
 	public void addMessageListener(Listener<MessageData> msgListener) {
 		this.msgListener = msgListener;
 	}
+
+
+
+    public void addNicksListener(Listener<ArrayList<String>> listener) {
+        // TODO Auto-generated method stub
+
+    }
 }
