@@ -17,27 +17,25 @@ public abstract class PDU {
         	OpCode op = OpCode.getOpCodeBy(bytes[0]);
 
         	switch(op) {
-        	case ACK:
+        	case ACK: System.out.println("Ack");
         		break;
-        	case ALIVE:
+        	case ALIVE: System.out.println("Alive");
         		break;
-        	case CHNICK:
+        	case CHNICK: System.out.println("Change nick");
         		break;
         	case MESSAGE: return new MessagePDU(bytes);
-        	case NICKS:
+        	case NICKS: System.out.println("YAY got nicks");
         		break;
-        	case NOTREG:
+        	case NOTREG: System.out.println("Not reg");
         		break;
-        	case QUIT:
-        		break;
-        	case REG:
+        	case QUIT: System.out.println("quit");
         		break;
         	case SLIST:  return new SListPDU(bytes);
-        	case UCNICK:
+        	case UCNICK: System.out.println("ucnick");
         		break;
-        	case UJOIN:
+        	case UJOIN: System.out.println("UJoin");
         		break;
-        	case ULEAVE:
+        	case ULEAVE: System.out.println("u leave");
         		break;
         	default:
         		break;

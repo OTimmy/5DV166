@@ -41,7 +41,7 @@ public class Network {
 		if(udp.isConnected()) {
 			udpThread = new Thread() {
 				public void run() {
-					watchServerList();	
+					watchServerList();
 				}
 			};
 			udpThread.start();
@@ -68,13 +68,13 @@ public class Network {
 	 * Read packet from udp, and updates listener with latest servers.
 	 */
 	private void watchServerList() {
-        while(udp.isConnected()) {			
-            
+        while(udp.isConnected()) {
+
         	SListPDU pdu = (SListPDU) udp.getPDU();
 			//This might be wrong way of doing it.
             nrOfServers = (int) ((pdu.toByteArray()[2] << 8)
                               | (pdu.toByteArray()[3] & 0xff));
-            
+
             /*Update list*/
             for(ServerData server:pdu.getServerData()) {
                 serverListener.update(server);
@@ -101,7 +101,7 @@ public class Network {
 	    		}
 	    	};
 	    	tcpThread.run();
-	    	
+
 	    }
 		return tcp.isConnected();
 	}
@@ -119,7 +119,7 @@ public class Network {
 	public void SendMessage(String msg) {
 		tcp.sendPDU(new MessagePDU(msg));
 	}
-	
+
 	private void watchServer() {
 		while(tcp.isConnected()) {
 
@@ -128,12 +128,14 @@ public class Network {
 
 		    System.out.println("done");
 		    if(pdu != null) {
+
 		        OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
 		        switch(op) {
-		        
-		        case NICKS:      	
+
+		        case NICKS:
+		            System.out.println("YAY got nicks");
 		            break;
-		            
+
 		        case MESSAGE:
 		        	msgListener.update(((MessagePDU) pdu).getMessageData());
 		            break;
@@ -145,7 +147,7 @@ public class Network {
 		    }
 		}
 	}
-	
+
 
 
 	public void addServersUsersListListener() {

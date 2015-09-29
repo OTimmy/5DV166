@@ -1,5 +1,6 @@
 package model.network.pdu.types;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import model.network.MessageData;
@@ -27,11 +28,11 @@ public class MessagePDU extends PDU{
 
 	public MessageData parseIn(byte[] bytes) {
 
-		
+
 		if(Checksum.computeChecksum(bytes) != 0  && !checkPad(bytes) ) {
 			return null;
 		}
-		
+
 	    int nickLength = (int) bytes[2];
 	    int msgLength = (int) (bytes[4]<<8) | ( bytes[5] & 0xff);
 
@@ -42,17 +43,19 @@ public class MessagePDU extends PDU{
 	        timeStamp += (char) bytes[index];
 	    }
 
-	    String msg = "";
-	    for(; index < msgLength+timeEnd; index++) {
-	        msg += (char) bytes[index];
+	    byte[] msgBytes = new byte[msgLength];
+
+	    for(int i = 0; index < msgLength+timeEnd; i++,index++) {
+	        msgBytes[i] = bytes[index];
 	    }
+	    String msg = new String(msgBytes, StandardCharsets.UTF_8);;
 
 	    String nick = "";
 	    for(; index < (nickLength + msgLength + timeEnd); index++) {
 	        nick += bytes[index];
 	    }
-	    
-	    
+
+
 	    return new MessageData(nick,msg,timeStamp);
 	}
 
@@ -63,24 +66,26 @@ public class MessagePDU extends PDU{
 	    bytes[5] = (byte) ((msg.length() >> 8) & 0xff);
 	    bytes[6] = 0;
 	    bytes[7] = 0;
-	    
+
 	    bytes[12] = 0;
 	    bytes[13] = 0;
 	    bytes[14] = 0;
 	    bytes[15] = 0;
-	    
+
+	    byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
+
 	    //Write message to byte
 	    int msgEnd = msg.length() +  (4 - msg.length() % 4) % 4 + 12;
 	    int index = 12;
 	    for(int i = 0; index < msgEnd;i++,index++) {
-	    	bytes[index] = (byte) msg.charAt(i);
+	    	bytes[index] = msgBytes[i];
 	    }
-	    
+
 	    bytes[3] = 0;
 	    byte sum = Checksum.computeChecksum(bytes);
 
 	    bytes[3] = sum;
-	    
+
 	    return bytes;
 	}
 

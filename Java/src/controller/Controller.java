@@ -23,8 +23,7 @@ public class Controller implements ActionListener{
 		initNetworkListener(net);
 		//temp
 		net.connectToNameServer("itchy.cs.umu.se", 1337);
-		//net.ConnectToServer("for.cs.umu.se", 51515);
-		//View
+		net.ConnectToServer("scratchy.cs.umu.se", 2015);
 	}
 
 	/**
@@ -36,7 +35,7 @@ public class Controller implements ActionListener{
 
 			@Override
 			public void update(String t) {
-				System.out.println("Error");
+				System.out.println("Error: "+t);
 			}
 		});
 

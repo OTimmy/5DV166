@@ -8,6 +8,7 @@ import java.net.Socket;
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 import model.network.pdu.types.JoinPDU;
+import model.network.pdu.types.MessagePDU;
 import model.network.pdu.types.QuitPDU;
 
 import controller.Listener;
@@ -34,6 +35,7 @@ public class NetworkTCP {
 
             JoinPDU joinPDU = new JoinPDU(nick,OpCode.JOIN.value);
             sendPDU(joinPDU);
+          //  sendPDU(new MessagePDU("Holla!"));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -94,7 +96,7 @@ public class NetworkTCP {
         return null;
     }
 
-    public void addErrorListener(Listener<String> erroLlistener) {
+    public void addErrorListener(Listener<String> errorListener) {
         this.errorListener = errorListener;
     }
 }
