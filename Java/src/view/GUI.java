@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.ScrollPane;
 import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
@@ -12,11 +14,14 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * @author c12ton
@@ -39,8 +44,10 @@ public class GUI {
 	private final int USR_PANEL_WIDTH   = 100;
 	private final int WRT_PANEL_HEIGHT  = 100;
 	private final int WRT_PANEL_WIDTH   = 400;
+
 	
 	private JFrame frame;
+	private DefaultTableModel tableModel;
 	
 	public GUI() {
 		UILookAndFeel();
@@ -49,12 +56,8 @@ public class GUI {
 		JPanel tabPanel    = buildTabPanel();
 		
 		
-		
-		
 		frame.add(configPanel,BorderLayout.NORTH);
-
 		frame.add(tabPanel,BorderLayout.CENTER);
-		frame.setVisible(true);
 		frame.revalidate();
 	}
 
@@ -122,27 +125,27 @@ public class GUI {
 		panel.add(button,gbc);
 		
 		
-		/*Server row*/
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		panel.add(new JLabel("Server:"),gbc);
-		
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.gridx++;
-		JTextField serverField = new JTextField(15);
-		panel.add(serverField,gbc);
-			
-		gbc.gridx++;
-		gbc.gridwidth = 2;
-		button = new JButton("Connect");
-		panel.add(button,gbc);
+//		/*Server row*/
+//		gbc.anchor = GridBagConstraints.LINE_END;
+//		gbc.gridx = 0;
+//		gbc.gridy = 1;
+//		panel.add(new JLabel("Server:"),gbc);
+//		
+//		gbc.anchor = GridBagConstraints.LINE_START;
+//		gbc.gridx++;
+//		JTextField serverField = new JTextField(15);
+//		panel.add(serverField,gbc);
+//			
+//		gbc.gridx++;
+//		gbc.gridwidth = 2;
+//		button = new JButton("Connect");
+//		panel.add(button,gbc);
 		
 		/*Nick row*/
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.gridwidth = 1;
 		gbc.gridx = 0;
-		gbc.gridy = 2;
+		gbc.gridy = 1;
 		panel.add(new JLabel("Nick"),gbc);
 		
 		gbc.anchor = GridBagConstraints.LINE_START;
@@ -150,21 +153,31 @@ public class GUI {
 		JTextField nickField = new JTextField(10);
 		panel.add(nickField,gbc);
 		
-		gbc.gridx++;
-		gbc.gridwidth = 2;
+		//gbc.anchor =  GridBagConstraints.WEST;
+		
+		//gbc.fill = GridBagConstraints.BOTH;
+		
+		//gbc.gridx++;
+		//gbc.gridwidth = 2;
+		gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+		gbc.insets.right = 30;
 		button = new JButton("Ok");
 		panel.add(button,gbc);
 
 		return panel;
 	}
 	
+	/**
+	 * @return panel with two tabs, that contains the browser and chat
+	 */
 	private JPanel buildTabPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(100,400));
 		JTabbedPane tabbedPane = new JTabbedPane();
 		JPanel chatPanel = buildChatPanelPanel();
+		JPanel browsPanel = buildServerPanel();
 		
-		tabbedPane.addTab("Browser", new JLabel("Browser"));
+		tabbedPane.addTab("Browse", browsPanel);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 		
 		
@@ -184,11 +197,22 @@ public class GUI {
 		panel.setBorder(BorderFactory.createLineBorder(Color.green));
 		panel.setBackground(Color.white);
 		
-		
+ 
 		/*Message panal*/
+		int msgPanelSize  = 400;
+		int textOutWidth  = 360;
+		int textOutHeight = 330;
+				
 		JPanel msgPanel = new JPanel();
-		msgPanel.setPreferredSize(new Dimension(MSG_PANEL_WIDTH,MSG_PANEL_HEIGHT));
+		msgPanel.setPreferredSize(new Dimension(msgPanelSize,msgPanelSize));
 		msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
+		
+		JTextArea input = new JTextArea(1,2);
+		input.setLineWrap(true);
+		JScrollPane scrollPane = new JScrollPane(input);
+		scrollPane.setPreferredSize(new Dimension(textOutWidth,textOutHeight));
+		
+		msgPanel.add(scrollPane);
 		
 		
 		/*User panel*/
@@ -207,10 +231,44 @@ public class GUI {
 		return panel;
 	}
 	
-	private void buildServerPanel() {
+	/**
+	 * Contains the list of servers and buttons for managing the list 
+	 */
+	private JPanel buildServerPanel() {
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setPreferredSize(new Dimension(frame.WIDTH - CONF_PANEL_WIDTH,
+			     frame.HEIGHT - CONF_PANEL_HEIGHT));
 		
+		int northSize = 400;
+		int southSize = 50;
+		
+		/*Server panel*/
+		JPanel northPanel = new JPanel(new BorderLayout());
+		northPanel.setPreferredSize(new Dimension(northSize,northSize));
+		northPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
+		
+		String[] columns = {"Address","Port","Connected","Topic"};
+		Object[][] data = new Object[21][4];
+		tableModel = new DefaultTableModel(data,columns);
+		
+		JTable table = new JTable(tableModel);
+		JScrollPane scrollPane = new JScrollPane(table);
+		northPanel.add(scrollPane,BorderLayout.CENTER);
+		
+		/*Panel with refresh and connect*/
+		JPanel southPanel = new JPanel();
+		southPanel.setPreferredSize(new Dimension(southSize,southSize));
+		southPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+		
+		JButton button = new JButton("Connect");
+		southPanel.add(button,BorderLayout.EAST);
+		button = new JButton("Refresh");
+		southPanel.add(button,BorderLayout.EAST);
+		
+		panel.add(northPanel,BorderLayout.NORTH);
+		panel.add(southPanel,BorderLayout.SOUTH);		
+		
+		return panel;
 	}
 	
-	/*Implement general error message window, to be used by Listsener*/
-	//errorMsg(int type,String errmsg)
 }
