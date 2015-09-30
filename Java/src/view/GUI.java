@@ -5,12 +5,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -28,24 +30,27 @@ public class GUI {
 	private final int FRAME_HEIGHT = 600;
 	//------------int panel_height etc
 	private final int CONF_PANEL_HEIGHT = 100;
-	private final int CONF_PANEL_WIDTH = 400;
-	
-	
+	private final int CONF_PANEL_WIDTH  = 400;
+	private final int MSG_PANEL_HEIGHT  = 400;
+	private final int MSG_PANEL_WIDTH   = 300;
+	private final int USR_PANEL_HEIGHT  = 400;
+	private final int USR_PANEL_WIDTH   = 100;
+	private final int WRT_PANEL_HEIGHT  = 100;
+	private final int WRT_PANEL_WIDTH   = 400;
 	
 	private JFrame frame;
 	
 	public GUI() {
 		frame = buildFrame();
 		JPanel configPanel = buildConfigPanel();
-		JPanel chatPanel   = buildChatPanelPanel();
-		
-		
+		JPanel tabPanel    = buildTabPanel();
 		
 		
 		
 		
 		frame.add(configPanel,BorderLayout.NORTH);
-		frame.add(chatPanel,BorderLayout.CENTER);
+
+		frame.add(tabPanel,BorderLayout.CENTER);
 		frame.setVisible(true);
 		frame.revalidate();
 	}
@@ -69,7 +74,7 @@ public class GUI {
 	
 	
 	private JPanel buildConfigPanel() {
-		JPanel panel       = new JPanel();
+		JPanel panel  = new JPanel();
 		
 		/*panel settings*/
 		panel.setPreferredSize(new Dimension(CONF_PANEL_WIDTH, CONF_PANEL_HEIGHT));
@@ -138,16 +143,52 @@ public class GUI {
 		return panel;
 	}
 	
-	
-	
-	
+	private JPanel buildTabPanel() {
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setPreferredSize(new Dimension(100,400));
+		JTabbedPane tabbedPane = new JTabbedPane();
+		JPanel chatPanel = buildChatPanelPanel();
+		
+		tabbedPane.addTab("Browser", new JLabel("Browser"));
+		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+		
+		
+		tabbedPane.addTab("Chat", chatPanel);
+		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+		
+		panel.add(tabbedPane);
+		
+		return panel;
+	}
+
 	
 	private JPanel buildChatPanelPanel() {
-		JPanel panel = new JPanel();
+		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(frame.WIDTH - CONF_PANEL_WIDTH,
 										     frame.HEIGHT - CONF_PANEL_HEIGHT));
 		panel.setBorder(BorderFactory.createLineBorder(Color.green));
 		panel.setBackground(Color.white);
+		
+		
+		/*Message panal*/
+		JPanel msgPanel = new JPanel();
+		msgPanel.setPreferredSize(new Dimension(MSG_PANEL_WIDTH,MSG_PANEL_HEIGHT));
+		msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
+		
+		
+		/*User panel*/
+		JPanel usrPanel = new JPanel();
+		usrPanel.setPreferredSize(new Dimension(USR_PANEL_WIDTH,USR_PANEL_HEIGHT));
+		usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+		
+		/*Chat panel (JtextArea + JButton)*/
+		JPanel writePanel = new JPanel();
+		writePanel.setPreferredSize(new Dimension(WRT_PANEL_WIDTH,WRT_PANEL_HEIGHT));
+		writePanel.setBorder(BorderFactory.createLineBorder(Color.black));
+		
+		panel.add(msgPanel,BorderLayout.CENTER);
+		panel.add(usrPanel,BorderLayout.EAST);
+		panel.add(writePanel,BorderLayout.SOUTH);
 		return panel;
 	}
 	
