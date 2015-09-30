@@ -15,6 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * @author c12ton
@@ -41,6 +43,7 @@ public class GUI {
 	private JFrame frame;
 	
 	public GUI() {
+		UILookAndFeel();
 		frame = buildFrame();
 		JPanel configPanel = buildConfigPanel();
 		JPanel tabPanel    = buildTabPanel();
@@ -56,6 +59,17 @@ public class GUI {
 	}
 
 	
+	private void UILookAndFeel() {
+        try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (ClassNotFoundException | InstantiationException
+				| IllegalAccessException | UnsupportedLookAndFeelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+	}
+	
     private JFrame buildFrame() {
         JFrame frame = new JFrame("Client");
 		
@@ -68,6 +82,7 @@ public class GUI {
         frame.setResizable(true);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         
         return frame;
 	}
