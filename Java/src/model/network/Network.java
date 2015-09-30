@@ -23,7 +23,6 @@ public class Network {
 
     private NetworkUDP udp;
     private NetworkTCP tcp;
-    private int nrOfServers;
     private Listener<String> errorListener;
     private Listener<ServerData> serverListener;
     private Listener<MessageData> msgListener;
@@ -35,7 +34,6 @@ public class Network {
 	public Network() {
 	    udp = new NetworkUDP();
 	    tcp = new NetworkTCP();
-	    nrOfServers = 0;
 	    sequenceNumbs = new ArrayList<Integer>();
 	}
 
