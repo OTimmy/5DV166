@@ -38,12 +38,8 @@ public class GUI {
 	//------------int panel_height etc
 	private final int CONF_PANEL_HEIGHT = 100;
 	private final int CONF_PANEL_WIDTH  = 400;
-	private final int MSG_PANEL_HEIGHT  = 400;
+	private final int MSG_PANEL_HEIGHT  = 400; //Tab panel
 	private final int MSG_PANEL_WIDTH   = 300;
-	private final int USR_PANEL_HEIGHT  = 400;
-	private final int USR_PANEL_WIDTH   = 100;
-	private final int WRT_PANEL_HEIGHT  = 100;
-	private final int WRT_PANEL_WIDTH   = 400;
 
 	
 	private JFrame frame;
@@ -200,30 +196,51 @@ public class GUI {
  
 		/*Message panal*/
 		int msgPanelSize  = 400;
-		int textOutWidth  = 360;
-		int textOutHeight = 330;
+		int txtOutHeight  = 360;
+		int txtOutWidth   = 330;
 				
 		JPanel msgPanel = new JPanel();
 		msgPanel.setPreferredSize(new Dimension(msgPanelSize,msgPanelSize));
 		msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 		
-		JTextArea input = new JTextArea(1,2);
-		input.setLineWrap(true);
-		JScrollPane scrollPane = new JScrollPane(input);
-		scrollPane.setPreferredSize(new Dimension(textOutWidth,textOutHeight));
+		JTextArea txtAreaInput = new JTextArea(1,2);
+		txtAreaInput.setLineWrap(true);
+		JScrollPane scrollPane = new JScrollPane(txtAreaInput);
+		scrollPane.setPreferredSize(new Dimension(txtOutWidth,txtOutHeight));
 		
 		msgPanel.add(scrollPane);
 		
 		
 		/*User panel*/
+		int usrPanelWidth  = 100;
+		int usrPanelHeight = 400;
+		int txtUsrWidth    = 100; 
+		int txtUsrHeight   = 400;
+		
 		JPanel usrPanel = new JPanel();
-		usrPanel.setPreferredSize(new Dimension(USR_PANEL_WIDTH,USR_PANEL_HEIGHT));
+		usrPanel.setPreferredSize(new Dimension(usrPanelWidth,usrPanelHeight));
 		usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 		
+		JTextArea txtAreaUsr = new JTextArea(1,2);
+		scrollPane = new JScrollPane(txtAreaUsr);
+		scrollPane.setPreferredSize(new Dimension(txtUsrWidth,txtUsrHeight));
+		usrPanel.add(scrollPane);
+		
+		
 		/*Chat panel (JtextArea + JButton)*/
+		int panelOutHeight = 100;
+		int panelOutWidth  = 400;
+		int paneOutHeight  = 400;
+		int paneOutWidth   = 100;
+		
 		JPanel writePanel = new JPanel();
-		writePanel.setPreferredSize(new Dimension(WRT_PANEL_WIDTH,WRT_PANEL_HEIGHT));
+		writePanel.setPreferredSize(new Dimension(panelOutWidth,panelOutHeight));
 		writePanel.setBorder(BorderFactory.createLineBorder(Color.black));
+		JTextArea txtArea = new JTextArea(1,2);
+		scrollPane = new JScrollPane(txtArea);
+		scrollPane.setPreferredSize(new Dimension(paneOutWidth,panelOutHeight));
+		writePanel.add(scrollPane);
+		
 		
 		panel.add(msgPanel,BorderLayout.CENTER);
 		panel.add(usrPanel,BorderLayout.EAST);
