@@ -7,8 +7,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.ScrollPane;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
@@ -23,8 +21,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -38,7 +34,7 @@ import javax.swing.table.DefaultTableModel;
 public class GUI {
 
 	private final int FRAME_WIDTH = 480;
-	private final int FRAME_HEIGHT = 568;
+	private final int FRAME_HEIGHT = 510;
 	private final int CONF_PANEL_HEIGHT = 100;
 	private final int CONF_PANEL_WIDTH  = 400;
 	private final int TAB_PANEL_HEIGHT  = 100;
@@ -47,18 +43,18 @@ public class GUI {
 	private JFrame frame;
 	private DefaultTableModel tableModel;
 
-	private JButton connectNameServer;
-	private JButton connectServer;
-//	private JButton
-
-
+	private JButton connectNameServerButton;
+	private JButton connectServerButton;
+	private JButton okButton;
+	private JButton refreshButton;
+	private JButton sendButton;
+	
 	private JTextArea msgTextArea;
 	private JTextArea usrsTextArea;
 	private JTextArea sendTextArea;
 
 
 	private JLabel browsErrLabel;
-	private JLabel chatErrLabel;
 
 	public GUI() {
 
@@ -128,8 +124,8 @@ public class GUI {
 
 		//Button
 		gbc.gridx++;
-		JButton button = new JButton("Connect");
-		panel.add(button,gbc);
+		connectNameServerButton = new JButton("Connect");
+		panel.add(connectNameServerButton,gbc);
 
 
 		/*Server row*/
@@ -157,8 +153,8 @@ public class GUI {
 		//Button
 		gbc.gridx++;
 		gbc.gridwidth = 2;
-		button = new JButton("Connect");
-		panel.add(button,gbc);
+		connectServerButton = new JButton("Connect");
+		panel.add(connectServerButton,gbc);
 
 		/*Nick row*/
 		//Label
@@ -177,8 +173,8 @@ public class GUI {
 		//Button
 		gbc.gridwidth = 1;
 		gbc.anchor = GridBagConstraints.LINE_END;
-		button = new JButton("Ok");
-		panel.add(button,gbc);
+		okButton = new JButton("Ok");
+		panel.add(okButton,gbc);
 
 		return panel;
 	}
@@ -266,7 +262,9 @@ public class GUI {
 		scrollPane.setPreferredSize(new Dimension(sendPaneWidth,sendPaneHeight));
 
 		sendPanel.add(scrollPane);
-        sendPanel.add(new JButton("Send"));
+		
+		sendButton = new JButton("send");
+        sendPanel.add(sendButton);
 
 		panel.add(msgPanel,BorderLayout.WEST);
 		panel.add(usrPanel,BorderLayout.EAST);
@@ -283,12 +281,12 @@ public class GUI {
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(panelSize, panelSize));
 
-		int northSize = 350;
+		int tablePanelSize = 300;
 		int southSize = 50;
 
 		/*Server panel*/
 		JPanel northPanel = new JPanel(new BorderLayout());
-		northPanel.setPreferredSize(new Dimension(northSize,northSize));
+		northPanel.setPreferredSize(new Dimension(tablePanelSize,tablePanelSize));
 		northPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
 		String[] columns = {"Address","Port","Connected","Topic"};
@@ -312,11 +310,9 @@ public class GUI {
 		browsErrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		southPanel.add(browsErrLabel);
 
-
-		JButton button = new JButton("Refresh");
-		button.setAlignmentX(Component.CENTER_ALIGNMENT);
-		southPanel.add(button);
-
+		refreshButton = new JButton("Refresh");
+		refreshButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		southPanel.add(refreshButton);
 
 		panel.add(northPanel,BorderLayout.NORTH);
 		panel.add(southPanel,BorderLayout.SOUTH);
@@ -339,29 +335,30 @@ public class GUI {
 	    browsErrLabel.setText(errorMsg);
 	}
 
-
-	public void addConnectNameServerButtonListener(ActionListener e) {
-
+	public String getSendTxtArea() {
+		String text = sendTextArea.getText();
+		sendTextArea.setText("");
+		
+		return text;
+	}
+	
+	public void addConnectNameServerButtonListener(ActionListener l) {
+		connectNameServerButton.addActionListener(l);
 	}
 
-	public void addConnectSeverButtonListener(ActionListener e) {
-
+	public void addConnectSeverButtonListener(ActionListener l) {
+		connectServerButton.addActionListener(l);
 	}
 
-	public void addOkButtonListener(ActionListener e) {
-
+	public void addOkButtonListener(ActionListener l) {
+		okButton.addActionListener(l);
 	}
 
-	public void addRefreshButtonListener(ActionListener e) {
-
+	public void addRefreshButtonListener(ActionListener l) {
+		refreshButton.addActionListener(l);
 	}
 
-	public void addSendButtonListener(ActionListener e) {
-
+	public void addSendButtonListener(ActionListener l) {
+		sendButton.addActionListener(l);
 	}
-
-	public void getSendTxtArea() {
-
-	}
-
 }

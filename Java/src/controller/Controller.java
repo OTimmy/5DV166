@@ -17,13 +17,18 @@ import model.network.ServerData;
  * @author c12ton
  * @version 0.0
  */
-public class Controller implements ActionListener{
+public class Controller {
 
     private Network net;
+    private GUI gui;
+    private ArrayList<String> nicks;
+    
     public Controller(Network net, GUI gui) {
     	//Model
     	this.net = net;
-		initNetworkListener(net);
+		this.gui = gui;
+    	initNetworkListener(net);
+		
 		//temp
 		net.connectToNameServer("itchy.cs.umu.se", 1337);
 		//net.ConnectToServer("proton.cs.umu.se", 515);
@@ -64,7 +69,6 @@ public class Controller implements ActionListener{
 
 		});
 
-
 		net.addNicksListener(new controller.Listener<ArrayList<String>>() {
 
             @Override
@@ -78,28 +82,53 @@ public class Controller implements ActionListener{
 	}
 
 	public void initGUIActionListener() {
+		gui.addConnectNameServerButtonListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+		gui.addConnectSeverButtonListener(new ActionListener() {
 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				if(net.ConnectToServer(address, port) {
+					//set button to disconnect
+				}
+			}
+			
+		});
+		
+		gui.addOkButtonListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				gui.getNick();
+				net.changeNick()
+			}
+		});
+		
+		gui.addRefreshButtonListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				net.refreshServers();
+				
+			}
+		});
+		
+		gui.addSendButtonListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String msg = gui.getSendTxtArea();
+				net.SendMessage(msg);
+			}
+		});
+		
 	}
-
-
-    private void connectToNameServer(String address, int port) {
- 	  net.connectToNameServer(address, port);
-    }
-
-    private void disconnectNameServer() {
-    	net.disconnectNameServer();
-    }
-
-    private void refreshServerList() {
-    	net.refreshServers();
-    }
-
-   private void connectServer(String address,int port) {
-       net.ConnectToServer("scratchy.cs.umu.se", 1234);
-   }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-    	//loads of else if statements
-    }
 }
