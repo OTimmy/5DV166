@@ -49,7 +49,6 @@ public class Controller implements ActionListener{
 			   } else {
 			       System.out.println("Reset servers");
 			   }
-
 			}
 
 		});
