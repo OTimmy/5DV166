@@ -2,7 +2,9 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -34,9 +36,11 @@ import javax.swing.table.DefaultTableModel;
 public class GUI {
 
 	private final int FRAME_WIDTH = 480;
-	private final int FRAME_HEIGHT = 600;
+	private final int FRAME_HEIGHT = 568;
 	private final int CONF_PANEL_HEIGHT = 100;
 	private final int CONF_PANEL_WIDTH  = 400;
+	private final int TAB_PANEL_HEIGHT  = 100;
+	private final int TAB_PANEL_WIDTH   = 400;
 
 	private JFrame frame;
 	private DefaultTableModel tableModel;
@@ -96,13 +100,16 @@ public class GUI {
 		JTextField hostField = new JTextField(15);
 		panel.add(hostField,gbc);
 
+		//Label
 		gbc.gridx++;
 		panel.add(new JLabel("port:"),gbc);
 
+		//Field
 		gbc.gridx++;
 		JTextField portField = new JTextField(5);
 		panel.add(portField,gbc);
 
+		//Button
 		gbc.gridx++;
 		JButton button = new JButton("Connect");
 		panel.add(button,gbc);
@@ -137,17 +144,20 @@ public class GUI {
 		panel.add(button,gbc);
 
 		/*Nick row*/
+		//Label
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.gridwidth = 1;
 		gbc.gridx = 0;
 		gbc.gridy = 2;
 		panel.add(new JLabel("Nick"),gbc);
 
+		//Field
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.gridx++;
 		JTextField nickField = new JTextField(10);
 		panel.add(nickField,gbc);
 
+		//Button
 		gbc.gridwidth = 1;
 		gbc.anchor = GridBagConstraints.LINE_END;
 		button = new JButton("Ok");
@@ -161,37 +171,43 @@ public class GUI {
 	 */
 	private JPanel buildTabPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.setPreferredSize(new Dimension(100,400));
+		panel.setPreferredSize(new Dimension(TAB_PANEL_WIDTH,TAB_PANEL_HEIGHT));
 		JTabbedPane tabbedPane = new JTabbedPane();
-		JPanel chatPanel = buildChatPanelPanel();
+
+		JPanel chatPanel  = buildChatPanelPanel();
 		JPanel browsPanel = buildBrowsPanel();
+
 		tabbedPane.addTab("Browse", browsPanel);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
 
 		tabbedPane.addTab("Chat", chatPanel);
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+
 		panel.add(new JButton("Refresh"));
 		panel.add(tabbedPane,BorderLayout.CENTER);
 
 		return panel;
 	}
 
-
+	/**
+	 * @return Panel containing three panels.
+	 */
 	private JPanel buildChatPanelPanel() {
+	    /*Main panel*/
+	    int panelSize = 400;
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.setPreferredSize(new Dimension(frame.WIDTH - CONF_PANEL_WIDTH,
-										     frame.HEIGHT - CONF_PANEL_HEIGHT));
-		panel.setBorder(BorderFactory.createLineBorder(Color.green));
+		panel.setPreferredSize(new Dimension(panelSize,
+										     panelSize));
+		panel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 		panel.setBackground(Color.white);
 
-
 		/*Message panal*/
-		int msgPanelSize  = 400;
-		int txtOutHeight  = 360;
-		int txtOutWidth   = 330;
+		int msgPanelSize  = 370;
+		int txtOutWidth   = 340;
+		int txtOutHeight  = 325;
 
-		JPanel msgPanel = new JPanel();
+		JPanel msgPanel = new JPanel(new BorderLayout());
 		msgPanel.setPreferredSize(new Dimension(msgPanelSize,msgPanelSize));
 		msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
@@ -200,43 +216,48 @@ public class GUI {
 		JScrollPane scrollPane = new JScrollPane(txtAreaInput);
 		scrollPane.setPreferredSize(new Dimension(txtOutWidth,txtOutHeight));
 
-		msgPanel.add(scrollPane);
-
+		//msgPanel.add(scrollPane,BorderLayout.WEST);
+        msgPanel.add(scrollPane);
 
 		/*User panel*/
 		int usrPanelWidth  = 100;
 		int usrPanelHeight = 400;
 		int txtUsrWidth    = 100;
-		int txtUsrHeight   = 400;
+		int txtUsrHeight   = 325;
 
-		JPanel usrPanel = new JPanel();
+		JPanel usrPanel = new JPanel(new BorderLayout());
 		usrPanel.setPreferredSize(new Dimension(usrPanelWidth,usrPanelHeight));
 		usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
 		JTextArea txtAreaUsr = new JTextArea(1,2);
+		txtAreaUsr.setLineWrap(true);
 		scrollPane = new JScrollPane(txtAreaUsr);
 		scrollPane.setPreferredSize(new Dimension(txtUsrWidth,txtUsrHeight));
-		usrPanel.add(scrollPane);
 
+        usrPanel.add(scrollPane);
 
 		/*Chat panel (JtextArea + JButton)*/
-		int panelOutHeight = 100;
+		int panelOutHeight = 50;
 		int panelOutWidth  = 400;
-		int paneOutHeight  = 400;
-		int paneOutWidth   = 100;
+		int paneOutHeight  = 43;
+		int paneOutWidth   = 365;
 
-		JPanel writePanel = new JPanel();
+		JPanel writePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		writePanel.setPreferredSize(new Dimension(panelOutWidth,panelOutHeight));
 		writePanel.setBorder(BorderFactory.createLineBorder(Color.black));
-		JTextArea txtArea = new JTextArea(1,2);
-		scrollPane = new JScrollPane(txtArea);
-		scrollPane.setPreferredSize(new Dimension(paneOutWidth,panelOutHeight));
+
+		JTextArea txtAreaWrite = new JTextArea(1,2);
+		txtAreaWrite.setLineWrap(true);
+		scrollPane = new JScrollPane(txtAreaWrite);
+		scrollPane.setPreferredSize(new Dimension(paneOutWidth,paneOutHeight));
+
 		writePanel.add(scrollPane);
+        writePanel.add(new JButton("Send"));
 
-
-		panel.add(msgPanel,BorderLayout.CENTER);
+		panel.add(msgPanel,BorderLayout.WEST);
 		panel.add(usrPanel,BorderLayout.EAST);
 		panel.add(writePanel,BorderLayout.SOUTH);
+
 		return panel;
 	}
 
@@ -244,8 +265,9 @@ public class GUI {
 	 * Contains the list of servers and buttons for managing the list
 	 */
 	private JPanel buildBrowsPanel() {
+	    int panelSize = 400;
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.setPreferredSize(new Dimension(CONF_PANEL_WIDTH, CONF_PANEL_HEIGHT));
+		panel.setPreferredSize(new Dimension(panelSize, panelSize));
 
 		int northSize = 350;
 		int southSize = 50;
@@ -268,15 +290,21 @@ public class GUI {
 		southPanel.setPreferredSize(new Dimension(southSize,southSize));
 		southPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
-		//JButton button = new JButton("Connect");
-		//southPanel.add(button,BorderLayout.EAST);
 		JButton button = new JButton("Refresh");
-		southPanel.add(button,BorderLayout.EAST);
+		southPanel.add(button);
 
 		panel.add(northPanel,BorderLayout.NORTH);
 		panel.add(southPanel,BorderLayout.SOUTH);
 
 		return panel;
+	}
+
+
+	/**
+	 *
+	 */
+	public void printError(String errorMsg) {
+
 	}
 
 }
