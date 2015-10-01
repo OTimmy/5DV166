@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+import view.GUI;
+
 import model.network.MessageData;
 import model.network.Network;
 import model.network.ServerData;
@@ -18,7 +20,7 @@ import model.network.ServerData;
 public class Controller implements ActionListener{
 
     private Network net;
-    public Controller(Network net) {
+    public Controller(Network net, GUI gui) {
     	//Model
     	this.net = net;
 		initNetworkListener(net);
@@ -67,10 +69,15 @@ public class Controller implements ActionListener{
 
             @Override
             public void update(ArrayList<String> nicks) {
+                for(String nick:nicks) {
 
+                }
             }
 
 		});
+	}
+
+	public void initGUIActionListener() {
 
 	}
 

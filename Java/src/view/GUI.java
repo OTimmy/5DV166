@@ -9,9 +9,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.ScrollPane;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -28,7 +30,7 @@ import javax.swing.table.DefaultTableModel;
 /**
  * @author c12ton
  *
- * Graphical represenation of the chat client
+ * Graphical representation of the chat client
  *
  * @version 0.0
  *
@@ -45,8 +47,21 @@ public class GUI {
 	private JFrame frame;
 	private DefaultTableModel tableModel;
 
+	private JButton connectNameServer;
+	private JButton connectServer;
+	private JButton
+
+
+	private JTextArea msgTextArea;
+	private JTextArea usrsTextArea;
+	private JTextArea sendTextArea;
+
+
+	private JLabel browsErrLabel;
+	private JLabel chatErrLabel;
+
 	public GUI() {
-		//UILookAndFeel();
+
 		frame = buildFrame();
 		JPanel configPanel = buildConfigPanel();
 		JPanel tabPanel    = buildTabPanel();
@@ -55,6 +70,9 @@ public class GUI {
 		frame.add(configPanel,BorderLayout.NORTH);
 		frame.add(tabPanel,BorderLayout.CENTER);
 		frame.revalidate();
+		//browsErrLabel.setText("Error");
+		//msgTextArea.setText("Holla!\n");
+		msgTextArea.append("Holla");
 	}
 
 
@@ -70,7 +88,6 @@ public class GUI {
         frame.setResizable(true);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
 
         return frame;
 	}
@@ -194,69 +211,66 @@ public class GUI {
 	 * @return Panel containing three panels.
 	 */
 	private JPanel buildChatPanelPanel() {
+
 	    /*Main panel*/
 	    int panelSize = 400;
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(panelSize,
 										     panelSize));
 		panel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
-		panel.setBackground(Color.white);
 
-		/*Message panal*/
-		int msgPanelSize  = 370;
-		int txtOutWidth   = 340;
-		int txtOutHeight  = 325;
+		/*Message board panal*/
+		int msgPanelSize   = 370;
+		int msgTextWidth   = 340;
+		int msgTextHeight  = 325;
 
 		JPanel msgPanel = new JPanel(new BorderLayout());
 		msgPanel.setPreferredSize(new Dimension(msgPanelSize,msgPanelSize));
 		msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
-		JTextArea txtAreaInput = new JTextArea(1,2);
-		txtAreaInput.setLineWrap(true);
-		JScrollPane scrollPane = new JScrollPane(txtAreaInput);
-		scrollPane.setPreferredSize(new Dimension(txtOutWidth,txtOutHeight));
+		msgTextArea = new JTextArea(1,2);
+		msgTextArea.setLineWrap(true);
+		JScrollPane scrollPane = new JScrollPane(msgTextArea);
+		scrollPane.setPreferredSize(new Dimension(msgTextWidth,msgTextHeight));
 
-		//msgPanel.add(scrollPane,BorderLayout.WEST);
         msgPanel.add(scrollPane);
 
 		/*User panel*/
-		int usrPanelWidth  = 100;
-		int usrPanelHeight = 400;
-		int txtUsrWidth    = 100;
-		int txtUsrHeight   = 325;
+		int usrsPanelWidth     = 100;
+		int usrsPanelHeight    = 400;
+		int usrsTextAreaWidth  = 100;
+		int usrsTextAreaHeight = 325;
 
 		JPanel usrPanel = new JPanel(new BorderLayout());
-		usrPanel.setPreferredSize(new Dimension(usrPanelWidth,usrPanelHeight));
+		usrPanel.setPreferredSize(new Dimension(usrsPanelWidth,usrsPanelHeight));
 		usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
-		JTextArea txtAreaUsr = new JTextArea(1,2);
-		txtAreaUsr.setLineWrap(true);
-		scrollPane = new JScrollPane(txtAreaUsr);
-		scrollPane.setPreferredSize(new Dimension(txtUsrWidth,txtUsrHeight));
+		usrsTextArea = new JTextArea(1,2);
+		usrsTextArea.setLineWrap(true);
+		scrollPane = new JScrollPane(usrsTextArea);
+		scrollPane.setPreferredSize(new Dimension(usrsTextAreaWidth,
+		                                          usrsTextAreaHeight));
 
         usrPanel.add(scrollPane);
 
-		/*Chat panel (JtextArea + JButton)*/
-		int panelOutHeight = 50;
-		int panelOutWidth  = 400;
-		int paneOutHeight  = 43;
-		int paneOutWidth   = 365;
+		/*Send panel*/
+		int sendPaneHeight  = 43;
+		int sendPaneWidth   = 365;
 
-		JPanel writePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		writePanel.setPreferredSize(new Dimension(panelOutWidth,panelOutHeight));
-		writePanel.setBorder(BorderFactory.createLineBorder(Color.black));
+		JPanel sendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		sendPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
-		JTextArea txtAreaWrite = new JTextArea(1,2);
-		txtAreaWrite.setLineWrap(true);
-		scrollPane = new JScrollPane(txtAreaWrite);
-		scrollPane.setPreferredSize(new Dimension(paneOutWidth,paneOutHeight));
+		sendTextArea = new JTextArea(1,2);
+		sendTextArea.setLineWrap(true);
+		scrollPane = new JScrollPane(sendTextArea);
+		scrollPane.setPreferredSize(new Dimension(sendPaneWidth,sendPaneHeight));
 
-		writePanel.add(scrollPane);
-        writePanel.add(new JButton("Send"));
+		sendPanel.add(scrollPane);
+        sendPanel.add(new JButton("Send"));
 
 		panel.add(msgPanel,BorderLayout.WEST);
 		panel.add(usrPanel,BorderLayout.EAST);
-		panel.add(writePanel,BorderLayout.SOUTH);
+		panel.add(sendPanel,BorderLayout.SOUTH);
 
 		return panel;
 	}
@@ -285,13 +299,24 @@ public class GUI {
 		JScrollPane scrollPane = new JScrollPane(table);
 		northPanel.add(scrollPane,BorderLayout.CENTER);
 
-		/*Panel with refresh and connect*/
+		/*Panel with refresh*/
 		JPanel southPanel = new JPanel();
+		southPanel.setLayout(new BoxLayout(southPanel,BoxLayout.PAGE_AXIS));
+
 		southPanel.setPreferredSize(new Dimension(southSize,southSize));
 		southPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
+		//Error label
+		browsErrLabel = new JLabel("");
+		browsErrLabel.setForeground(Color.red);
+		browsErrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		southPanel.add(browsErrLabel);
+
+
 		JButton button = new JButton("Refresh");
+		button.setAlignmentX(Component.CENTER_ALIGNMENT);
 		southPanel.add(button);
+
 
 		panel.add(northPanel,BorderLayout.NORTH);
 		panel.add(southPanel,BorderLayout.SOUTH);
@@ -299,11 +324,43 @@ public class GUI {
 		return panel;
 	}
 
+	//TODO change to addConnectServerButtonListener
 
-	/**
-	 *
-	 */
-	public void printError(String errorMsg) {
+	public synchronized void printOnMessageBoard(String msg) {
+	    msgTextArea.append(msg +"\n");
+	}
+
+
+	public void printErrorChat(String errorMsg) {
+	    printOnMessageBoard(errorMsg);
+	}
+
+	public void printErrorBrowser(String errorMsg) {
+	    browsErrLabel.setText(errorMsg);
+	}
+
+
+	public void addConnectNameServerButtonListener(ActionListener e) {
+
+	}
+
+	public void addConnectSeverButtonListener(ActionListener e) {
+
+	}
+
+	public void addOkButtonListener(ActionListener e) {
+
+	}
+
+	public void addRefreshButtonListener(ActionListener e) {
+
+	}
+
+	public void addSendButtonListener(ActionListener e) {
+
+	}
+
+	public void getSendTxtArea() {
 
 	}
 

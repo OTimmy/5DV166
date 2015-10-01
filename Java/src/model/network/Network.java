@@ -8,6 +8,7 @@ import controller.Listener;
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 import model.network.pdu.types.MessagePDU;
+import model.network.pdu.types.NicksPDU;
 import model.network.pdu.types.SListPDU;
 
 /**
@@ -26,6 +27,7 @@ public class Network {
     private Listener<String> errorListener;
     private Listener<ServerData> serverListener;
     private Listener<MessageData> msgListener;
+    private Listener<ArrayList<String>> nicksListener;
     private Thread udpThread;
     private Thread tcpThread;
     private ArrayList<Integer> sequenceNumbs;
@@ -87,7 +89,7 @@ public class Network {
             if(expectSequenceNr == pdu.getSequenceNr()) {
                 sequenceNumbs.add(pdu.getSequenceNr());
                 /*Update list*/
-                for(ServerData server:pdu.getServerData()) { //send whole array list instead, and after ever update remove previouse servers
+                for(ServerData server:pdu.getServerData()) {
                     serverListener.update(server);
                 }
             }
@@ -141,7 +143,8 @@ public class Network {
 		        switch(op) {
 
 		        case NICKS:
-		            nicksListener.update();
+		            NicksPDU nicksPDU = (NicksPDU) pdu;
+		            nicksListener.update(nicksPDU.getNicks());
 		            break;
 
 		        case MESSAGE:
@@ -179,10 +182,7 @@ public class Network {
 		this.msgListener = msgListener;
 	}
 
-
-
-    public void addNicksListener(Listener<ArrayList<String>> listener) {
-        // TODO Auto-generated method stub
-
+    public void addNicksListener(Listener<ArrayList<String>> nicksListener) {
+        this.nicksListener = nicksListener;
     }
 }
