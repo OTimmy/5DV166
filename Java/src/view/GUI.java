@@ -49,7 +49,7 @@ public class GUI {
 
 	private JButton connectNameServer;
 	private JButton connectServer;
-	private JButton
+//	private JButton
 
 
 	private JTextArea msgTextArea;
