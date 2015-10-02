@@ -1,7 +1,7 @@
 /*
  * name_server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 28/9-15.
+ * Last update: 1/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * name_server.c contains functions for connecting to the name server.
@@ -100,10 +100,22 @@ for (int i=4; i<reg_arr_len; i++)
         printf("0");
     }
     else
+    {
+        printf("%c", reg_array[i]);
+    }
+}
+printf("\n\n");
+for (int i=0; i<reg_arr_len; i++)
+{
     printf("%c", reg_array[i]);
 }
 printf("\n\n");
-        err = send(sockfd, reg_array, reg_arr_len, 0);
+for (int i=0; i<reg_arr_len; i++)
+{
+    printf("%u ", reg_array[i]);
+}
+printf("\n\n");
+        err = send(sockfd, reg_array, reg_arr_len, 0);//select for sending????
 printf("Bytes sent as REG: %d\n", err);
         if (err < 0)
         {
@@ -117,7 +129,7 @@ printf("Bytes sent as REG: %d\n", err);
             perror("select (reg)");
             exit(EXIT_FAILURE);
         }
-        else
+        else /* FD_ISSET(sockfd, &read_fds) */
         {
             err = recv(sockfd, buffer, sizeof(buffer), MSG_DONTWAIT);
 printf("Bytes received as REG-ACK: %d\n", err);
@@ -141,11 +153,12 @@ printf("Bytes received as REG-ACK: %d\n", err);
         while (ACK_OP == buffer[0]) /* Otherwise a NOTREG was received */
         {
             buffer[0] = ALIVE_OP;
-            buffer[1] = nrof_clients; // thread safe!!!!!!!!!!!!!!!!!!!!!!!!!!
+            buffer[1] = get_nrof_clients();
 printf("\nALIVE: %d, ", buffer[0]);
 printf("%d, ", buffer[1]);
 printf("%d, ", buffer[2]);
-printf("%d\n", buffer[3]);
+printf("%d, ", buffer[3]);
+printf("ID: %d\n", (buffer[2] << 8) | (buffer[3] & 0xFF));
             err = send(sockfd, buffer, sizeof(buffer), 0);
 printf("Bytes sent to ALIVE: %d\n", err);
             if (err < 0)
@@ -160,7 +173,7 @@ printf("Bytes sent to ALIVE: %d\n", err);
                 perror("select (alive)");
                 exit(EXIT_FAILURE);
             }
-            else
+            else /* FD_ISSET(sockfd, &read_fds) */
             {
                 err = recv(sockfd, buffer, sizeof(buffer), MSG_DONTWAIT);
 printf("Bytes received as ALIVE-ACK: %d\n", err);
@@ -181,7 +194,8 @@ printf("Bytes received as ALIVE-ACK: %d\n", err);
 printf("ACK: %d, ", buffer[0]);
 printf("%d, ", buffer[1]);
 printf("%d, ", buffer[2]);
-printf("%d\n", buffer[3]);
+printf("%d, ", buffer[3]);
+printf("ID: %d\n", (buffer[2] << 8) | (buffer[3] & 0xFF));
                 sleep(6); /* Only called if a message was received */
             }
         }
@@ -210,13 +224,13 @@ int connect_to_name_server(char *ns_name, char *ns_port)
 
     /* Search for addresses corresponding to the given server name and port */
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;        /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_DGRAM;     /* Datagram socket */
-    hints.ai_protocol = IPPROTO_UDP;    /* UDP protocol */
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
+    hints.ai_protocol = 0;          /* Any protocol (expecting UDP) */
     err = getaddrinfo(ns_name, ns_port, &hints, &result);
     if (0 != err)
     {
-        fprintf(stderr,"getaddrinfo: %s\n", gai_strerror(err));
+        fprintf(stderr,"getaddrinfo (ns): %s\n", gai_strerror(err));
         exit(EXIT_FAILURE);
     }
 
@@ -226,7 +240,7 @@ int connect_to_name_server(char *ns_name, char *ns_port)
         sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
         if (sockfd < 0)
         {
-            perror("socket");
+            perror("socket (ns)");
             continue;
         }
         /* For UDP sockets connect() only sets the default address and port

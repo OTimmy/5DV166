@@ -1,7 +1,7 @@
 /*
  * server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 28/9-15.
+ * Last update: 2/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.c implements a chat server.
@@ -69,14 +69,14 @@
 #include "globals.h"
 #include "pdu.h"
 #include "server.h"
+#include "doorman.h"
 #include "name_server.h"
 
-/* Port where this server accepts client connections */
-int client_conn_port = 51515; // func to search up. if bind fails.
-
-//struct client clients[255]; // Dynamic list not necessary since protocol
-// limits number of clients to 255.
-//message_queue;
+void *process_event_queue(void *ignore)
+{
+    
+    return NULL;
+}
 
 /*
  * main: Runs a chat server. It registers at a name server where clients can
@@ -95,9 +95,14 @@ int main(int argc, char *argv[])
     clock_t proc_start_time, proc_end_time;
     proc_start_time = clock(); /* Start process timer */
 
+    /* Initialize thread attribute to detached */
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
     /* Initialize variables (could be extended to be done dynamically) */
-    char name_server_address[] = "itchy.cs.umu.se";
-    char name_server_port[] = "1337";
+    char *name_server_address = "itchy.cs.umu.se";
+    char *name_server_port = "1337";
     char *name;
     if (1 < argc)
     {
@@ -106,18 +111,38 @@ int main(int argc, char *argv[])
     else
     {
         //name = "Anti-SkyNet";
-        name = "Joshua - \"The only winning move is not to play\"";
-        //name = "Transhumanism (H+)";
+        //name = "Joshua - \"The only winning move is not to play\"";
+        name = "Transhumanism (H+)";
         //name = "Epistemological Cyberneticist";
+        //name = "Þursa-smiðja";
+        //name = "¬(µæłø ∨ (Ω»¦«¥⅝²ß)) ∧ ©";
     }
-    //init
-    //find portno
-    //listen
+    /* Port where this server accepts client connections */
+    char *client_conn_port = "51515";//chaeck len in parser
+
+    /* Create thread for processing the event queue */
+    pthread_t thread_eq;
+    if (0 != pthread_create(&thread_eq, &attr, process_event_queue, NULL))
+    {
+        fprintf(stderr, "ERROR: Failed to create thread eq!\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    /* Create thread for handling new client connections (doorman) */
+    pthread_t thread_dm;
+    if (0 != pthread_create(&thread_dm, &attr, handle_connecting_clients,
+                            (void *) client_conn_port))
+    {
+        fprintf(stderr, "ERROR: Failed to create thread dm!\n");
+        exit(EXIT_FAILURE);
+    }
+
     /* Create thread for communication with name server */
-    pdu_reg reg = {REG_OP, strlen(name), client_conn_port, name};
+    uint16_t ccp = strtoul(client_conn_port, NULL, 10);
+    pdu_reg reg = {REG_OP, strlen(name), ccp, name};
     reg_data thread_data_ns = {name_server_address, name_server_port, reg};
     pthread_t thread_ns;
-    if (0 != pthread_create(&thread_ns, NULL, register_at_name_server,
+    if (0 != pthread_create(&thread_ns, &attr, register_at_name_server,
                             (void *) &thread_data_ns))
     {
         fprintf(stderr, "ERROR: Failed to create thread ns!\n");
@@ -158,10 +183,13 @@ int main(int argc, char *argv[])
 /*    n = write(newsockfd,"I got your message",18);*/
 /*    if (n < 0) error("ERROR writing to socket");*/
 
-    if (0 != pthread_join(thread_ns, NULL))
-    {
-        fprintf(stderr, "ERROR: Failed to join with thread ns!\n");
-    }
+    pthread_attr_destroy(&attr);
+    for EVER {} //mini client?
+
+/*    if (0 != pthread_join(thread_ns, NULL))*/
+/*    {*/
+/*        fprintf(stderr, "ERROR: Failed to join with thread ns!\n");*/
+/*    }*/
 
     proc_end_time = clock(); /* End process timer */
     proc_runtime = (double) (proc_end_time - proc_start_time)/CLOCKS_PER_SEC;

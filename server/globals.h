@@ -1,7 +1,7 @@
 /*
  * globals.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 28/9-15.
+ * Last update: 2/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.h is the header file for the globals.c file.
@@ -37,10 +37,10 @@
 /* --- Signals and threads --- */
 //#include <signal.h>
 //#include <setjmp.h>
-//#include <pthread.h> /* -pthread &or -lpthread */
+#include <pthread.h> /* -pthread &or -lpthread */
 /* --- Sockets --- */
 //#include <sys/socket.h>
-//#include <netinet/in.h>
+#include <netinet/in.h>
 //#include <arpa/inet.h>
 //#include <endian.h>
 //#include <netdb.h>
@@ -49,8 +49,18 @@
 
 /* --- Local headers --- */
 #include "pdu.h"
+#include "queue.h"
 
 #define EVER (;;)
+
+/* Struct containing the data associated with a client */
+typedef struct {
+    char *nick;
+    int sockfd;
+    struct sockaddr_storage address;
+    pthread_mutex_t queue_mutex;
+    queue send_queue;
+} client;
 
 /* Struct containing the data needed by the name server thread */
 typedef struct {
@@ -59,8 +69,17 @@ typedef struct {
     pdu_reg reg;
 } reg_data;
 
+pthread_mutex_t clients_mutex;
+extern client *clients[255];
+
+extern pthread_mutex_t nrof_clients_mutex;
+
 /* Number of clients currently connected to the server */
 extern uint8_t nrof_clients;
+
+uint8_t get_nrof_clients();
+void incr_nrof_clients();
+void decr_nrof_clients();
 
 #endif /* GLOBALS_H_ */
 

@@ -1,7 +1,7 @@
 /*
  * globals.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 27/9-15.
+ * Last update: 1/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.c contains global variables and functions for using them.
@@ -33,7 +33,7 @@
 /* --- Signals and threads --- */
 //#include <signal.h>
 //#include <setjmp.h>
-//#include <pthread.h> /* -pthread &or -lpthread */
+#include <pthread.h> /* -pthread &or -lpthread */
 /* --- Sockets --- */
 //#include <sys/socket.h>
 //#include <netinet/in.h>
@@ -46,5 +46,35 @@
 /* --- Local headers --- */
 #include "globals.h"
 
+pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
+client *clients[255]; // Dynamic list not necessary since protocol
+// limits number of clients to 255.
+// add/remove client funcs
+
+pthread_mutex_t nrof_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 uint8_t nrof_clients = 0;
+
+uint8_t get_nrof_clients()
+{
+    pthread_mutex_lock(&nrof_clients_mutex);
+    uint8_t num = nrof_clients;
+    pthread_mutex_unlock(&nrof_clients_mutex);
+    return num;
+}
+
+void incr_nrof_clients()
+{
+    pthread_mutex_lock(&nrof_clients_mutex);
+    nrof_clients++;
+    pthread_mutex_unlock(&nrof_clients_mutex);
+    return;
+}
+
+void decr_nrof_clients()
+{
+    pthread_mutex_lock(&nrof_clients_mutex);
+    nrof_clients--;
+    pthread_mutex_unlock(&nrof_clients_mutex);
+    return;
+}
 

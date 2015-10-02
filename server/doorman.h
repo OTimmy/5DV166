@@ -1,14 +1,14 @@
 /*
- * name_server.h
- * Written by Joakim Sandman, September 2015.
+ * doorman.h
+ * Written by Joakim Sandman, October 2015.
  * Last update: 1/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
- * name_server.h is the header file for the name_server.c file.
+ * doorman.h is the header file for the doorman.c file.
  */
 
-#ifndef NAME_SERVER_H_
-#define NAME_SERVER_H_
+#ifndef DOORMAN_H_
+#define DOORMAN_H_
 
 /* --- Standard headers --- */
 //#include <stdlib.h>
@@ -61,20 +61,18 @@
  * Returns: NULL.
  * Notes:
  */
-void *register_at_name_server(void *thread_data_ns);
+void *handle_connecting_clients(void *thread_data_dm);
 
 /*
- * connect_to_name_server: Connects to the given name server and creates a
- *      socket for communication.
- * Params: ns_name = string with the name of the name server.
- *         ns_port = string representing the port number where the name server
- *                   accepts connections.
- * Returns: The socket file descriptor associated with the connection.
- * Notes: Since the created socket is UDP, there is no "real connection" to
- *      the name server which needs to be closed later. However, when finished,
- *      the socket should be closed to free the file descriptor.
+ * bind_client_conn_port: Creates a socket where client connections are to be
+ *      accepted and binds it to the given port.
+ * Params: conn_port = string representing the port number where the server
+ *                     accepts connections.
+ * Returns: The socket file descriptor associated with the port.
+ * Notes: When finished using it, the socket should be closed to free the
+ *      file descriptor.
  */
-int connect_to_name_server(char *ns_name, char *ns_port);
+int bind_client_conn_port(char *conn_port);
 
-#endif /* NAME_SERVER_H_ */
+#endif /* DOORMAN_H_ */
 
