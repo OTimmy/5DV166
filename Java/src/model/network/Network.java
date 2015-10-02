@@ -2,6 +2,7 @@ package model.network;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import controller.Listener;
 
@@ -22,6 +23,8 @@ import model.network.pdu.types.SListPDU;
  */
 public class Network {
 
+    private final int udpTimer = 20;
+
     private NetworkUDP udp;
     private NetworkTCP tcp;
     private Listener<String> errorListener;
@@ -30,13 +33,12 @@ public class Network {
     private Listener<ArrayList<String>> nicksListener;
     private Thread udpThread;
     private Thread tcpThread;
-    private ArrayList<Integer> sequenceNumbs;
-
+    private HashSet<Integer>seqNumbs;
 
 	public Network() {
 	    udp = new NetworkUDP();
 	    tcp = new NetworkTCP();
-	    sequenceNumbs = new ArrayList<Integer>();
+	    seqNumbs = new HashSet<Integer>();
 	}
 
 	//UDP-related
@@ -68,31 +70,87 @@ public class Network {
 	public void refreshServers() {
 		udp.sendGetList();
         serverListener.update(null);      //Reset serverlist
-        sequenceNumbs = new ArrayList<Integer>();  //reset list of sequence numbers
-    }
 
+	}
+
+
+
+    //1. get pdu
+    //2. if pdu is null                                 (The cause is that it didn't get any pdu in the given time or pdu is incorrect
+         //then, send new request repeat step 1
+    //2. remove timer if any is set
+    //3. Check sequence number
+    //3. if any sequence number is missing  /----------> (do this by looping trough list, and if not all numbers between the lowest and higest is found)
+         // then set new timer for next package
+
+
+
+	//TODO keep track of current sequence numbers, if zero appears twice, then clear list.
+	  // if theres missing packets, set a timer to wait to receive
 	/**
 	 * Read packet from udp, and updates listener with latest servers.
 	 */
 	private void watchServerList() {
         while(udp.isConnected()) {
+            boolean resetSeqNumbs = false;
+            SListPDU pdu = (SListPDU) udp.getPDU();
 
-        	SListPDU pdu = (SListPDU) udp.getPDU();
 
-            int expectSequenceNr = 0;  //default value
-            if(sequenceNumbs.size() > 0) {
+            if(pdu != null) {
+                udp.setTimer(0); // reset timer
 
-                expectSequenceNr = sequenceNumbs.get(sequenceNumbs.size()
-                                                         -1).intValue() + 1;
-            }
+                if(seqNumbs.contains(pdu.getSequenceNr())) {
+                    seqNumbs.add(pdu.getSequenceNr());
+                    boolean seqMissed = true;
 
-            if(expectSequenceNr == pdu.getSequenceNr()) {
-                sequenceNumbs.add(pdu.getSequenceNr());
-                /*Update list*/
-                for(ServerData server:pdu.getServerData()) {
-                    serverListener.update(server);
+
+                    //Check for any missing sequence numbers
+                    for(int i = 0; i < seqNumbs.size(); i++) {
+                        seqMissed = true;
+                        for(int seq:seqNumbs) {
+                            if(seq == i) {
+                                seqMissed = false;
+                            }
+                        }
+                    }
+
+                    //If sequence numbers is missed, then to be safe,
+                    // a timer will be set just in case
+                    if(seqMissed) {
+                        //set timer
+                        udp.setTimer(udpTimer);
+                    }
+
+                    /*Update list*/
+                    for(ServerData server:pdu.getServerData()) {
+                        serverListener.update(server);
+                    }
                 }
+
+            } else {
+                //requestList
+                seqNumbs = new HashSet<Integer>();   //Reset sequenceNumbers
             }
+
+//
+//        	if(pdu != null) {
+//        	    int expectSequenceNr = 0;  //default value
+//
+//        	}
+//
+//            if(sequenceNumbs.size() > 0) {
+//
+//                expectSequenceNr = sequenceNumbs.get(sequenceNumbs.size()
+//                                                         -1).intValue() + 1;
+//            }
+//
+//            if(pdu != null) {
+//                if(expectSequenceNr == pdu.getSequenceNr()) {
+//                    sequenceNumbs.add(pdu.getSequenceNr());
+//
+//                }
+//            }
+
         }
 	}
 
@@ -102,8 +160,8 @@ public class Network {
 	 * @return List of clients or null if unsuccessful.
 	 *
 	 */
-	public boolean ConnectToServer(String address, int port) {
-	    tcp.connect(address, port, "nick");
+	public boolean ConnectToServer(String address, int port, String nick) {
+	    tcp.connect(address, port, nick);
 	    if(tcp.isConnected()) {
 	    	tcpThread = new Thread() {
 	    		public void run() {
@@ -130,6 +188,10 @@ public class Network {
 		tcp.sendPDU(new MessagePDU(msg));
 	}
 
+	public void changeNick(String nick) {
+
+	}
+
 	private void watchServer() {
 		while(tcp.isConnected()) {
 
@@ -143,8 +205,10 @@ public class Network {
 		        switch(op) {
 
 		        case NICKS:
+		            System.out.println("Got nicks");
 		            NicksPDU nicksPDU = (NicksPDU) pdu;
-		            nicksListener.update(nicksPDU.getNicks());
+		            System.out.println("Nick"+nicksPDU.getNicks().get(0));
+		            //nicksListener.update(nicksPDU.getNicks());
 		            break;
 
 		        case MESSAGE:

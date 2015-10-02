@@ -14,7 +14,7 @@ public class NicksPDU extends PDU{
 
     private ArrayList<String> parse(byte[] bytes) {
         ArrayList<String> nicks = new ArrayList<String>();
-        int nrOfNicks = (byte) bytes[2];
+        int nrOfNicks = (byte) bytes[1];
         int length = (byte) ((bytes[2] << 8) | (bytes[3] & 0xff));
         int startIndex = 4;
         String nick = "";

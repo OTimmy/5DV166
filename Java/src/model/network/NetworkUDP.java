@@ -26,16 +26,11 @@ public class NetworkUDP {
     private DatagramSocket socket;
     private String address;
     private int port;
-    private boolean connection;
+    private volatile boolean connection;
 
-    public NetworkUDP() {
-        try {
-			socket = new DatagramSocket();
-		} catch (SocketException e) {
-			e.printStackTrace();
-			errorListener.update(e.getMessage());
-		}
-    }
+//    public NetworkUDP() {
+//
+//    }
 
     /**
      *  Connects to name server by sending getlist PDU
@@ -46,12 +41,17 @@ public class NetworkUDP {
     public void connect(String address,int port) {
         this.address = address;
         this.port = port;
+        try {
+            socket = new DatagramSocket();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
         connection = sendGetList();
     }
 
     public synchronized void disconnect() {
-    	socket.close();
-        connection = false;
+            connection = false;
+            socket.close();
     }
 
     public boolean sendGetList() {
@@ -74,9 +74,18 @@ public class NetworkUDP {
         return true;
     }
 
-
-    public synchronized boolean isConnected() {
+    // Change to is socket closed
+    public synchronized  boolean isConnected() {
     	return connection;
+    }
+
+    public void setTimer(int timeout) {
+        try {
+            socket.setSoTimeout(timeout);
+        } catch (SocketException e) {
+            e.printStackTrace();
+            errorListener.update(e.getMessage());
+        }
     }
 
     /**
@@ -90,20 +99,22 @@ public class NetworkUDP {
     		InputStream inStream;
     		PDU pdu = null;
     		try {
-                socket.receive(packet);
 
+                socket.receive(packet);
                 inStream = new ByteArrayInputStream(packet.getData());
                 pdu = (SListPDU) PDU.fromInputStream(inStream);
 
     		}catch (IOException e) {
-                e.printStackTrace();
-                errorListener.update(e.getMessage());
-                disconnect();
+
+    		    if(isConnected()) {
+    		        e.printStackTrace();
+    		        errorListener.update(e.getMessage());
+    		    }
+
     		}
 
     	return pdu;
     }
-
 
     public void addErrorListener(Listener<String> errorListener) {
     	this.errorListener = errorListener;

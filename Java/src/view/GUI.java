@@ -22,18 +22,20 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
-
+//TODO add listener for jtable, so that selected row is showed in correct fields
 /**
  * @author c12ton
  *
- * Graphical representation of the chat client
+ * Graphical representation of the chat client.
+ * Provide methods for adding listeners, and using the graphical
+ * components like the text area.
  *
  * @version 0.0
  *
  */
 public class GUI {
 
-	private final int FRAME_WIDTH = 480;
+	private final int FRAME_WIDTH = 500;
 	private final int FRAME_HEIGHT = 510;
 	private final int CONF_PANEL_HEIGHT = 100;
 	private final int CONF_PANEL_WIDTH  = 400;
@@ -43,16 +45,23 @@ public class GUI {
 	private JFrame frame;
 	private DefaultTableModel tableModel;
 
+	//Used by configuration panel
 	private JButton connectNameServerButton;
 	private JButton connectServerButton;
 	private JButton okButton;
 	private JButton refreshButton;
 	private JButton sendButton;
-	
+
+	private JTextField nameServerAddressField;
+	private JTextField nameServerPortField;
+	private JTextField serverAddressField;
+	private JTextField serverPortField;
+	private JTextField nickField;
+
+	//Used by chat panel
 	private JTextArea msgTextArea;
 	private JTextArea usrsTextArea;
 	private JTextArea sendTextArea;
-
 
 	private JLabel browsErrLabel;
 
@@ -66,9 +75,6 @@ public class GUI {
 		frame.add(configPanel,BorderLayout.NORTH);
 		frame.add(tabPanel,BorderLayout.CENTER);
 		frame.revalidate();
-		//browsErrLabel.setText("Error");
-		//msgTextArea.setText("Holla!\n");
-		msgTextArea.append("Holla");
 	}
 
 
@@ -100,7 +106,7 @@ public class GUI {
 		gbc.insets.bottom = 2;
 		gbc.insets.right = 5;
 
-		/*Server name row*/
+		/*Name server row*/
 		//Label
 		gbc.anchor = GridBagConstraints.LINE_END;
 		gbc.gridx = 0;
@@ -110,8 +116,8 @@ public class GUI {
 		//Field
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.gridx++;
-		JTextField hostField = new JTextField(15);
-		panel.add(hostField,gbc);
+		nameServerAddressField = new JTextField(15);
+		panel.add(nameServerAddressField,gbc);
 
 		//Label
 		gbc.gridx++;
@@ -119,8 +125,8 @@ public class GUI {
 
 		//Field
 		gbc.gridx++;
-		JTextField portField = new JTextField(5);
-		panel.add(portField,gbc);
+		nameServerPortField = new JTextField(5);
+		panel.add(nameServerPortField,gbc);
 
 		//Button
 		gbc.gridx++;
@@ -138,8 +144,8 @@ public class GUI {
 		//Field
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.gridx++;
-		JTextField serverField = new JTextField(15);
-		panel.add(serverField,gbc);
+		serverAddressField = new JTextField(15);
+		panel.add(serverAddressField,gbc);
 
 		//Label
 		gbc.gridx++;
@@ -147,7 +153,7 @@ public class GUI {
 
 		//Field
 		gbc.gridx++;
-		JTextField serverPortField = new JTextField(5);
+		serverPortField = new JTextField(5);
 		panel.add(serverPortField,gbc);
 
 		//Button
@@ -167,7 +173,7 @@ public class GUI {
 		//Field
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.gridx++;
-		JTextField nickField = new JTextField(10);
+		nickField = new JTextField(10);
 		panel.add(nickField,gbc);
 
 		//Button
@@ -216,9 +222,9 @@ public class GUI {
 		panel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 
 		/*Message board panal*/
-		int msgPanelSize   = 370;
-		int msgTextWidth   = 340;
-		int msgTextHeight  = 325;
+		int msgPanelSize  = 370;
+		int msgTextWidth  = 340;
+		int msgTextHeight = 325;
 
 		JPanel msgPanel = new JPanel(new BorderLayout());
 		msgPanel.setPreferredSize(new Dimension(msgPanelSize,msgPanelSize));
@@ -262,7 +268,7 @@ public class GUI {
 		scrollPane.setPreferredSize(new Dimension(sendPaneWidth,sendPaneHeight));
 
 		sendPanel.add(scrollPane);
-		
+
 		sendButton = new JButton("send");
         sendPanel.add(sendButton);
 
@@ -320,12 +326,9 @@ public class GUI {
 		return panel;
 	}
 
-	//TODO change to addConnectServerButtonListener
-
 	public synchronized void printOnMessageBoard(String msg) {
 	    msgTextArea.append(msg +"\n");
 	}
-
 
 	public void printErrorChat(String errorMsg) {
 	    printOnMessageBoard(errorMsg);
@@ -335,13 +338,34 @@ public class GUI {
 	    browsErrLabel.setText(errorMsg);
 	}
 
-	public String getSendTxtArea() {
-		String text = sendTextArea.getText();
+	public String getSendTextArea() {
+
+	    String text = sendTextArea.getText();
 		sendTextArea.setText("");
-		
+
 		return text;
 	}
-	
+
+	public String getNameServerAddress() {
+	    return nameServerAddressField.getText();
+	}
+
+	public String getNameServerPort() {
+	    return nameServerPortField.getText();
+	}
+
+	public String getServerAddress() {
+	    return serverAddressField.getText();
+	}
+
+	public String getServerPort() {
+	    return serverPortField.getText();
+	}
+
+	public String getNick() {
+	    return nickField.getText();
+	}
+
 	public void addConnectNameServerButtonListener(ActionListener l) {
 		connectNameServerButton.addActionListener(l);
 	}
