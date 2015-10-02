@@ -101,17 +101,14 @@ public class Network {
 
                 if(seqNumbs.contains(pdu.getSequenceNr())) {
                     seqNumbs.add(pdu.getSequenceNr());
-                    boolean seqMissed = true;
+                    boolean seqMissed = false;
 
 
                     //Check for any missing sequence numbers
                     for(int i = 0; i < seqNumbs.size(); i++) {
-                        seqMissed = true;
-                        for(int seq:seqNumbs) {
-                            if(seq == i) {
-                                seqMissed = false;
-                            }
-                        }
+                    	if(!seqNumbs.contains(i)) {
+                    		seqMissed = true;
+                    	}
                     }
 
                     //If sequence numbers is missed, then to be safe,
