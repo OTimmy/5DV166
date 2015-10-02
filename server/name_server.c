@@ -1,7 +1,7 @@
 /*
  * name_server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 1/10-15.
+ * Last update: 2/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * name_server.c contains functions for connecting to the name server.
@@ -115,7 +115,7 @@ for (int i=0; i<reg_arr_len; i++)
     printf("%u ", reg_array[i]);
 }
 printf("\n\n");
-        err = send(sockfd, reg_array, reg_arr_len, 0);//select for sending????
+        err = send(sockfd, reg_array, reg_arr_len, 0);
 printf("Bytes sent as REG: %d\n", err);
         if (err < 0)
         {
@@ -224,7 +224,7 @@ int connect_to_name_server(char *ns_name, char *ns_port)
 
     /* Search for addresses corresponding to the given server name and port */
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_family = AF_INET;      /* Allow only IPv4 */
     hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
     hints.ai_protocol = 0;          /* Any protocol (expecting UDP) */
     err = getaddrinfo(ns_name, ns_port, &hints, &result);

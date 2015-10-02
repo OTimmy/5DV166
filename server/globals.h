@@ -57,9 +57,8 @@
 typedef struct {
     char *nick;
     int sockfd;
-    struct sockaddr_storage address;
     pthread_mutex_t queue_mutex;
-    queue send_queue;
+    queue *send_queue;
 } client;
 
 /* Struct containing the data needed by the name server thread */

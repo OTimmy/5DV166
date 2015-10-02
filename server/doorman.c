@@ -47,6 +47,7 @@
 #include "globals.h"
 #include "pdu.h"
 #include "doorman.h"
+#include "clients.h"
 
 /*
  * register_at_name_server: Registers at the given name server with the given
@@ -65,14 +66,18 @@ void *handle_connecting_clients(void *thread_data_dm)
     /* Extract thread data */
     char *client_conn_port = (char *) thread_data_dm;
 
-    //int err;
     int clifd;
     int listener = bind_client_conn_port(client_conn_port);
     struct sockaddr_storage client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
     client *new_client;
+    
+    /* Initialize thread attribute to detached */
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-    if (listen(listener, 17) < 0) /* Listen for connections to port */
+    if (listen(listener, 12) < 0) /* Listen for connections to port */
     {
         perror("listen");
         exit(EXIT_FAILURE);
@@ -86,6 +91,7 @@ void *handle_connecting_clients(void *thread_data_dm)
         if (clifd < 0)
         {
             perror("accept");
+            continue;
         }
         else
         {
@@ -93,20 +99,23 @@ void *handle_connecting_clients(void *thread_data_dm)
             if (NULL == new_client)
             {
                 perror("malloc (new cli)");
+                close(clifd);
+                continue;
             }
             new_client->sockfd = clifd;
-            new_client->address = client_addr;//??????
             /* Create thread for processing client input */
-            //new thread stuff (will read and init nick, mutex and queue -> output thread?)
-/*            pthread_t thread_cli;*/
-/*            if (0 != pthread_create(&thread_cli, &attr, handle_connecting_clients,*/
-/*                                    (void *) new_client))*/
-/*            {*/
-/*                fprintf(stderr, "ERROR: Failed to create thread cli!\n");*/
-/*                exit(EXIT_FAILURE);*/
-/*            }*/
+            pthread_t thread_cli;
+            if (0 != pthread_create(&thread_cli, &attr, init_new_client,
+                                    (void *) new_client))
+            {
+                fprintf(stderr, "ERROR: Failed to create thread cli!\n");
+                free(new_client);
+                close(clifd);
+                continue;
+            }
         }
     }
+    pthread_attr_destroy(&attr);
     close(listener);
     return NULL;
 }
