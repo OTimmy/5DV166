@@ -117,6 +117,7 @@ public class GUI {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.gridx++;
 		nameServerAddressField = new JTextField(15);
+		nameServerAddressField.setText("itchy.cs.umu.se");
 		panel.add(nameServerAddressField,gbc);
 
 		//Label

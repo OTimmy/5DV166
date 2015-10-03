@@ -33,10 +33,10 @@ public class Controller {
 		this.gui = gui;
     	initNetworkListener(net);
     	initGUIActionListener();
-    	//net.connectToNameServer("itchy.cs.umu.se", 1337);
+    	net.connectToNameServer("itchy.cs.umu.se", 1337);
 		nameServerConnected = false;
 		serverConnected = false;
-		net.ConnectToServer("nightcrawler.cs.umu.se", 51515, "FUCKU");
+		//net.ConnectToServer("nightcrawler.cs.umu.se", 51515, "FUCKU");
 	}
 
 	/**
@@ -147,7 +147,7 @@ public class Controller {
 		});
 
 		gui.addRefreshButtonListener(new ActionListener() {
-
+			//IF refresh is in progress, user should be able to cancle the refresh, by clicking again on refresh(??MABY NOT))
 			@Override
 			public void actionPerformed(ActionEvent e) {
 			    if(nameServerConnected) {

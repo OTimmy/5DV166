@@ -24,7 +24,7 @@ import model.network.pdu.types.SListPDU;
 public class Network {
 
     private final int udpTimer = 20;
-
+   
     private NetworkUDP udp;
     private NetworkTCP tcp;
     private Listener<String> errorListener;
@@ -57,6 +57,9 @@ public class Network {
 		return udp.isConnected();
 	}
 
+	/**
+	 * Close udp socket, clear current sequence numbers.
+	 */
 	public void disconnectNameServer() {
 		udp.disconnect();
 		try {
@@ -65,26 +68,33 @@ public class Network {
 			e.printStackTrace();
 			errorListener.update(e.getMessage());
 		}
+		synchronized(seqNumbs) {
+			seqNumbs.clear();
+		}
 	}
 
+	/**
+	 * 
+	 */
 	public void refreshServers() {
 		udp.sendGetList();
         serverListener.update(null);      //Reset serverlist
-
+        synchronized(seqNumbs) {
+        	seqNumbs.clear();    //Should not create a new instance, thus not ruining lock
+        }
 	}
-
-
 
     //1. get pdu
     //2. if pdu is null                                 (The cause is that it didn't get any pdu in the given time or pdu is incorrect
          //then, send new request repeat step 1
     //2. remove timer if any is set
     //3. Check sequence number
+	//    3.1 If sequence number is zero, then reset hashtable, send a new getlist.
     //3. if any sequence number is missing  /----------> (do this by looping trough list, and if not all numbers between the lowest and higest is found)
          // then set new timer for next package
+	
 
-
-
+//TODO synchronize seqNumbs, seqNumbs should be resetted in disconnect, and refresh.
 	//TODO keep track of current sequence numbers, if zero appears twice, then clear list.
 	  // if theres missing packets, set a timer to wait to receive
 	/**
@@ -92,62 +102,42 @@ public class Network {
 	 */
 	private void watchServerList() {
         while(udp.isConnected()) {
-            boolean resetSeqNumbs = false;
+
             SListPDU pdu = (SListPDU) udp.getPDU();
+                        
+            synchronized(seqNumbs) {
+                if(pdu != null) {
+                    udp.setTimer(0); // reset timer
 
+                    if(!seqNumbs.contains(pdu.getSequenceNr())) {
+                        seqNumbs.add(pdu.getSequenceNr());
+                        boolean seqMissed = false;
 
-            if(pdu != null) {
-                udp.setTimer(0); // reset timer
+                        //Check for any missing sequence numbers
+                        for(int i = 0; i < seqNumbs.size(); i++) {
+                    	    if(!seqNumbs.contains(i)) {
+                    		    seqMissed = true;
+                    	    }
+                        }
 
-                if(seqNumbs.contains(pdu.getSequenceNr())) {
-                    seqNumbs.add(pdu.getSequenceNr());
-                    boolean seqMissed = false;
+                        //If sequence numbers is missed, then to be safe,
+                        // a timer will be set just in case
+                        if(seqMissed) {
+                            //set timer
+                            udp.setTimer(udpTimer);
+                        }
 
-
-                    //Check for any missing sequence numbers
-                    for(int i = 0; i < seqNumbs.size(); i++) {
-                    	if(!seqNumbs.contains(i)) {
-                    		seqMissed = true;
-                    	}
+                        /*Update list*/
+                        for(ServerData server:pdu.getServerData()) {
+                            serverListener.update(server);
+                        }
                     }
-
-                    //If sequence numbers is missed, then to be safe,
-                    // a timer will be set just in case
-                    if(seqMissed) {
-                        //set timer
-                        udp.setTimer(udpTimer);
-                    }
-
-                    /*Update list*/
-                    for(ServerData server:pdu.getServerData()) {
-                        serverListener.update(server);
-                    }
+                    // else if (seqNr = 0) then reset hashset
+                } else {
+                    //requestList
+                    seqNumbs.clear();   //Reset sequenceNumbers
                 }
-
-            } else {
-                //requestList
-                seqNumbs = new HashSet<Integer>();   //Reset sequenceNumbers
             }
-
-//
-//        	if(pdu != null) {
-//        	    int expectSequenceNr = 0;  //default value
-//
-//        	}
-//
-//            if(sequenceNumbs.size() > 0) {
-//
-//                expectSequenceNr = sequenceNumbs.get(sequenceNumbs.size()
-//                                                         -1).intValue() + 1;
-//            }
-//
-//            if(pdu != null) {
-//                if(expectSequenceNr == pdu.getSequenceNr()) {
-//                    sequenceNumbs.add(pdu.getSequenceNr());
-//
-//                }
-//            }
-
         }
 	}
 
@@ -204,8 +194,6 @@ public class Network {
 		        case NICKS:
 		            System.out.println("Got nicks");
 		            NicksPDU nicksPDU = (NicksPDU) pdu;
-		            System.out.println("Nick"+nicksPDU.getNicks().get(0));
-		            //nicksListener.update(nicksPDU.getNicks());
 		            break;
 
 		        case MESSAGE:

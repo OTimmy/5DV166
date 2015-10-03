@@ -43,7 +43,15 @@ public abstract class PDU {
 
         return null;
     }
-
+    
+    /**
+     * 
+     * @return 0 for correct padding or numb
+     */
+    public int checkPadding() {
+    	return 0;
+    }
+    
     public static int pduSize() {
         return pduBuffSize;
     }
