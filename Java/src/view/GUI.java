@@ -22,6 +22,8 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
+
+import model.network.ServerData;
 //TODO add listener for jtable, so that selected row is showed in correct fields
 /**
  * @author c12ton
@@ -326,20 +328,40 @@ public class GUI {
 
 		return panel;
 	}
-
-	public synchronized void printOnMessageBoard(String msg) {
+	
+    public void addToServerList(ServerData server) {
+        synchronized(tableModel) {
+        	// if last row is not set then
+        	   //for loop 0 to size of tableModel
+        	   //tableModel.getValueAt(row, column)
+        	   //if(row is empty)
+        	      // then add to row
+        	   //endif
+        	//else
+        	//addtolastrow
+        }
+    }
+	
+    public void clearServerList() {
+        synchronized(tableModel) {
+        	tableModel.setRowCount(0);
+			//tableModel.addRow(null) 
+        }
+    }
+	
+    public synchronized void printOnMessageBoard(String msg) {
 	    msgTextArea.append(msg +"\n");
-	}
+    }
 
-	public void printErrorChat(String errorMsg) {
+    public void printErrorChat(String errorMsg) {
 	    printOnMessageBoard(errorMsg);
-	}
+    }
 
-	public void printErrorBrowser(String errorMsg) {
+    public void printErrorBrowser(String errorMsg) {
 	    browsErrLabel.setText(errorMsg);
-	}
+    }
 
-	public String getSendTextArea() {
+    public String getSendTextArea() {
 
 	    String text = sendTextArea.getText();
 		sendTextArea.setText("");

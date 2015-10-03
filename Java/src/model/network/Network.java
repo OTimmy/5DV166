@@ -1,6 +1,5 @@
 package model.network;
 
-
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -42,6 +41,11 @@ public class Network {
 	}
 
 	//UDP-related
+	/**
+	 * If connection was sucessfull, then a monitoring thead will be used 
+	 * for reading the udp socket.
+	 * @return true if connection was succesfull, otherwise false.
+	 */
 	public boolean connectToNameServer(String address, int port) {
 		udp.connect(address, port);
 
@@ -58,7 +62,7 @@ public class Network {
 	}
 
 	/**
-	 * Close udp socket, clear current sequence numbers.
+	 * Close currentudp socket, clear current sequence numbers.
 	 */
 	public void disconnectNameServer() {
 		udp.disconnect();
