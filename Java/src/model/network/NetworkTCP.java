@@ -3,6 +3,7 @@ package model.network;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import model.network.pdu.OpCode;
@@ -19,6 +20,8 @@ import controller.Listener;
  */
 public class NetworkTCP {
 
+    private final int TIME_OUT = 20;
+
     private Socket socket;
     private Listener<String> errorListener;
     private OutputStream outStream;
@@ -27,15 +30,15 @@ public class NetworkTCP {
 
     public boolean connect(String address,int port, String nick) {
         try {
-
-        	socket = new Socket(address,port);
+            socket = new Socket();
+        	socket.connect(new InetSocketAddress(address,port),TIME_OUT);
 
             outStream = socket.getOutputStream();
             inStream = socket.getInputStream();
 
             JoinPDU joinPDU = new JoinPDU(nick,OpCode.JOIN.value);
             sendPDU(joinPDU);
-            sendPDU(new MessagePDU("Hallå!, skriv några oöäå tecken. Testar utf8, kan ej svara tillbaka :)"));
+            System.out.println("Connected");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -73,7 +76,7 @@ public class NetworkTCP {
     public void sendPDU(PDU pdu) {
         try {
             outStream.write(pdu.toByteArray(),0,pdu.getSize());
-            outStream.flush();
+
         } catch (IOException e) {
             e.printStackTrace();
             errorListener.update(e.getMessage());

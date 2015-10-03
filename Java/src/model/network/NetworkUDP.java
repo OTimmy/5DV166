@@ -55,7 +55,7 @@ public class NetworkUDP {
     }
 
     public boolean sendGetList() {
-
+        System.out.println("Seding");
         InetAddress inetAddress;
 		try {
 			inetAddress = InetAddress.getByName(address);

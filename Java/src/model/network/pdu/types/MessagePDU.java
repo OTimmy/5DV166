@@ -8,6 +8,7 @@ import model.network.pdu.Checksum;
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 
+//TODO
 public class MessagePDU extends PDU{
 
     private final int timeEnd = 12;
@@ -64,13 +65,13 @@ public class MessagePDU extends PDU{
 	    bytes[0] = OpCode.MESSAGE.value;
 	    bytes[4] = (byte) (msg.length() & 0xff);
 	    bytes[5] = (byte) ((msg.length() >> 8) & 0xff);
-	    bytes[6] = 0;
-	    bytes[7] = 0;
+//	    bytes[6] = 0;
+//	    bytes[7] = 0;
 
-	    bytes[12] = 0;
-	    bytes[13] = 0;
-	    bytes[14] = 0;
-	    bytes[15] = 0;
+//	    bytes[12] = 0;
+//	    bytes[13] = 0;
+//	    bytes[14] = 0;
+//	    bytes[15] = 0;
 
 	    byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
 
@@ -81,7 +82,7 @@ public class MessagePDU extends PDU{
 	    	bytes[index] = msgBytes[i];
 	    }
 
-	    bytes[3] = 0;
+	    //bytes[3] = 0;
 	    byte sum = Checksum.computeChecksum(bytes);
 
 	    bytes[3] = sum;
@@ -89,8 +90,48 @@ public class MessagePDU extends PDU{
 	    return bytes;
 	}
 
-	private boolean checkPad(byte[] bytes) {
-	    return (bytes[1] != 0 && bytes[6] != 0 && bytes[7] != 0);
+
+	/**
+	 *
+	 *
+	 *
+	 * @param start of padding, length of message or nicks
+	 * @return true if padding is correct otherwise false.
+	 */
+	private boolean checkMessagePadding() {
+
+	    if((bytes[1] != 0 || bytes[6] != 0 || bytes[7] != 0)) {
+	        return false;
+	    }
+
+        int msgLength  = (int) (bytes[4]<<8 & 0xff) | ( bytes[5] & 0xff);
+        int msgStart   = 12;
+
+	    //message padding
+	    if(!checkStringPadding(msgStart,msgLength)) {
+	        return false;
+	    }
+
+	    int nickLength = (int) bytes[2];
+        int nickStart  = msgStart + padLengths(msgLength);
+
+	    if(!checkStringPadding(nickStart,nickLength)) {
+	        return false;
+	    }
+
+	    return true;
+	}
+
+	private boolean checkStringPadding(int start, int length) {
+        int end = start + padLengths(length);
+
+        for(;start < end; start++ ) {
+            if(bytes[start] != 0) {
+                return false;
+            }
+        }
+
+        return true;
 	}
 
 	@Override

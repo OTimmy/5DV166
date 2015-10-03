@@ -39,6 +39,7 @@ public final class ByteSequenceBuilder {
         return this;
     }
 
+
     /**
      * @param s The short appended as two bytes at the end of the sequence.
      * @return The ByteSequenceBuilder.

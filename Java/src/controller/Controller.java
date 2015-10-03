@@ -2,9 +2,13 @@ package controller;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JTable;
+
 
 import view.GUI;
 
@@ -33,10 +37,8 @@ public class Controller {
 		this.gui = gui;
     	initNetworkListener(net);
     	initGUIActionListener();
-    	net.connectToNameServer("itchy.cs.umu.se", 1337);
 		nameServerConnected = false;
-		serverConnected = false;
-		//net.ConnectToServer("nightcrawler.cs.umu.se", 51515, "FUCKU");
+    	serverConnected = false;
 	}
 
 	/**
@@ -55,9 +57,10 @@ public class Controller {
 		net.addServerListener(new controller.Listener<ServerData>() {
 
 			@Override
-			public void update(ServerData t) {
-			   if(t != null) {
-	                System.out.println("Server name: " + t.getName());
+			public void update(ServerData server) {
+			   if(server != null) {
+	                System.out.println("Server name: " + server.getName());
+	                gui.addToServerList(server);
 			   } else {
 			       System.out.println("Reset servers");
 			   }
@@ -68,8 +71,9 @@ public class Controller {
 		net.addMessageListener(new controller.Listener<MessageData>() {
 
 			@Override
-			public void update(MessageData t) {
-				System.out.println("Message received: "+t.getMsg());
+			public void update(MessageData msg) {
+				System.out.println("Message received: "+msg.getMsg());
+				gui.printOnMessageBoard(msg.getMsg());
 			}
 
 		});
@@ -91,12 +95,14 @@ public class Controller {
 			public void actionPerformed(ActionEvent arg0) {
 
 			    if(nameServerConnected == false) {
+			        gui.clearTable();
 			        String address = gui.getNameServerAddress();
 			        int port = new Integer(gui.getNameServerPort());
 
 			        nameServerConnected = net.connectToNameServer(address, port);
 
 			    } else {
+			        gui.clearTable();
 			        net.disconnectNameServer();
 			        nameServerConnected = false;
 			    }
@@ -120,6 +126,7 @@ public class Controller {
 			        String address = gui.getServerAddress();
 			        int port = new Integer(gui.getServerPort());
 			        String nick = gui.getNick();
+
 			        serverConnected = net.ConnectToServer(address, port, nick);
 			    } else {
 			        serverConnected = false;
@@ -151,7 +158,8 @@ public class Controller {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 			    if(nameServerConnected) {
-	                net.refreshServers();
+	                gui.clearTable();
+			        net.refreshServers();
 			    }
 			}
 		});
@@ -164,5 +172,30 @@ public class Controller {
 				net.SendMessage(msg);
 			}
 		});
+
+		gui.addTableListener(new MouseListener() {
+
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+
+            @Override
+            public void mousePressed(MouseEvent e) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {}
+
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // TODO Auto-generated method stub
+                JTable table = (JTable) e.getSource();
+                int row = table.getSelectedRow();
+
+                String[] server = gui.getServerAtRow(row);
+                gui.setServerField(server[0],server[1]);
+            }
+        });
 	}
 }

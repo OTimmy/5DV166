@@ -9,6 +9,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -21,10 +22,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+
+import com.sun.org.glassfish.external.statistics.annotations.Reset;
 
 import model.network.ServerData;
 //TODO add listener for jtable, so that selected row is showed in correct fields
+//TODO set limit for characters in chat window
 /**
  * @author c12ton
  *
@@ -43,6 +48,8 @@ public class GUI {
 	private final int CONF_PANEL_WIDTH  = 400;
 	private final int TAB_PANEL_HEIGHT  = 100;
 	private final int TAB_PANEL_WIDTH   = 400;
+	private final int NR_TABLE_COLUMNS  = 4;
+	private final int NR_TABLE_ROWS     = 17;
 
 	private JFrame frame;
 	private DefaultTableModel tableModel;
@@ -59,6 +66,8 @@ public class GUI {
 	private JTextField serverAddressField;
 	private JTextField serverPortField;
 	private JTextField nickField;
+
+	private JTable table;
 
 	//Used by chat panel
 	private JTextArea msgTextArea;
@@ -77,6 +86,7 @@ public class GUI {
 		frame.add(configPanel,BorderLayout.NORTH);
 		frame.add(tabPanel,BorderLayout.CENTER);
 		frame.revalidate();
+
 	}
 
 
@@ -129,6 +139,7 @@ public class GUI {
 		//Field
 		gbc.gridx++;
 		nameServerPortField = new JTextField(5);
+		nameServerPortField.setText("1337");
 		panel.add(nameServerPortField,gbc);
 
 		//Button
@@ -299,10 +310,10 @@ public class GUI {
 		northPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
 		String[] columns = {"Address","Port","Connected","Topic"};
-		Object[][] data = new Object[21][4];
+		Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
 		tableModel = new DefaultTableModel(data,columns);
 
-		JTable table = new JTable(tableModel);
+		table = new JTable(tableModel);
 		JScrollPane scrollPane = new JScrollPane(table);
 		northPanel.add(scrollPane,BorderLayout.CENTER);
 
@@ -328,27 +339,41 @@ public class GUI {
 
 		return panel;
 	}
-	
+
     public void addToServerList(ServerData server) {
         synchronized(tableModel) {
-        	// if last row is not set then
-        	   //for loop 0 to size of tableModel
-        	   //tableModel.getValueAt(row, column)
-        	   //if(row is empty)
-        	      // then add to row
-        	   //endif
-        	//else
-        	//addtolastrow
+            int row = tableModel.getRowCount() -1;
+            String value = (String)tableModel.getValueAt(row, 0);
+
+            String address   = server.getAddress();
+            String port      = Integer.toString(server.getPort());
+            String nrClients = Integer.toString(server.getNrClients());
+            String name      = server.getName();
+
+            Object[] rowData = {address,port,nrClients,name};
+
+            //If last value is null then find the first empty (null) in table
+            if(value == null) {
+                int index = 0;
+                for(; index < tableModel.getRowCount()
+                        && tableModel.getValueAt(index, 0) != null; index++) {}
+
+                tableModel.insertRow(index, rowData);
+                tableModel.removeRow(tableModel.getRowCount() -1);
+            } else { //if last value is not null  then add a new row
+                tableModel.addRow(rowData);
+            }
         }
     }
-	
-    public void clearServerList() {
+
+    public void clearTable() {
         synchronized(tableModel) {
-        	tableModel.setRowCount(0);
-			//tableModel.addRow(null) 
+            String[] columns = {"Address","Port","Connected","Topic"};
+            Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
+        	tableModel.setDataVector(data, columns);
         }
     }
-	
+
     public synchronized void printOnMessageBoard(String msg) {
 	    msgTextArea.append(msg +"\n");
     }
@@ -359,6 +384,11 @@ public class GUI {
 
     public void printErrorBrowser(String errorMsg) {
 	    browsErrLabel.setText(errorMsg);
+    }
+
+    public void setServerField(String  address, String port) {
+        serverAddressField.setText(address);
+        serverPortField.setText(port);
     }
 
     public String getSendTextArea() {
@@ -389,6 +419,16 @@ public class GUI {
 	    return nickField.getText();
 	}
 
+	public String[] getServerAtRow(int row) {
+	    String[] server = new String[2];
+	    synchronized(tableModel) {
+	        server[0] = (String) tableModel.getValueAt(row, 0);
+	        server[1] = (String) tableModel.getValueAt(row, 1);
+	    }
+
+	    return server;
+	}
+
 	public void addConnectNameServerButtonListener(ActionListener l) {
 		connectNameServerButton.addActionListener(l);
 	}
@@ -407,5 +447,9 @@ public class GUI {
 
 	public void addSendButtonListener(ActionListener l) {
 		sendButton.addActionListener(l);
+	}
+
+	public void addTableListener(MouseListener l) {
+	    table.addMouseListener(l);
 	}
 }

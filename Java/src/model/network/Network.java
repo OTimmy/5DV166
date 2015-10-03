@@ -10,7 +10,8 @@ import model.network.pdu.PDU;
 import model.network.pdu.types.MessagePDU;
 import model.network.pdu.types.NicksPDU;
 import model.network.pdu.types.SListPDU;
-
+//TODO ServerData nrofclients should be in string not integer
+//TODO Port 64868 gives -668
 /**
  * <h1>Network</h2>
  *
@@ -23,7 +24,7 @@ import model.network.pdu.types.SListPDU;
 public class Network {
 
     private final int udpTimer = 20;
-   
+
     private NetworkUDP udp;
     private NetworkTCP tcp;
     private Listener<String> errorListener;
@@ -42,7 +43,7 @@ public class Network {
 
 	//UDP-related
 	/**
-	 * If connection was sucessfull, then a monitoring thead will be used 
+	 * If connection was sucessfull, then a monitoring thead will be used
 	 * for reading the udp socket.
 	 * @return true if connection was succesfull, otherwise false.
 	 */
@@ -78,7 +79,7 @@ public class Network {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	public void refreshServers() {
 		udp.sendGetList();
@@ -96,7 +97,7 @@ public class Network {
 	//    3.1 If sequence number is zero, then reset hashtable, send a new getlist.
     //3. if any sequence number is missing  /----------> (do this by looping trough list, and if not all numbers between the lowest and higest is found)
          // then set new timer for next package
-	
+
 
 //TODO synchronize seqNumbs, seqNumbs should be resetted in disconnect, and refresh.
 	//TODO keep track of current sequence numbers, if zero appears twice, then clear list.
@@ -108,7 +109,7 @@ public class Network {
         while(udp.isConnected()) {
 
             SListPDU pdu = (SListPDU) udp.getPDU();
-                        
+
             synchronized(seqNumbs) {
                 if(pdu != null) {
                     udp.setTimer(0); // reset timer
@@ -191,12 +192,11 @@ public class Network {
 
 		    System.out.println("done");
 		    if(pdu != null) {
-
+		        System.out.println("Got nicks");
 		        OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
 		        switch(op) {
 
 		        case NICKS:
-		            System.out.println("Got nicks");
 		            NicksPDU nicksPDU = (NicksPDU) pdu;
 		            break;
 
@@ -207,6 +207,8 @@ public class Network {
 		        case UJOIN:
 		            break;
 		        }
+		    } else {
+		        tcp.disconnect();
 		    }
 		}
 	}

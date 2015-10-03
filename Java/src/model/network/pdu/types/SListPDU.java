@@ -32,7 +32,7 @@ public class SListPDU extends PDU{
 
 
 		sequenceNr = (int) ((bytes[1]));
-		int nrOfServers = (int) (((bytes[2] << 8) | (bytes[3] & 0xff)));
+		int nrOfServers = (int) (((bytes[2] & 0xff )<< 8) | (bytes[3] & 0xff));
 		int index = 4;
 
 		for(int i = 0; i < nrOfServers; i++) {
@@ -44,9 +44,9 @@ public class SListPDU extends PDU{
 	                }
 	        }
 
-            int port        =  (int) (( bytes[index +4] << 8) |( bytes[index +5] & 0xff ));
-	        int nrOfClients = (int) bytes [index + 6];
-	        int nameLength  = (int) bytes[index + 7];
+            int port        =  (int) ((( bytes[index +4] & 0xff) << 8) |( bytes[index +5] & 0xff ));
+	        int nrOfClients =  (int) bytes [index + 6];
+	        int nameLength  =  (int) bytes[index + 7];
 
 	        //start index for server name
 	        index += 8;
@@ -55,7 +55,6 @@ public class SListPDU extends PDU{
 	        for(int j = index; j < (index + nameLength);j++) {
 	            serverName += (char) bytes[j];
 	        }
-
 
 	        index += nameLength +  (4 - nameLength % 4) % 4;
 
@@ -85,5 +84,21 @@ public class SListPDU extends PDU{
 		return OpCode.SLIST.value;
 	}
 
+	p
 
+	@Override
+    public boolean checkPadding() {
+
+       int length = bytes[11];
+
+       int  start = 12 + length;
+
+       for(int i = start; i < bytes.length; i++) {
+           if( bytes[i] != 0 ) {
+               return false;
+           }
+       }
+
+        return false;
+    }
 }

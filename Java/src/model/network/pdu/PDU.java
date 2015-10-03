@@ -5,7 +5,7 @@ import java.io.InputStream;
 
 import model.network.pdu.types.*;
 
-
+//TODO byte buffer
 public abstract class PDU {
 
     private final static int pduBuffSize = 65539;
@@ -43,15 +43,33 @@ public abstract class PDU {
 
         return null;
     }
-    
+
+//    /**
+//     * @param bytes from inputstream, index start of String
+//     * @return false if paddings is incorrect else true
+//     */
+//    public boolean checkPadding(byte[] bytes, int index,int length) {
+//
+//        int indexPad = padLengths(length) + index;
+//        for(;indexPad < bytes.length;indexPad++) {
+//            if(bytes[indexPad] != 0) {
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
+
+
+    public abstract boolean checkPadding(byte[] bytes);
     /**
-     * 
+     *
      * @return 0 for correct padding or numb
      */
-    public int checkPadding() {
-    	return 0;
+    public static int padLengths(int length) {
+        return length +  (4 - length % 4) % 4;
     }
-    
+
     public static int pduSize() {
         return pduBuffSize;
     }
