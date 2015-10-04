@@ -55,4 +55,9 @@ public class NicksPDU extends PDU{
     public int getNrOfNicks() {
         return 0;
     }
+    
+    public static boolean checkPadding(byte[] bytes) {
+    	//
+    	return true;
+    }
 }

@@ -14,23 +14,24 @@ public class SListPDU extends PDU{
 	private ArrayList<ServerData> servers;
 	private byte[] bytes;
 	private int sequenceNr;
-	//TODO currentsequence
 
 	public SListPDU(byte[] bytes) {
 	    this.bytes = bytes;
-	    servers = new ArrayList<ServerData>();
-
-	    parse(bytes);
+	    servers = parse(bytes);
 	}
 
 	/**
 	 * Parser and store data in appropiate list.
 	 * @return false if parsing failed.
 	 */
-	private void parse(byte[] bytes) {
-
-
-
+	private ArrayList<ServerData> parse(byte[] bytes) {
+		
+		if(!checkPadding()) {
+			return null;
+		}
+		
+		
+		ArrayList<ServerData>servers = new ArrayList<ServerData>();
 		sequenceNr = (int) ((bytes[1]));
 		int nrOfServers = (int) (((bytes[2] & 0xff )<< 8) | (bytes[3] & 0xff));
 		int index = 4;
@@ -60,6 +61,8 @@ public class SListPDU extends PDU{
 
 	        servers.add(new ServerData(serverName,address,port,nrOfClients));
 	    }
+		
+		return servers;
 	}
 
 	public ArrayList<ServerData> getServerData() {
@@ -84,21 +87,19 @@ public class SListPDU extends PDU{
 		return OpCode.SLIST.value;
 	}
 
-	p
-
-	@Override
-    public boolean checkPadding() {
+    private boolean checkPadding() {
 
        int length = bytes[11];
 
        int  start = 12 + length;
 
-       for(int i = start; i < bytes.length; i++) {
-           if( bytes[i] != 0 ) {
-               return false;
-           }
+       for(int i = 0; i < 30; i++) {
+    	   System.out.println("val: "+ bytes[i]);
+//           if( bytes[i] != 0 ) {
+//               return false;
+//           }
        }
 
-        return false;
+        return true;
     }
 }

@@ -30,6 +30,7 @@ public class Controller {
     private ArrayList<String> nicks;
     private boolean serverConnected;
     private boolean nameServerConnected;
+    private String nick;
 
     public Controller(Network net, GUI gui) {
 
@@ -148,8 +149,8 @@ public class Controller {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-			    String nick = gui.getNick();
-				net.changeNick(nick);
+			    nick = gui.getNick();
+			    net.changeNick(nick);
 			}
 		});
 
@@ -169,7 +170,7 @@ public class Controller {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String msg = gui.getSendTextArea();
-				net.SendMessage(msg);
+				net.SendMessage(msg,nick);
 			}
 		});
 

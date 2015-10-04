@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import model.network.pdu.types.*;
-
+//TODO make a static method in pdu types, that check padding is correct, else return null
 //TODO byte buffer
 public abstract class PDU {
 
@@ -23,7 +23,11 @@ public abstract class PDU {
         		break;
         	case CHNICK: System.out.println("Change nick");
         		break;
-        	case MESSAGE: return new MessagePDU(bytes);
+        	case MESSAGE: 
+        		if(MessagePDU.checkPadding(bytes) && Checksum.computeChecksum(bytes) == 0) {
+        			return new MessagePDU(bytes);
+        		}
+        		return null;
         	case NICKS:   return new NicksPDU(bytes);
         	case NOTREG: System.out.println("Not reg");
         		break;
@@ -43,25 +47,7 @@ public abstract class PDU {
 
         return null;
     }
-
-//    /**
-//     * @param bytes from inputstream, index start of String
-//     * @return false if paddings is incorrect else true
-//     */
-//    public boolean checkPadding(byte[] bytes, int index,int length) {
-//
-//        int indexPad = padLengths(length) + index;
-//        for(;indexPad < bytes.length;indexPad++) {
-//            if(bytes[indexPad] != 0) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
-
-
-    public abstract boolean checkPadding(byte[] bytes);
+    
     /**
      *
      * @return 0 for correct padding or numb
@@ -79,4 +65,5 @@ public abstract class PDU {
     public abstract int getSize();
 
     public abstract byte getOpCode();
+    
 }

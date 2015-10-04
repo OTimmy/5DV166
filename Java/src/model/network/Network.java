@@ -113,7 +113,6 @@ public class Network {
             synchronized(seqNumbs) {
                 if(pdu != null) {
                     udp.setTimer(0); // reset timer
-
                     if(!seqNumbs.contains(pdu.getSequenceNr())) {
                         seqNumbs.add(pdu.getSequenceNr());
                         boolean seqMissed = false;
@@ -176,8 +175,8 @@ public class Network {
 		}
 	}
 
-	public void SendMessage(String msg) {
-		tcp.sendPDU(new MessagePDU(msg));
+	public void SendMessage(String msg, String nick) {
+		tcp.sendPDU(new MessagePDU(msg,nick));
 	}
 
 	public void changeNick(String nick) {
