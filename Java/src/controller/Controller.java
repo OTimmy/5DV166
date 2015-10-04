@@ -15,6 +15,8 @@ import view.GUI;
 import model.network.MessageData;
 import model.network.Network;
 import model.network.ServerData;
+import model.network.pdu.types.UJoinPDU;
+import model.network.pdu.types.ULeavePDU;
 //TODO send the whol god damn pdu trought the listener
 /**
  * <h1>Listener.java</h1>
@@ -100,24 +102,23 @@ public class Controller {
 
 		});
 
-		net.addUserJoinListener(new Listener<String>() {
+		net.addUserJoinListener(new Listener<UJoinPDU>() {
 
-            @Override
-            public void update(String t) {
-                System.out.println(t +" has joined");
-                gui.addNick(t);
-                nicks.add(t);
-            }
+			@Override
+			public void update(UJoinPDU t) {
+				// TODO Auto-generated method stub
+				
+			}
 
 		});
 
-		net.addUserLeaveListener(new Listener<String>() {
+		net.addUserLeaveListener(new Listener<ULeavePDU>() {
 
-            @Override
-            public void update(String t) {
-                gui.printOnMessageBoard("User");
-                nicks.remove(t);
-            }
+			@Override
+			public void update(ULeavePDU t) {
+				// TODO Auto-generated method stub
+				
+			}
 
 		});
 

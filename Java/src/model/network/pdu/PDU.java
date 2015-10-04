@@ -17,8 +17,6 @@ public abstract class PDU {
         	OpCode op = OpCode.getOpCodeBy(bytes[0]);
 
         	switch(op) {
-        	case CHNICK: System.out.println("Change nick");
-        		break;
         	case MESSAGE:
         	    MessagePDU msgPDU = new MessagePDU(bytes);
 
@@ -27,7 +25,7 @@ public abstract class PDU {
         	    }
 
         	    break;
-        	case NICKS: System.out.println("Got mah nicks");
+        	case NICKS: 
 
         	    NicksPDU nicksPDU = new NicksPDU(bytes);
 
@@ -36,10 +34,6 @@ public abstract class PDU {
         	    }
 
         	    break;
-        	case NOTREG: System.out.println("Not reg");
-        		break;
-        	case QUIT: System.out.println("quit");
-        		break;
         	case SLIST:
         	    SListPDU sListPDU = new SListPDU(bytes);
 

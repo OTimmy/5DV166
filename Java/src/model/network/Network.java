@@ -1,6 +1,6 @@
 package model.network;
 
-import java.util.ArrayList;
+
 import java.util.HashSet;
 
 
@@ -12,6 +12,7 @@ import model.network.pdu.types.MessagePDU;
 import model.network.pdu.types.NicksPDU;
 import model.network.pdu.types.SListPDU;
 import model.network.pdu.types.UJoinPDU;
+import model.network.pdu.types.ULeavePDU;
 //TODO ServerData nrofclients should be in string not integer
 //TODO Port 64868 gives -668
 /**
@@ -34,7 +35,8 @@ public class Network {
     private Listener<ServerData> serverListener;
     private Listener<MessageData> msgListener;
     private Listener<String> nicksListener;
-    private Listener<String> userJoinedListener;
+    private Listener<UJoinPDU> uJoinListener;
+    private Listener<ULeavePDU> uLeaveListener;
     private Listener<String> userLeaveListener;
     private Thread udpThread;
     private Thread tcpThread;
@@ -215,10 +217,12 @@ public class Network {
 		            break;
 
 		        case UJOIN:
-		            System.out.println("Got ujoin");
 		            UJoinPDU ujoinPDU = (UJoinPDU) pdu;
-		            userJoinedListener.update(ujoinPDU.getNick());
+		            uJoinListener.update(ujoinPDU);
 		            break;
+		        case ULEAVE:
+		        	
+		        	break;
 		        }
 		    } else {
 		        tcp.disconnect();
@@ -233,7 +237,6 @@ public class Network {
 		this.serverListener = serverListener;
 	}
 
-
 	public void addMessageListener(Listener<MessageData> msgListener) {
 		this.msgListener = msgListener;
 	}
@@ -242,12 +245,12 @@ public class Network {
         this.nicksListener = nickListener;
     }
 
-    public void addUserJoinListener(Listener<String> userJoinedListener) {
-        this.userJoinedListener = userJoinedListener;
+    public void addUJoinListener(Listener<UJoinPDU> uJoinListener) {
+        this.uJoinListener = uJoinListener;
     }
 
-    public void addUserLeaveListener(Listener<String> userLeaveListener) {
-        this.userLeaveListener = userLeaveListener;
+    public void addULeaveListener(Listener<ULeavePDU> uLeaveListener) {
+        this.uLeaveListener = uLeaveListener;
     }
 
     public void addTCPErrorListener(Listener<String> tcpErrorListener) {
