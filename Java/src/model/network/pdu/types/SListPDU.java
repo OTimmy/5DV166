@@ -26,9 +26,6 @@ public class SListPDU extends PDU{
 	 */
 	private ArrayList<ServerData> parse(byte[] bytes) {
 		
-		if(!checkPadding()) {
-			return null;
-		}
 		
 		
 		ArrayList<ServerData>servers = new ArrayList<ServerData>();
@@ -56,9 +53,11 @@ public class SListPDU extends PDU{
 	        for(int j = index; j < (index + nameLength);j++) {
 	            serverName += (char) bytes[j];
 	        }
-
-	        index += nameLength +  (4 - nameLength % 4) % 4;
-
+	        
+	        
+	        System.out.println(checkPadding(index + nameLength,nameLength));
+	        //index += nameLength +  (4 - nameLength % 4) % 4;
+	        index += nameLength + padLengths(nameLength);
 	        servers.add(new ServerData(serverName,address,port,nrOfClients));
 	    }
 		
@@ -87,17 +86,15 @@ public class SListPDU extends PDU{
 		return OpCode.SLIST.value;
 	}
 
-    private boolean checkPadding() {
+    private boolean checkPadding(int start,int length) {
 
-       int length = bytes[11];
+    	int padded = padLengths(length);
 
-       int  start = 12 + length;
-
-       for(int i = 0; i < 30; i++) {
-    	   System.out.println("val: "+ bytes[i]);
-//           if( bytes[i] != 0 ) {
-//               return false;
-//           }
+       for(int i = start; i < padded+start; i++) {
+    	   
+           if( bytes[i] != 0 ) {
+               return false;
+           }
        }
 
         return true;

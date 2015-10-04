@@ -53,7 +53,7 @@ public abstract class PDU {
      * @return 0 for correct padding or numb
      */
     public static int padLengths(int length) {
-        return length +  (4 - length % 4) % 4;
+        return (4 - length % 4) % 4;
     }
 
     public static int pduSize() {
