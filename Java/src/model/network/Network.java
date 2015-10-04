@@ -3,6 +3,7 @@ package model.network;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+
 import controller.Listener;
 
 import model.network.pdu.OpCode;
@@ -10,6 +11,7 @@ import model.network.pdu.PDU;
 import model.network.pdu.types.MessagePDU;
 import model.network.pdu.types.NicksPDU;
 import model.network.pdu.types.SListPDU;
+import model.network.pdu.types.UJoinPDU;
 //TODO ServerData nrofclients should be in string not integer
 //TODO Port 64868 gives -668
 /**
@@ -27,10 +29,13 @@ public class Network {
 
     private NetworkUDP udp;
     private NetworkTCP tcp;
-    private Listener<String> errorListener;
+    private Listener<String> udpErrorListener;
+    private Listener<String> tcpErrorListener;
     private Listener<ServerData> serverListener;
     private Listener<MessageData> msgListener;
-    private Listener<ArrayList<String>> nicksListener;
+    private Listener<String> nicksListener;
+    private Listener<String> userJoinedListener;
+    private Listener<String> userLeaveListener;
     private Thread udpThread;
     private Thread tcpThread;
     private HashSet<Integer>seqNumbs;
@@ -54,6 +59,7 @@ public class Network {
 			udpThread = new Thread() {
 				public void run() {
 					watchServerList();
+
 				}
 			};
 			udpThread.start();
@@ -71,7 +77,7 @@ public class Network {
 			udpThread.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			errorListener.update(e.getMessage());
+			udpErrorListener.update(e.getMessage());
 		}
 		synchronized(seqNumbs) {
 			seqNumbs.clear();
@@ -83,7 +89,6 @@ public class Network {
 	 */
 	public void refreshServers() {
 		udp.sendGetList();
-        serverListener.update(null);      //Reset serverlist
         synchronized(seqNumbs) {
         	seqNumbs.clear();    //Should not create a new instance, thus not ruining lock
         }
@@ -154,13 +159,14 @@ public class Network {
 	public boolean ConnectToServer(String address, int port, String nick) {
 	    tcp.connect(address, port, nick);
 	    if(tcp.isConnected()) {
+
 	    	tcpThread = new Thread() {
 	    		public void run() {
 	    			watchServer();
 	    		}
 	    	};
-	    	tcpThread.run();
 
+	    	tcpThread.start();
 	    }
 		return tcp.isConnected();
 	}
@@ -169,14 +175,16 @@ public class Network {
 		tcp.disconnect();
 		try {
 			tcpThread.join();
+
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			errorListener.update(e.getMessage());
+			tcpErrorListener.update(e.getMessage());
 		}
+		System.out.println("Disconnecting to server");
 	}
 
 	public void SendMessage(String msg, String nick) {
-		tcp.sendPDU(new MessagePDU(msg,nick));
+		tcp.sendPDU(new MessagePDU(msg));
 	}
 
 	public void changeNick(String nick) {
@@ -188,55 +196,67 @@ public class Network {
 
 			System.out.println("waiting");
 		    PDU pdu = tcp.getPDU();
-
 		    System.out.println("done");
+
 		    if(pdu != null) {
-		        System.out.println("Got nicks");
+
 		        OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
 		        switch(op) {
 
 		        case NICKS:
 		            NicksPDU nicksPDU = (NicksPDU) pdu;
-		            break;
+		            for(String nick:nicksPDU.getNicks()) {
+		                nicksListener.update(nick);
+		            }
+	                break;
 
 		        case MESSAGE:
 		        	msgListener.update(((MessagePDU) pdu).getMessageData());
 		            break;
 
 		        case UJOIN:
+		            System.out.println("Got ujoin");
+		            UJoinPDU ujoinPDU = (UJoinPDU) pdu;
+		            userJoinedListener.update(ujoinPDU.getNick());
 		            break;
 		        }
 		    } else {
 		        tcp.disconnect();
+		        tcpErrorListener.update("Disconnect: Invalid pdu");
 		    }
 		}
 	}
 
 
 
-	public void addServersUsersListListener() {
-
-	}
-
-	public void addUserJoinListener(Listener<String> listener) {
-
-	}
-
 	public void addServerListener(Listener<ServerData> serverListener) {
 		this.serverListener = serverListener;
 	}
 
-	public void addErrorListener(Listener<String> errorListener) {
-	    this.errorListener = errorListener;
-	    tcp.addErrorListener(errorListener);
-	    udp.addErrorListener(errorListener);
-	}
 
 	public void addMessageListener(Listener<MessageData> msgListener) {
 		this.msgListener = msgListener;
 	}
 
-    public void addNicksListener(Listener<ArrayList<String>> nicksListener) {
-        this.nicksListener = nicksListener;
+    public void addNicksListener(Listener<String> nickListener) {
+        this.nicksListener = nickListener;
+    }
+
+    public void addUserJoinListener(Listener<String> userJoinedListener) {
+        this.userJoinedListener = userJoinedListener;
+    }
+
+    public void addUserLeaveListener(Listener<String> userLeaveListener) {
+        this.userLeaveListener = userLeaveListener;
+    }
+
+    public void addTCPErrorListener(Listener<String> tcpErrorListener) {
+        this.tcpErrorListener = tcpErrorListener;
+        tcp.addErrorListener(tcpErrorListener);
+    }
+
+    public void addUDPErrorListener(Listener<String> udpErrorListener) {
+        this.udpErrorListener = udpErrorListener;
+        udp.addErrorListener(udpErrorListener);
     }
 }

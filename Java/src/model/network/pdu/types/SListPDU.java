@@ -1,5 +1,6 @@
 package model.network.pdu.types;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import model.network.ServerData;
@@ -14,9 +15,12 @@ public class SListPDU extends PDU{
 	private ArrayList<ServerData> servers;
 	private byte[] bytes;
 	private int sequenceNr;
+	private boolean validFlag;
 
 	public SListPDU(byte[] bytes) {
 	    this.bytes = bytes;
+	    validFlag = true;
+
 	    servers = parse(bytes);
 	}
 
@@ -25,9 +29,9 @@ public class SListPDU extends PDU{
 	 * @return false if parsing failed.
 	 */
 	private ArrayList<ServerData> parse(byte[] bytes) {
-		
-		
-		
+
+
+
 		ArrayList<ServerData>servers = new ArrayList<ServerData>();
 		sequenceNr = (int) ((bytes[1]));
 		int nrOfServers = (int) (((bytes[2] & 0xff )<< 8) | (bytes[3] & 0xff));
@@ -42,7 +46,7 @@ public class SListPDU extends PDU{
 	                }
 	        }
 
-            int port        =  (int) ((( bytes[index +4] & 0xff) << 8) |( bytes[index +5] & 0xff ));
+            int port        =  (int) ((( bytes[index +4] & 0xff) << 8) | ( bytes[index +5] & 0xff ));
 	        int nrOfClients =  (int) bytes [index + 6];
 	        int nameLength  =  (int) bytes[index + 7];
 
@@ -50,17 +54,23 @@ public class SListPDU extends PDU{
 	        index += 8;
 	        // Getting servers name
 	        String serverName =  "";
-	        for(int j = index; j < (index + nameLength);j++) {
-	            serverName += (char) bytes[j];
+	        byte[] nameBytes = new byte[nameLength];
+	        for(int j = 0,k = index; k < (index + nameLength);j++,k++) {
+	            //serverName += (char) (bytes[j] & 0xff);
+	            nameBytes[j] = (byte) (bytes[k] &0xff);
 	        }
-	        
-	        
-	        System.out.println(checkPadding(index + nameLength,nameLength));
-	        //index += nameLength +  (4 - nameLength % 4) % 4;
+	        serverName = new String(nameBytes,StandardCharsets.UTF_8);
+
+	        //Padding for name of server is done correctly
+	        if(!checkPadding(index + nameLength,nameLength)) {
+	            validFlag = false;
+	            return null;
+	        }
+
 	        index += nameLength + padLengths(nameLength);
 	        servers.add(new ServerData(serverName,address,port,nrOfClients));
 	    }
-		
+
 		return servers;
 	}
 
@@ -88,15 +98,19 @@ public class SListPDU extends PDU{
 
     private boolean checkPadding(int start,int length) {
 
-    	int padded = padLengths(length);
+       int padded = padLengths(length);
 
        for(int i = start; i < padded+start; i++) {
-    	   
+
            if( bytes[i] != 0 ) {
                return false;
            }
        }
 
         return true;
+    }
+
+    public boolean isValid() {
+        return validFlag;
     }
 }

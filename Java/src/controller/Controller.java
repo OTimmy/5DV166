@@ -15,7 +15,7 @@ import view.GUI;
 import model.network.MessageData;
 import model.network.Network;
 import model.network.ServerData;
-
+//TODO send the whol god damn pdu trought the listener
 /**
  * <h1>Listener.java</h1>
  *  Manage the flow between the gui and the underlying model
@@ -40,6 +40,7 @@ public class Controller {
     	initGUIActionListener();
 		nameServerConnected = false;
     	serverConnected = false;
+    	nicks = new ArrayList<String>();
 	}
 
 	/**
@@ -47,23 +48,12 @@ public class Controller {
 	 */
 	private void initNetworkListener(Network net) {
 
-		net.addErrorListener(new controller.Listener<String>() {
-
-			@Override
-			public void update(String t) {
-				System.out.println("Error: "+t);
-			}
-		});
-
 		net.addServerListener(new controller.Listener<ServerData>() {
 
 			@Override
 			public void update(ServerData server) {
 			   if(server != null) {
-	                System.out.println("Server name: " + server.getName());
 	                gui.addToServerList(server);
-			   } else {
-			       System.out.println("Reset servers");
 			   }
 			}
 
@@ -73,20 +63,67 @@ public class Controller {
 
 			@Override
 			public void update(MessageData msg) {
-				System.out.println("Message received: "+msg.getMsg());
-				gui.printOnMessageBoard(msg.getMsg());
+				gui.printOnMessageBoard(msg.getNickname()+":"+msg.getMsg());
 			}
 
 		});
 
-//		net.addNicksListener(new controller.Listener<String>() {
+		net.addTCPErrorListener(new Listener<String>() {
+
+            @Override
+            public void update(String t) {
+                System.out.println(t);
+                gui.setConnectServerButton("Connect");
+                nicks = new ArrayList<String>();
+                nicks.clear();
+            }
+        });
+
+		net.addUDPErrorListener(new Listener<String>() {
+
+            @Override
+            public void update(String t) {
+                System.out.println(t);
+                gui.setConnectNameServerButton("Connect");
+                //gui.printErrorBrowser(t);
+            }
+        });
+
+		net.addNicksListener(new Listener<String>() {
 //
-//            @Override
-//            public void update(String nicks) {
-//
-//            }
-//
-//		});
+            @Override
+            public void update(String t) {
+                System.out.println("Nick: "+ t);
+                gui.addNick(t);
+                nicks.add(t);
+            }
+
+		});
+
+		net.addUserJoinListener(new Listener<String>() {
+
+            @Override
+            public void update(String t) {
+                System.out.println(t +" has joined");
+                gui.addNick(t);
+                nicks.add(t);
+            }
+
+		});
+
+		net.addUserLeaveListener(new Listener<String>() {
+
+            @Override
+            public void update(String t) {
+                gui.printOnMessageBoard("User");
+                nicks.remove(t);
+            }
+
+		});
+
+
+
+		//net.addUserJ
 	}
 
 	private void initGUIActionListener() {
@@ -129,16 +166,16 @@ public class Controller {
 			        String nick = gui.getNick();
 
 			        serverConnected = net.ConnectToServer(address, port, nick);
+
 			    } else {
 			        serverConnected = false;
+			        net.disconnectServer();
 			    }
 
-	            JButton button = (JButton) e.getSource();
-
 			    if(!serverConnected) {
-			        button.setText("Connect");
+			        gui.setConnectServerButton("Connect");
 			    } else {
-			        button.setText("Disconnect");
+			        gui.setConnectServerButton("Disconnect");
 			    }
 
 			}

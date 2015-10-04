@@ -22,14 +22,15 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.DefaultCaret;
 
-import com.sun.org.glassfish.external.statistics.annotations.Reset;
 
 import model.network.ServerData;
 //TODO add listener for jtable, so that selected row is showed in correct fields
 //TODO set limit for characters in chat window
+//TODO add support for nicks to be displayed
+//TODO when connected, ignore talbe listener
 /**
  * @author c12ton
  *
@@ -188,6 +189,7 @@ public class GUI {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.gridx++;
 		nickField = new JTextField(10);
+		nickField.setText("Neo");
 		panel.add(nickField,gbc);
 
 		//Button
@@ -246,6 +248,8 @@ public class GUI {
 
 		msgTextArea = new JTextArea(1,2);
 		msgTextArea.setLineWrap(true);
+		DefaultCaret caret = (DefaultCaret) msgTextArea.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		JScrollPane scrollPane = new JScrollPane(msgTextArea);
 		scrollPane.setPreferredSize(new Dimension(msgTextWidth,msgTextHeight));
 
@@ -356,7 +360,7 @@ public class GUI {
             if(value == null) {
                 int index = 0;
                 for(; index < tableModel.getRowCount()
-                        && tableModel.getValueAt(index, 0) != null; index++) {}
+                        && tableModel.getValueAt(index, 0) != null; index++);
 
                 tableModel.insertRow(index, rowData);
                 tableModel.removeRow(tableModel.getRowCount() -1);
@@ -374,6 +378,14 @@ public class GUI {
         }
     }
 
+    public void addNick(String nick) {
+        usrsTextArea.append(nick +"\n");
+    }
+
+    public void clearNicks() {
+        usrsTextArea.setText("");
+    }
+
     public synchronized void printOnMessageBoard(String msg) {
 	    msgTextArea.append(msg +"\n");
     }
@@ -389,6 +401,17 @@ public class GUI {
     public void setServerField(String  address, String port) {
         serverAddressField.setText(address);
         serverPortField.setText(port);
+    }
+
+    public void setConnectNameServerButton(String text) {
+        connectNameServerButton.setText(text);
+
+        //if disconnect
+        // then make field gray
+    }
+
+    public void setConnectServerButton(String text) {
+        connectServerButton.setText(text);
     }
 
     public String getSendTextArea() {

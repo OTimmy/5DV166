@@ -17,27 +17,43 @@ public abstract class PDU {
         	OpCode op = OpCode.getOpCodeBy(bytes[0]);
 
         	switch(op) {
-        	case ACK: System.out.println("Ack");
-        		break;
-        	case ALIVE: System.out.println("Alive");
-        		break;
         	case CHNICK: System.out.println("Change nick");
         		break;
-        	case MESSAGE: 
-        		if(MessagePDU.checkPadding(bytes) && Checksum.computeChecksum(bytes) == 0) {
-        			return new MessagePDU(bytes);
-        		}
-        		return null;
-        	case NICKS:   return new NicksPDU(bytes);
+        	case MESSAGE:
+        	    MessagePDU msgPDU = new MessagePDU(bytes);
+
+        	    if(msgPDU.isValid()) {
+        	        return msgPDU;
+        	    }
+
+        	    break;
+        	case NICKS: System.out.println("Got mah nicks");
+
+        	    NicksPDU nicksPDU = new NicksPDU(bytes);
+
+        	    if(nicksPDU.isValid()) {
+        	        return nicksPDU;
+        	    }
+
+        	    break;
         	case NOTREG: System.out.println("Not reg");
         		break;
         	case QUIT: System.out.println("quit");
         		break;
-        	case SLIST:  return new SListPDU(bytes);
+        	case SLIST:
+        	    SListPDU sListPDU = new SListPDU(bytes);
+
+        	    if(sListPDU.isValid()) {
+        	        return sListPDU;
+        	    }
+
+        	    break;
         	case UCNICK: System.out.println("ucnick");
-        		break;
-        	case UJOIN: System.out.println("UJoin");
-        		break;
+        	    return new UCNickPDU(bytes);
+
+        	case UJOIN: return new UJoinPDU(bytes);
+
+
         	case ULEAVE: System.out.println("u leave");
         		break;
         	default:
@@ -47,7 +63,7 @@ public abstract class PDU {
 
         return null;
     }
-    
+
     /**
      *
      * @return 0 for correct padding or numb
@@ -65,5 +81,5 @@ public abstract class PDU {
     public abstract int getSize();
 
     public abstract byte getOpCode();
-    
+
 }

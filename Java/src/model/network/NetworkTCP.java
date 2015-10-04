@@ -5,11 +5,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 import model.network.pdu.types.JoinPDU;
-import model.network.pdu.types.MessagePDU;
 import model.network.pdu.types.QuitPDU;
 
 import controller.Listener;
@@ -19,7 +19,7 @@ import controller.Listener;
  * Manage network with server trough tcp.
  */
 public class NetworkTCP {
-
+    //TODO fix a lock for disconnect of send pdu
     private final int TIME_OUT = 20;
 
     private Socket socket;
@@ -41,7 +41,7 @@ public class NetworkTCP {
             System.out.println("Connected");
 
         } catch (IOException e) {
-            e.printStackTrace();
+           // e.printStackTrace();
             errorListener.update(e.getMessage());
             return false;
         }
@@ -62,6 +62,8 @@ public class NetworkTCP {
             outStream.close();
             inStream.close();
             socket.close();
+        } catch(SocketException e) {
+            //IGNORE becuase of disconnect
         } catch (IOException e) {
             e.printStackTrace();
             errorListener.update(e.getMessage());
@@ -75,7 +77,8 @@ public class NetworkTCP {
 
     public void sendPDU(PDU pdu) {
         try {
-            outStream.write(pdu.toByteArray(),0,pdu.getSize());
+            outStream.write(pdu.toByteArray(),0,pdu.toByteArray().length);
+            outStream.flush();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -83,15 +86,20 @@ public class NetworkTCP {
         }
     }
 
-
     /**
      * @return pdu packet
      */
     public PDU getPDU() {
         try {
             return PDU.fromInputStream(inStream);
+        } catch(SocketException e) {
+           if(isConnected()) {
+               e.printStackTrace();
+               errorListener.update(e.getMessage());
+           }
+
         } catch (IOException e) {
-           // e.printStackTrace();
+            e.printStackTrace();
         	System.out.println("Exception shit");
             errorListener.update(e.getMessage());
         }
