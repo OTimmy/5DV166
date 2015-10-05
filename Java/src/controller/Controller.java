@@ -300,12 +300,14 @@ public class Controller {
 	    synchronized(nicks) {
 	        //local
 	        int index = nicks.indexOf(oldNickName);
-	        nicks.set(index, newNickName);
+	        if(index > -1) {
+		        nicks.set(index, newNickName);
 
-	        //gui
-	        gui.clearNicks();
-	        for(String nick:nicks) {
-	            gui.addNick(nick);
+		        //gui
+		        gui.clearNicks();
+		        for(String nick:nicks) {
+		            gui.addNick(nick);
+		        }	        	
 	        }
 	    }
 	}

@@ -384,11 +384,11 @@ public class GUI {
     }
 
     public void clearTable() {
-      //  synchronized(tableModel) {
+        synchronized(tableModel) {
             String[] columns = {"Address","Port","Connected","Topic"};
             Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
         	tableModel.setDataVector(data, columns);
-       // }
+        }
     }
 
     public void addNick(String nick) {
@@ -400,9 +400,9 @@ public class GUI {
     }
 
     public void printOnMessageBoard(String msg) {
-	    //synchronized(msgTextArea) {
+	    synchronized(msgTextArea) {
 	        msgTextArea.append(msg +"\n");
-	    //}
+	    }
 
     }
 

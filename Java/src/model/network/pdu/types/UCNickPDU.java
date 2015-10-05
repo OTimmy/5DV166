@@ -2,9 +2,9 @@ package model.network.pdu.types;
 
 
 import java.nio.charset.StandardCharsets;
+
 import java.util.Date;
 
-import model.network.pdu.DateUtils;
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 
@@ -12,9 +12,7 @@ public class UCNickPDU extends PDU{
 
     private final int NICK_LENGTH1       = 1;
     private final int NICK_LENGTH2       = 2;
-    private final int TIME_STAMP_START   = 4;
     private final int NICK_START         = 8;
-    private final int TIME_STAMP_LENGTH  = 4;
 
     private String oldNick;
     private String newNick;
@@ -28,10 +26,10 @@ public class UCNickPDU extends PDU{
     private void parse(byte[] bytes ) {
 
         //Time stamp
-        int seconds = (bytes[4] & 0xff) << 8 | (bytes[5] & 0xff) << 8
-                      | (bytes[6] & 0xff) <<8 | (bytes[7] & 0xff) << 8;
+        long seconds = (bytes[4] & 0xff) << 24 | (bytes[5] & 0xff) << 16
+                      | (bytes[6] & 0xff) <<8 | (bytes[7] & 0xff);
 
-        date = DateUtils.toDate(seconds);
+        date = new Date(seconds);
 
         //Old nick
         int length = (bytes[NICK_LENGTH1] & 0xff);
@@ -62,13 +60,11 @@ public class UCNickPDU extends PDU{
 
     @Override
     public byte[] toByteArray() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public int getSize() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -88,5 +84,4 @@ public class UCNickPDU extends PDU{
     public Date getDate(){
         return date;
     }
-
 }

@@ -28,14 +28,11 @@ public class UJoinPDU extends PDU{
         //Time stamp
         byte[] timeBytes = new byte[TIME_STAMP_LENGTH];
         int end = TIME_STAMP_START + TIME_STAMP_LENGTH;
-//        for(int i = 0,j = TIME_STAMP_START; j <  end; j++) {
-//            timeBytes[i] = bytes[j];
-//
-//        }
-        int seconds = ((bytes[4]& 0xff) << 8  ) | ((bytes[5] & 0xff) << 8)
-                       | ((bytes[6] & 0xff) << 8) | ((bytes[7] & 0xff) << 8);
 
-        date = DateUtils.toDate(seconds);
+        long seconds = ((bytes[4]& 0xff) << 24  ) | ((bytes[5] & 0xff) << 16)
+                       | ((bytes[6] & 0xff) << 8) | ((bytes[7] & 0xff));
+
+        date = new Date(seconds);
 
 
         //Nick
