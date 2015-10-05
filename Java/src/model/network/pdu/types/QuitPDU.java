@@ -13,6 +13,7 @@ public class QuitPDU extends PDU{
         bytes[0] = OpCode.QUIT.value;
     }
 
+
     @Override
     public byte[] toByteArray() {
         return bytes;

@@ -1,9 +1,12 @@
 package controller;
 
 import java.awt.event.ActionEvent;
+
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -30,6 +33,8 @@ import model.network.pdu.types.MessagePDU;
  */
 public class Controller {
 
+    private final int KEY_ENTER = 10;
+
     private Network net;
     private GUI gui;
     private ArrayList<String> nicks;
@@ -41,7 +46,7 @@ public class Controller {
 
     	this.net = net;
 		this.gui = gui;
-    	initNetworkListener(net);
+    	initNetworkListener();
     	initGUIActionListener();
 		nameServerConnected = false;
     	serverConnected = false;
@@ -51,7 +56,7 @@ public class Controller {
 	/**
 	 * Initate listeners dedicated for the network.
 	 */
-	private void initNetworkListener(Network net) {
+	private void initNetworkListener() {
 
 		net.addServerListener(new controller.Listener<SListPDU>() {
 
@@ -83,9 +88,9 @@ public class Controller {
                 System.out.println(t);
                 gui.printOnMessageBoard("Error:"+t);
                 gui.setConnectServerButton("Connect");
-
-                nicks = new ArrayList<String>();
-                nicks.clear();
+                net.disconnectServer();
+                clearNicks();
+                serverConnected = false;
             }
         });
 
@@ -114,8 +119,7 @@ public class Controller {
 			public void update(UJoinPDU t) {
 			    String date = DateUtils.format(t.getDate());
 			    gui.printOnMessageBoard(date+" "+t.getNick() + " has joined");
-			    gui.addNick(t.getNick());
-			    nicks.add(t.getNick());
+			    addNickToList(t.getNick());
 			}
 
 		});
@@ -126,11 +130,7 @@ public class Controller {
 			public void update(ULeavePDU t) {
 			    String date = DateUtils.format(t.getDate());
 			    gui.printOnMessageBoard(date+" "+t.getNick()+" has left");
-			    nicks.remove(t.getNick());
-			    gui.clearNicks();
-			    for(String nick:nicks) {
-			        gui.addNick(nick);
-			    }
+			    removeNickFromList(t.getNick());
 			}
 
 		});
@@ -143,15 +143,7 @@ public class Controller {
                 gui.printOnMessageBoard(date + " "+ t.getOldNick()
                                        +" has changed to " + t.getNewNick() );
 
-                nicks.remove(t.getOldNick());
-                gui.clearNicks();
-
-                nicks.add(t.getNewNick());
-
-                for(String nick:nicks) {
-                    gui.addNick(nick);
-                }
-
+                changeNickFromList(t.getOldNick(), t.getNewNick());
             }
 
 		});
@@ -251,13 +243,10 @@ public class Controller {
 
             @Override
             public void mouseReleased(MouseEvent e) {}
-
             @Override
             public void mousePressed(MouseEvent e) {}
-
             @Override
             public void mouseExited(MouseEvent e) {}
-
             @Override
             public void mouseEntered(MouseEvent e) {}
 
@@ -271,8 +260,34 @@ public class Controller {
                 gui.setServerField(server[0],server[1]);
             }
         });
+
+		gui.addSendTextAreaListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {}
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+                if(KEY_ENTER == e.getKeyCode()) {
+                    e.consume();
+                    String msg = gui.getSendTextArea();
+                    net.SendMessage(msg,nick);
+
+                }
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {}
+
+		});
 	}
 
+	private void disconnectServer() {
+	    serverConnected = false;
+	    //synchronized
+	}
 
 	private void addNickToList(String nickName) {
 	    synchronized(nicks) {
@@ -308,6 +323,7 @@ public class Controller {
 	private void clearNicks() {
 	    synchronized(nicks) {
 	        nicks.clear();
+	        gui.clearNicks();
 	    }
 	}
 }

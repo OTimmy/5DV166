@@ -30,6 +30,7 @@ public class NetworkTCP {
 
     public boolean connect(String address,int port, String nick) {
         try {
+            System.out.println("Connecting");
             socket = new Socket();
         	socket.connect(new InetSocketAddress(address,port),TIME_OUT);
 
@@ -83,6 +84,7 @@ public class NetworkTCP {
         } catch (IOException e) {
             e.printStackTrace();
             errorListener.update(e.getMessage());
+            System.out.println("Error write");
         }
     }
 

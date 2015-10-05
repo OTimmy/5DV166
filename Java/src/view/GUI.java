@@ -9,6 +9,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 
 import javax.swing.BorderFactory;
@@ -68,6 +69,10 @@ public class GUI {
 	private JTextField serverPortField;
 	private JTextField nickField;
 
+	//used by tab
+    JTabbedPane tabbedPane;
+
+    //used by browser panel
 	private JTable table;
 
 	//Used by chat panel
@@ -207,19 +212,23 @@ public class GUI {
 	private JPanel buildTabPanel() {
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(TAB_PANEL_WIDTH,TAB_PANEL_HEIGHT));
-		JTabbedPane tabbedPane = new JTabbedPane();
+		tabbedPane = new JTabbedPane();
 
 		JPanel chatPanel  = buildChatPanelPanel();
 		JPanel browsPanel = buildBrowsPanel();
 
+		//tabbedPane.addTab("Browse", new JLabel("Stuff"));
 		tabbedPane.addTab("Browse", browsPanel);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
 
-		tabbedPane.addTab("Chat", chatPanel);
-		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-		panel.add(new JButton("Refresh"));
+		tabbedPane.addTab("Chat", chatPanel);
+		//tabbedPane.addTab("Chat", new JLabel("Label"));
+		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
+		tabbedPane.setFocusCycleRoot(true);
+
+		//panel.add(new JButton("Refresh"));
 		panel.add(tabbedPane,BorderLayout.CENTER);
 
 		return panel;
@@ -284,6 +293,7 @@ public class GUI {
 
 		sendTextArea = new JTextArea(1,2);
 		sendTextArea.setWrapStyleWord(true);
+		sendTextArea.setLineWrap(true);
 
 		scrollPane = new JScrollPane(sendTextArea);
 		scrollPane.setPreferredSize(new Dimension(sendPaneWidth,sendPaneHeight));
@@ -293,7 +303,7 @@ public class GUI {
 		sendButton = new JButton("send");
         sendPanel.add(sendButton);
 
-		panel.add(msgPanel,BorderLayout.WEST);
+		panel.add(msgPanel,BorderLayout.CENTER);
 		panel.add(usrPanel,BorderLayout.EAST);
 		panel.add(sendPanel,BorderLayout.SOUTH);
 
@@ -374,11 +384,11 @@ public class GUI {
     }
 
     public void clearTable() {
-        synchronized(tableModel) {
+      //  synchronized(tableModel) {
             String[] columns = {"Address","Port","Connected","Topic"};
             Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
         	tableModel.setDataVector(data, columns);
-        }
+       // }
     }
 
     public void addNick(String nick) {
@@ -390,25 +400,18 @@ public class GUI {
     }
 
     public void printOnMessageBoard(String msg) {
-	    synchronized(msgTextArea) {
+	    //synchronized(msgTextArea) {
 	        msgTextArea.append(msg +"\n");
-	    }
+	    //}
 
     }
 
     public void clearMessageBoard() {
         synchronized(msgTextArea) {
             msgTextArea.setText("");
-        }
+       }
     }
 
-    public void printErrorChat(String errorMsg) {
-	    printOnMessageBoard(errorMsg);
-    }
-
-    public void printErrorBrowser(String errorMsg) {
-	    browsErrLabel.setText(errorMsg);
-    }
 
     public void setServerField(String  address, String port) {
         serverAddressField.setText(address);
@@ -430,9 +433,13 @@ public class GUI {
 
 	    String text = sendTextArea.getText();
 		sendTextArea.setText("");
-
+		sendTextArea.setCaretPosition(0);
 		return text;
 	}
+
+    public void sendTextReset() {
+
+    }
 
 	public String getNameServerAddress() {
 	    return nameServerAddressField.getText();
@@ -456,13 +463,22 @@ public class GUI {
 
 	public String[] getServerAtRow(int row) {
 	    String[] server = new String[2];
-	    synchronized(tableModel) {
+	  //  synchronized(tableModel) {
 	        server[0] = (String) tableModel.getValueAt(row, 0);
 	        server[1] = (String) tableModel.getValueAt(row, 1);
-	    }
+	    //}
 
 	    return server;
 	}
+
+    public void printErrorChat(String errorMsg) {
+        printOnMessageBoard(errorMsg);
+    }
+
+    public void printErrorBrowser(String errorMsg) {
+        browsErrLabel.setText(errorMsg);
+    }
+
 
 	public void addConnectNameServerButtonListener(ActionListener l) {
 		connectNameServerButton.addActionListener(l);
@@ -486,5 +502,9 @@ public class GUI {
 
 	public void addTableListener(MouseListener l) {
 	    table.addMouseListener(l);
+	}
+
+	public void addSendTextAreaListener(KeyListener keyListener) {
+	    sendTextArea.addKeyListener(keyListener);
 	}
 }

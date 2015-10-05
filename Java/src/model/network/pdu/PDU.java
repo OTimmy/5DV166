@@ -15,10 +15,10 @@ public abstract class PDU {
         if(inStream != null) {
         	inStream.read(bytes,0,bytes.length);
         	OpCode op = OpCode.getOpCodeBy(bytes[0]);
-
+        	System.out.println("PDU value: " +op.value);
         	switch(op) {
 
-        	case MESSAGE: System.out.println("PDU: Message");
+        	case MESSAGE:
         	    MessagePDU msgPDU = new MessagePDU(bytes);
 
         	    if(msgPDU.isValid()) {
@@ -48,6 +48,8 @@ public abstract class PDU {
         	case UJOIN:  return new UJoinPDU(bytes);
 
         	case ULEAVE: return new ULeavePDU(bytes);
+
+        	case QUIT:   return new QuitPDU();
 
         	default:
         		break;

@@ -174,13 +174,18 @@ public class Network {
 	}
 
 	public void disconnectServer() {
+
 		tcp.disconnect();
 		try {
-			tcpThread.join();
+		    System.out.println("Disconnecting sto server");
+		    tcpThread.interrupt();
+		    tcpThread.join();
+
+			System.out.println("Disconnecting sto server");
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-			tcpErrorListener.update(e.getMessage());
+			//tcpErrorListener.update(e.getMessage());
 		}
 		System.out.println("Disconnecting to server");
 	}
@@ -194,6 +199,7 @@ public class Network {
 	}
 
 	private void watchServer() {
+	    boolean gotNicks = false;
 		while(tcp.isConnected()) {
 
 			System.out.println("waiting");
@@ -227,16 +233,22 @@ public class Network {
                     uCNickListener.update(uCNickPDU);
 		            break;
 
+		        case QUIT:
+		            tcpErrorListener.update("Disconnected by admin");
+		            break;
+
 		        }
 
 		    } else {
 		        if(tcp.isConnected()) {
-	                tcp.disconnect();
+		            disconnectServer();
 	                tcpErrorListener.update("Invalid pdu");
 		        }
 		    }
 		}
+
 	}
+
 
 
 
