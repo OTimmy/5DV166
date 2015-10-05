@@ -47,11 +47,11 @@ public class MessagePDU extends PDU{
 	    int msgLength = (int) (((bytes[4] & 0xff)<<8) | ( bytes[5] & 0xff) );
 
 	    //Time stamp
-	    int seconds = (bytes[8] & 0xff) << 24 | (bytes[9] & 0xff) << 16
+	    long seconds = (bytes[8] & 0xff) << 24 | (bytes[9] & 0xff) << 16
 	                  | (bytes[10] &0xff) << 8 | (bytes[11] & 0xff);
 
-	    date = DateUtils.toDate(seconds);
-
+	    //date = DateUtils.toDate(seconds);
+	    date = new Date(seconds * 1000);
 
 	    //Message
 	    int index = TIME_START + TIME_LENGTH;

@@ -211,7 +211,7 @@ public class Network {
 		                nicksListener.update(nick);
 		            }
 	                break;
-		        case MESSAGE: System.out.println("Network: message");
+		        case MESSAGE:
 		        	msgListener.update(((MessagePDU) pdu));
 		            break;
 		        case UJOIN:
@@ -226,6 +226,7 @@ public class Network {
 		            UCNickPDU uCNickPDU = (UCNickPDU) pdu;
                     uCNickListener.update(uCNickPDU);
 		            break;
+
 		        }
 
 		    } else {

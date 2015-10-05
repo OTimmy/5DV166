@@ -113,7 +113,7 @@ public class GUI {
 
 		/*panel settings*/
 		panel.setPreferredSize(new Dimension(CONF_PANEL_WIDTH, CONF_PANEL_HEIGHT));
-		panel.setBorder(BorderFactory.createLineBorder(Color.red));
+		//panel.setBorder(BorderFactory.createLineBorder(Color.red));
 		panel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets.bottom = 2;
@@ -235,7 +235,7 @@ public class GUI {
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(panelSize,
 										     panelSize));
-		panel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+		//panel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 
 		/*Message board panal*/
 		int msgPanelSize  = 370;
@@ -244,7 +244,7 @@ public class GUI {
 
 		JPanel msgPanel = new JPanel(new BorderLayout());
 		msgPanel.setPreferredSize(new Dimension(msgPanelSize,msgPanelSize));
-		msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
+		//msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
 		msgTextArea = new JTextArea(1,2);
 		msgTextArea.setWrapStyleWord(true);
@@ -257,14 +257,14 @@ public class GUI {
         msgPanel.add(scrollPane);
 
 		/*User panel*/
-		int usrsPanelWidth     = 100;
+		int usrsPanelWidth     = 120; //100;
 		int usrsPanelHeight    = 400;
 		int usrsTextAreaWidth  = 100;
 		int usrsTextAreaHeight = 325;
 
 		JPanel usrPanel = new JPanel(new BorderLayout());
 		usrPanel.setPreferredSize(new Dimension(usrsPanelWidth,usrsPanelHeight));
-		usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+		//usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
 		usrsTextArea = new JTextArea(1,2);
 		usrsTextArea.setWrapStyleWord(true);
@@ -277,10 +277,10 @@ public class GUI {
 
 		/*Send panel*/
 		int sendPaneHeight  = 43;
-		int sendPaneWidth   = 365;
+		int sendPaneWidth   =  365; //365;
 
 		JPanel sendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		sendPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+		//sendPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
 		sendTextArea = new JTextArea(1,2);
 		sendTextArea.setWrapStyleWord(true);
@@ -314,7 +314,7 @@ public class GUI {
 		/*Server panel*/
 		JPanel northPanel = new JPanel(new BorderLayout());
 		northPanel.setPreferredSize(new Dimension(tablePanelSize,tablePanelSize));
-		northPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
+		//northPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
 		String[] columns = {"Address","Port","Connected","Topic"};
 		Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
@@ -329,7 +329,7 @@ public class GUI {
 		southPanel.setLayout(new BoxLayout(southPanel,BoxLayout.PAGE_AXIS));
 
 		southPanel.setPreferredSize(new Dimension(southSize,southSize));
-		southPanel.setBorder(BorderFactory.createLineBorder(Color.red));
+		//southPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
 		//Error label
 		browsErrLabel = new JLabel("");

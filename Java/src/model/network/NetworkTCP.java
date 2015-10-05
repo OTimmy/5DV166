@@ -36,7 +36,7 @@ public class NetworkTCP {
             outStream = socket.getOutputStream();
             inStream = socket.getInputStream();
 
-            JoinPDU joinPDU = new JoinPDU(nick,OpCode.JOIN.value);
+            JoinPDU joinPDU = new JoinPDU(nick);
             sendPDU(joinPDU);
             System.out.println("Connected");
 

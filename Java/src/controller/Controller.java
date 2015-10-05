@@ -68,13 +68,10 @@ public class Controller {
 
 			@Override
 			public void update(MessagePDU t) {
-			    System.out.println("Message");
 			    String date = DateUtils.format(t.getDate());
-			    t.getMsg();
-			    t.getNick();
+
 			    gui.printOnMessageBoard(date +"<"+t.getNick()+"> "
 			                            +t.getMsg());
-
 			}
 
 		});
@@ -86,6 +83,7 @@ public class Controller {
                 System.out.println(t);
                 gui.printOnMessageBoard("Error:"+t);
                 gui.setConnectServerButton("Connect");
+
                 nicks = new ArrayList<String>();
                 nicks.clear();
             }
@@ -105,8 +103,7 @@ public class Controller {
 
 			@Override
 			public void update(String t) {
-			    gui.addNick(t);
-			    nicks.add(t);
+			    addNickToList(t);
 			}
 
 		});
@@ -129,6 +126,11 @@ public class Controller {
 			public void update(ULeavePDU t) {
 			    String date = DateUtils.format(t.getDate());
 			    gui.printOnMessageBoard(date+" "+t.getNick()+" has left");
+			    nicks.remove(t.getNick());
+			    gui.clearNicks();
+			    for(String nick:nicks) {
+			        gui.addNick(nick);
+			    }
 			}
 
 		});
@@ -140,6 +142,16 @@ public class Controller {
                 String date = DateUtils.format(t.getDate());
                 gui.printOnMessageBoard(date + " "+ t.getOldNick()
                                        +" has changed to " + t.getNewNick() );
+
+                nicks.remove(t.getOldNick());
+                gui.clearNicks();
+
+                nicks.add(t.getNewNick());
+
+                for(String nick:nicks) {
+                    gui.addNick(nick);
+                }
+
             }
 
 		});
@@ -191,12 +203,12 @@ public class Controller {
 
 			        serverConnected = false;
 			        net.disconnectServer();
-			        gui.clearNicks();
-			        nicks.clear();
+			        clearNicks();
 			    }
 
 			    if(!serverConnected) {
 			        gui.setConnectServerButton("Connect");
+			        clearNicks();
 			    } else {
 			        gui.setConnectServerButton("Disconnect");
 			    }
@@ -259,5 +271,43 @@ public class Controller {
                 gui.setServerField(server[0],server[1]);
             }
         });
+	}
+
+
+	private void addNickToList(String nickName) {
+	    synchronized(nicks) {
+	        nicks.add(nickName);
+	        gui.addNick(nickName);
+	    }
+	}
+
+	private void changeNickFromList(String oldNickName, String newNickName) {
+	    synchronized(nicks) {
+	        //local
+	        int index = nicks.indexOf(oldNickName);
+	        nicks.set(index, newNickName);
+
+	        //gui
+	        gui.clearNicks();
+	        for(String nick:nicks) {
+	            gui.addNick(nick);
+	        }
+	    }
+	}
+
+	private void removeNickFromList(String nickName) {
+	    synchronized(nicks) {
+	        nicks.remove(nickName);
+	        gui.clearNicks();
+	        for(String nick: nicks) {
+	            gui.addNick(nick);
+	        }
+	    }
+	}
+
+	private void clearNicks() {
+	    synchronized(nicks) {
+	        nicks.clear();
+	    }
 	}
 }

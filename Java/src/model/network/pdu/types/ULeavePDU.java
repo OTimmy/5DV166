@@ -20,8 +20,8 @@ public class ULeavePDU extends PDU{
 
 	private void parse(byte[] bytes) {
 
-		int seconds = (bytes[4] & 0xff) << 8 | (bytes[5] & 0xff) << 8 | (bytes[6] & 0xff)
-		              | (bytes[7] & 0xff) << 8;
+		int seconds = (bytes[4] & 0xff) << 24 | (bytes[5] & 0xff) << 16 | (bytes[6] & 0xff) << 8
+		              | (bytes[7] & 0xff);
 		date = DateUtils.toDate(seconds);
 
 
