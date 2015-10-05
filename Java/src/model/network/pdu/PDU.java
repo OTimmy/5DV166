@@ -17,7 +17,8 @@ public abstract class PDU {
         	OpCode op = OpCode.getOpCodeBy(bytes[0]);
 
         	switch(op) {
-        	case MESSAGE:
+
+        	case MESSAGE: System.out.println("PDU: Message");
         	    MessagePDU msgPDU = new MessagePDU(bytes);
 
         	    if(msgPDU.isValid()) {
@@ -25,7 +26,7 @@ public abstract class PDU {
         	    }
 
         	    break;
-        	case NICKS: 
+        	case NICKS:
 
         	    NicksPDU nicksPDU = new NicksPDU(bytes);
 
@@ -42,14 +43,12 @@ public abstract class PDU {
         	    }
 
         	    break;
-        	case UCNICK: System.out.println("ucnick");
-        	    return new UCNickPDU(bytes);
+        	case UCNICK: return new UCNickPDU(bytes);
 
-        	case UJOIN: return new UJoinPDU(bytes);
+        	case UJOIN:  return new UJoinPDU(bytes);
 
+        	case ULEAVE: return new ULeavePDU(bytes);
 
-        	case ULEAVE: System.out.println("u leave");
-        		break;
         	default:
         		break;
         	}

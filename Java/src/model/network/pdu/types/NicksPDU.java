@@ -1,5 +1,6 @@
 package model.network.pdu.types;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import model.network.pdu.OpCode;
@@ -35,7 +36,7 @@ public class NicksPDU extends PDU{
 
             for(int j = start; bytes[j] != 0 && j < bytes.length; j++,length++);
 
-            nick = new String(bytes,start,length);
+            nick = new String(bytes,start,length,StandardCharsets.UTF_8);
 
             start += length + padLengths(length);
 

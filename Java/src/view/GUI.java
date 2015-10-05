@@ -44,7 +44,7 @@ import model.network.ServerData;
 public class GUI {
 
 	private final int FRAME_WIDTH = 500;
-	private final int FRAME_HEIGHT = 510;
+	private final int FRAME_HEIGHT = 520;
 	private final int CONF_PANEL_HEIGHT = 100;
 	private final int CONF_PANEL_WIDTH  = 400;
 	private final int TAB_PANEL_HEIGHT  = 100;
@@ -247,6 +247,7 @@ public class GUI {
 		msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
 		msgTextArea = new JTextArea(1,2);
+		msgTextArea.setWrapStyleWord(true);
 		msgTextArea.setLineWrap(true);
 		DefaultCaret caret = (DefaultCaret) msgTextArea.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
@@ -266,6 +267,7 @@ public class GUI {
 		usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
 		usrsTextArea = new JTextArea(1,2);
+		usrsTextArea.setWrapStyleWord(true);
 		usrsTextArea.setLineWrap(true);
 		scrollPane = new JScrollPane(usrsTextArea);
 		scrollPane.setPreferredSize(new Dimension(usrsTextAreaWidth,
@@ -281,7 +283,8 @@ public class GUI {
 		sendPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
 		sendTextArea = new JTextArea(1,2);
-		sendTextArea.setLineWrap(true);
+		sendTextArea.setWrapStyleWord(true);
+
 		scrollPane = new JScrollPane(sendTextArea);
 		scrollPane.setPreferredSize(new Dimension(sendPaneWidth,sendPaneHeight));
 
@@ -386,8 +389,17 @@ public class GUI {
         usrsTextArea.setText("");
     }
 
-    public synchronized void printOnMessageBoard(String msg) {
-	    msgTextArea.append(msg +"\n");
+    public void printOnMessageBoard(String msg) {
+	    synchronized(msgTextArea) {
+	        msgTextArea.append(msg +"\n");
+	    }
+
+    }
+
+    public void clearMessageBoard() {
+        synchronized(msgTextArea) {
+            msgTextArea.setText("");
+        }
     }
 
     public void printErrorChat(String errorMsg) {

@@ -1,27 +1,32 @@
 package model.network.pdu.types;
 
-import java.nio.charset.StandardCharsets;
 
-import model.network.MessageData;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+
 import model.network.pdu.ByteSequenceBuilder;
 import model.network.pdu.Checksum;
+import model.network.pdu.DateUtils;
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 
 
 public class MessagePDU extends PDU{
-
-    private final int TIME_END = 12;
+    private final int TIME_START  = 8;
+    private final int TIME_LENGTH = 4;
     private final byte PAD = 0;
 
     private byte[] bytes;
-    private MessageData msgData;
     private boolean validFlag;
 
+    private String msg;
+    private String nick;
+    private Date date;
+
     public MessagePDU(byte[] bytes) {
-        this.bytes = bytes;
+        //this.bytes = bytes;
         validFlag = true;
-        msgData = parseIn(bytes);
+        parseIn(bytes);
         //Always true
         validFlag = true;
 
@@ -32,42 +37,41 @@ public class MessagePDU extends PDU{
 
 	}
 
-	public MessageData parseIn(byte[] bytes) {
+	public void parseIn(byte[] bytes) {
 
 		if(Checksum.computeChecksum(bytes) != 0  && !checkPadding(bytes) ) {
 		    validFlag = false;
-			//return null;
 		}
 
-	    int nickLength = (int) bytes[2];
+	    int nickLength = (int) (bytes[2] & 0xff);
 	    int msgLength = (int) (((bytes[4] & 0xff)<<8) | ( bytes[5] & 0xff) );
-	    int index = 8;
-	    int end = TIME_END;
 
 	    //Time stamp
-	    String timeStamp  = "";
-	    for( ; index < TIME_END; index++ ) {
-	        timeStamp += (char) bytes[index];
-	    }
+	    int seconds = (bytes[8] & 0xff) << 24 | (bytes[9] & 0xff) << 16
+	                  | (bytes[10] &0xff) << 8 | (bytes[11] & 0xff);
+
+	    date = DateUtils.toDate(seconds);
+
 
 	    //Message
-	    end = msgLength + TIME_END;
+	    int index = TIME_START + TIME_LENGTH;
+	    int end = msgLength + index;
 	    byte[] msgBytes = new byte[msgLength];
 	    for(int i = 0; index < end; i++,index++) {
 	        msgBytes[i] = bytes[index];
 	    }
 
-	    String msg = new String(msgBytes, StandardCharsets.UTF_8);
+	    msg = new String(msgBytes, StandardCharsets.UTF_8);
 	    index+= padLengths(msgBytes.length);
 
-
+	    //Nick
 	    byte[] nickBytes = new byte[nickLength];
 	    for(int i = 0, j = index; j < (nickLength + index); i++,j++) {
 	        nickBytes[i] = bytes[j];
 	    }
-	    String nick = new String(nickBytes, StandardCharsets.UTF_8);
+	    nick = new String(nickBytes, StandardCharsets.UTF_8);
 
-	    return new MessageData(nick,msg,timeStamp);
+
 	}
 
 	private byte[] parseOut(String msg) {
@@ -158,11 +162,19 @@ public class MessagePDU extends PDU{
 		return OpCode.MESSAGE.value;
 	}
 
-	public MessageData getMessageData() {
-	    return msgData;
-	}
-
 	public boolean isValid() {
 	    return validFlag;
+	}
+
+	public String getMsg() {
+	    return msg;
+	}
+
+	public String getNick() {
+	    return nick;
+	}
+
+	public Date getDate() {
+	    return date;
 	}
 }

@@ -8,9 +8,11 @@ import controller.Listener;
 
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
+import model.network.pdu.types.ChNickPDU;
 import model.network.pdu.types.MessagePDU;
 import model.network.pdu.types.NicksPDU;
 import model.network.pdu.types.SListPDU;
+import model.network.pdu.types.UCNickPDU;
 import model.network.pdu.types.UJoinPDU;
 import model.network.pdu.types.ULeavePDU;
 //TODO ServerData nrofclients should be in string not integer
@@ -37,7 +39,8 @@ public class Network {
     private Listener<String> nicksListener;
     private Listener<UJoinPDU> uJoinListener;
     private Listener<ULeavePDU> uLeaveListener;
-   
+    private Listener<UCNickPDU> uCNickListener;
+
     private Thread udpThread;
     private Thread tcpThread;
     private HashSet<Integer>seqNumbs;
@@ -138,10 +141,6 @@ public class Network {
                             udp.setTimer(udpTimer);
                         }
 
-                        /*Update list*/
-//                        for(ServerData server:pdu.getServerData()) {
-//                            serverListener.update(server);
-//                        }
                         sListListener.update(pdu);
                     }
                     // else if (seqNr = 0) then reset hashset
@@ -191,7 +190,7 @@ public class Network {
 	}
 
 	public void changeNick(String nick) {
-
+	    tcp.sendPDU(new ChNickPDU(nick));
 	}
 
 	private void watchServer() {
@@ -212,23 +211,28 @@ public class Network {
 		                nicksListener.update(nick);
 		            }
 	                break;
-
-		        case MESSAGE:
-		        	//msgListener.update(((MessagePDU) pdu).getMessageData());
+		        case MESSAGE: System.out.println("Network: message");
 		        	msgListener.update(((MessagePDU) pdu));
 		            break;
-
 		        case UJOIN:
 		            UJoinPDU ujoinPDU = (UJoinPDU) pdu;
 		            uJoinListener.update(ujoinPDU);
 		            break;
 		        case ULEAVE:
-		        	
+		            ULeavePDU uLeavePDU = (ULeavePDU) pdu;
+		            uLeaveListener.update(uLeavePDU);
 		        	break;
+		        case UCNICK:
+		            UCNickPDU uCNickPDU = (UCNickPDU) pdu;
+                    uCNickListener.update(uCNickPDU);
+		            break;
 		        }
+
 		    } else {
-		        tcp.disconnect();
-		        tcpErrorListener.update("Disconnect: Invalid pdu");
+		        if(tcp.isConnected()) {
+	                tcp.disconnect();
+	                tcpErrorListener.update("Invalid pdu");
+		        }
 		    }
 		}
 	}
@@ -253,6 +257,10 @@ public class Network {
 
     public void addULeaveListener(Listener<ULeavePDU> uLeaveListener) {
         this.uLeaveListener = uLeaveListener;
+    }
+
+    public void addUCNickListener(Listener<UCNickPDU> uCNickListener) {
+        this.uCNickListener = uCNickListener;
     }
 
     public void addTCPErrorListener(Listener<String> tcpErrorListener) {

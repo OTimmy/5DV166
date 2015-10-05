@@ -1,48 +1,44 @@
 package model.network.pdu.types;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 
+import model.network.pdu.DateUtils;
 import model.network.pdu.PDU;
 import model.network.pdu.OpCode;
 public class ULeavePDU extends PDU{
 	private final int NICK_LENGTH = 1;
-	private final int TIME_STAMP  = 4;
-	private final int NICK_INDEX  = 8;
-	private final int ROW_SIZE    = 4;
+	private final int TIME_STAMP_START  = 4;
+	private final int TIME_LENGTH = 4;
 	private String nick;
-	
+	private Date date;
 	public ULeavePDU(byte[] bytes) {
 		parse(bytes);
 	}
-	
-	
+
+
 	private void parse(byte[] bytes) {
-		
-		//time stamp
-		int start  = TIME_STAMP;
-		int length = ROW_SIZE;
-		int end    = start + length;
-		
-		byte[] timeBytes = new byte[ROW_SIZE];
-		for(int i = 0,j = start; j < end; i++, j++) {
-			timeBytes[i] = bytes[j];
-		}
-		
+
+		int seconds = (bytes[4] & 0xff) << 8 | (bytes[5] & 0xff) << 8 | (bytes[6] & 0xff)
+		              | (bytes[7] & 0xff) << 8;
+		date = DateUtils.toDate(seconds);
+
+
 		//Nick name
-		start  = end;
-		length = (bytes[NICK_LENGTH] & 0xff);
-		end   += length;
-		
+		int start  = TIME_STAMP_START + TIME_LENGTH;
+		int length = (bytes[NICK_LENGTH] & 0xff);
+		int end   = TIME_STAMP_START + TIME_LENGTH + length;
+
 		byte[] nickBytes = new byte[length];
 		for(int i = 0, j = start; j < end;i++,j++) {
 			nickBytes[i] = (byte) (bytes[j]);
 		}
-		
+
 		nick = new String(nickBytes,StandardCharsets.UTF_8);
-		
+
 	}
-	
+
 	@Override
 	public byte[] toByteArray() {
 		// TODO Auto-generated method stub
@@ -59,9 +55,13 @@ public class ULeavePDU extends PDU{
 	public byte getOpCode() {
 		return OpCode.ULEAVE.value;
 	}
-	
+
 	public String getNick() {
 		return nick;
+	}
+
+	public Date getDate() {
+	    return date;
 	}
 
 }

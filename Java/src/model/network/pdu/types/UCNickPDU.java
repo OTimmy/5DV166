@@ -1,9 +1,10 @@
 package model.network.pdu.types;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import model.network.pdu.DateUtils;
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 
@@ -26,44 +27,36 @@ public class UCNickPDU extends PDU{
 
     private void parse(byte[] bytes ) {
 
-        //time stamp
-        int timeStart = TIME_STAMP_START;
-        byte[] timeBytes = new byte[TIME_STAMP_LENGTH];
+        //Time stamp
+        int seconds = (bytes[4] & 0xff) << 8 | (bytes[5] & 0xff) << 8
+                      | (bytes[6] & 0xff) <<8 | (bytes[7] & 0xff) << 8;
 
-        for(int i = 0,j = timeStart; j < (timeStart + TIME_STAMP_LENGTH); i++,j++ ) {
-            timeBytes[i] = bytes[j];
-        }
-
-        SimpleDateFormat format  = new SimpleDateFormat("yyy.MM.dd");
-        try {
-            date = format.parse(timeBytes.toString());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-
+        date = DateUtils.toDate(seconds);
 
         //Old nick
         int length = (bytes[NICK_LENGTH1] & 0xff);
-        int start  = (bytes[NICK_START] & 0xff);
+        int start  = NICK_START;
         int end = length + start;
 
-        String nick = "";
-        for(int i = start; i < end; i++, start++) {
-            nick += (char) (bytes[i] & 0xff);
+        byte[] nickBytes = new byte[length];
+        for(int i = 0, j = start; j < end; j++,i++, start++) {
+            nickBytes[i] = bytes[j];
         }
+
+        oldNick = new String(nickBytes,StandardCharsets.UTF_8);
 
         start += padLengths(length);
 
-        oldNick = nick;
-
         //New nick
         length = (bytes[NICK_LENGTH2] & 0xff);
-        end = (bytes[NICK_LENGTH2] & 0xff) + start;
-        nick = "";
-        for(int i = start; i < end; i++, start++) {
-            nick += (char) (bytes[i] & 0xff);
+        end = length + start;
+
+        nickBytes = new byte[length];
+        for(int i= 0,j= start; j < end; i++, j++, start++) {
+            nickBytes[i] = bytes[j];
         }
+
+        newNick = new String(nickBytes,StandardCharsets.UTF_8);
 
     }
 
@@ -81,7 +74,6 @@ public class UCNickPDU extends PDU{
 
     @Override
     public byte getOpCode() {
-        // TODO Auto-generated method stub
         return OpCode.UCNICK.value;
     }
 

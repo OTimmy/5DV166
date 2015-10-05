@@ -13,13 +13,14 @@ import javax.swing.JTable;
 import view.GUI;
 
 import model.network.Network;
+import model.network.ServerData;
+import model.network.pdu.DateUtils;
+import model.network.pdu.types.UCNickPDU;
 import model.network.pdu.types.UJoinPDU;
 import model.network.pdu.types.ULeavePDU;
 import model.network.pdu.types.SListPDU;
 import model.network.pdu.types.MessagePDU;
 
-
-//TODO send the whol god damn pdu trought the listener
 /**
  * <h1>Listener.java</h1>
  *  Manage the flow between the gui and the underlying model
@@ -54,32 +55,26 @@ public class Controller {
 
 		net.addServerListener(new controller.Listener<SListPDU>() {
 
-//			@Override
-//			public void update(ServerData server) {
-//			   if(server != null) {
-//	                gui.addToServerList(server);
-//			   }
-//			}
-
 			@Override
 			public void update(SListPDU t) {
-				// TODO Auto-generated method stub
-				
+			    for(ServerData server : t.getServerData()) {
+			        gui.addToServerList(server);
+			    }
 			}
 
 		});
 
 		net.addMessageListener(new controller.Listener<MessagePDU>() {
 
-//			@Override
-//			public void update(MessageData msg) {
-//				gui.printOnMessageBoard(msg.getNickname()+":"+msg.getMsg());
-//			}
-
 			@Override
 			public void update(MessagePDU t) {
-				// TODO Auto-generated method stub
-				
+			    System.out.println("Message");
+			    String date = DateUtils.format(t.getDate());
+			    t.getMsg();
+			    t.getNick();
+			    gui.printOnMessageBoard(date +"<"+t.getNick()+"> "
+			                            +t.getMsg());
+
 			}
 
 		});
@@ -89,6 +84,7 @@ public class Controller {
             @Override
             public void update(String t) {
                 System.out.println(t);
+                gui.printOnMessageBoard("Error:"+t);
                 gui.setConnectServerButton("Connect");
                 nicks = new ArrayList<String>();
                 nicks.clear();
@@ -101,23 +97,16 @@ public class Controller {
             public void update(String t) {
                 System.out.println(t);
                 gui.setConnectNameServerButton("Connect");
-                //gui.printErrorBrowser(t);
+                gui.printErrorBrowser(t);
             }
         });
 
 		net.addNicksListener(new Listener<String>() {
-//
-//            @Override
-//            public void update(String t) {
-//                System.out.println("Nick: "+ t);
-//                gui.addNick(t);
-//                nicks.add(t);
-//            }
 
 			@Override
 			public void update(String t) {
-				// TODO Auto-generated method stub
-				
+			    gui.addNick(t);
+			    nicks.add(t);
 			}
 
 		});
@@ -126,8 +115,10 @@ public class Controller {
 
 			@Override
 			public void update(UJoinPDU t) {
-				// TODO Auto-generated method stub
-				
+			    String date = DateUtils.format(t.getDate());
+			    gui.printOnMessageBoard(date+" "+t.getNick() + " has joined");
+			    gui.addNick(t.getNick());
+			    nicks.add(t.getNick());
 			}
 
 		});
@@ -136,9 +127,20 @@ public class Controller {
 
 			@Override
 			public void update(ULeavePDU t) {
-				// TODO Auto-generated method stub
-				
+			    String date = DateUtils.format(t.getDate());
+			    gui.printOnMessageBoard(date+" "+t.getNick()+" has left");
 			}
+
+		});
+
+		net.addUCNickListener(new Listener<UCNickPDU>() {
+
+            @Override
+            public void update(UCNickPDU t) {
+                String date = DateUtils.format(t.getDate());
+                gui.printOnMessageBoard(date + " "+ t.getOldNick()
+                                       +" has changed to " + t.getNewNick() );
+            }
 
 		});
 	}
@@ -178,6 +180,7 @@ public class Controller {
 			public void actionPerformed(ActionEvent e) {
 
 			    if(!serverConnected) {
+			        gui.clearMessageBoard();
 			        String address = gui.getServerAddress();
 			        int port = new Integer(gui.getServerPort());
 			        String nick = gui.getNick();
@@ -185,8 +188,11 @@ public class Controller {
 			        serverConnected = net.ConnectToServer(address, port, nick);
 
 			    } else {
+
 			        serverConnected = false;
 			        net.disconnectServer();
+			        gui.clearNicks();
+			        nicks.clear();
 			    }
 
 			    if(!serverConnected) {
@@ -204,6 +210,7 @@ public class Controller {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 			    nick = gui.getNick();
+			    System.out.println("Nick: "+nick);
 			    net.changeNick(nick);
 			}
 		});
@@ -244,7 +251,7 @@ public class Controller {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                // TODO Auto-generated method stub
+
                 JTable table = (JTable) e.getSource();
                 int row = table.getSelectedRow();
 

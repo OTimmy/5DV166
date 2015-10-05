@@ -1,17 +1,40 @@
 package model.network.pdu.types;
 
+import model.network.pdu.ByteSequenceBuilder;
+import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 
-public class ChNickPDU {
+public class ChNickPDU extends PDU{
 
     private byte bytes[];
     public ChNickPDU(String nickname) {
-
+        bytes = parse(nickname);
     }
 
-    private byte[] parse() {
-        byte bytes[] = new byte[PDU.pduSize()];
-        return bytes;
+    private byte[] parse(String name) {
+        byte[] nickBytes = name.getBytes();
+        ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.CHNICK.value,
+                                                       (byte) nickBytes.length);
+        builder.pad();
+        builder.append(nickBytes);
+        builder.pad();
 
+        return builder.toByteArray();
+    }
+
+    @Override
+    public byte[] toByteArray() {
+        return bytes;
+    }
+
+    @Override
+    public int getSize() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public byte getOpCode() {
+        return OpCode.CHNICK.value;
     }
 }
