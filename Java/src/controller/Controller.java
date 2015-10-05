@@ -12,11 +12,13 @@ import javax.swing.JTable;
 
 import view.GUI;
 
-import model.network.MessageData;
 import model.network.Network;
-import model.network.ServerData;
 import model.network.pdu.types.UJoinPDU;
 import model.network.pdu.types.ULeavePDU;
+import model.network.pdu.types.SListPDU;
+import model.network.pdu.types.MessagePDU;
+
+
 //TODO send the whol god damn pdu trought the listener
 /**
  * <h1>Listener.java</h1>
@@ -50,22 +52,34 @@ public class Controller {
 	 */
 	private void initNetworkListener(Network net) {
 
-		net.addServerListener(new controller.Listener<ServerData>() {
+		net.addServerListener(new controller.Listener<SListPDU>() {
+
+//			@Override
+//			public void update(ServerData server) {
+//			   if(server != null) {
+//	                gui.addToServerList(server);
+//			   }
+//			}
 
 			@Override
-			public void update(ServerData server) {
-			   if(server != null) {
-	                gui.addToServerList(server);
-			   }
+			public void update(SListPDU t) {
+				// TODO Auto-generated method stub
+				
 			}
 
 		});
 
-		net.addMessageListener(new controller.Listener<MessageData>() {
+		net.addMessageListener(new controller.Listener<MessagePDU>() {
+
+//			@Override
+//			public void update(MessageData msg) {
+//				gui.printOnMessageBoard(msg.getNickname()+":"+msg.getMsg());
+//			}
 
 			@Override
-			public void update(MessageData msg) {
-				gui.printOnMessageBoard(msg.getNickname()+":"+msg.getMsg());
+			public void update(MessagePDU t) {
+				// TODO Auto-generated method stub
+				
 			}
 
 		});
@@ -93,16 +107,22 @@ public class Controller {
 
 		net.addNicksListener(new Listener<String>() {
 //
-            @Override
-            public void update(String t) {
-                System.out.println("Nick: "+ t);
-                gui.addNick(t);
-                nicks.add(t);
-            }
+//            @Override
+//            public void update(String t) {
+//                System.out.println("Nick: "+ t);
+//                gui.addNick(t);
+//                nicks.add(t);
+//            }
+
+			@Override
+			public void update(String t) {
+				// TODO Auto-generated method stub
+				
+			}
 
 		});
 
-		net.addUserJoinListener(new Listener<UJoinPDU>() {
+		net.addUJoinListener(new Listener<UJoinPDU>() {
 
 			@Override
 			public void update(UJoinPDU t) {
@@ -112,7 +132,7 @@ public class Controller {
 
 		});
 
-		net.addUserLeaveListener(new Listener<ULeavePDU>() {
+		net.addULeaveListener(new Listener<ULeavePDU>() {
 
 			@Override
 			public void update(ULeavePDU t) {
@@ -121,10 +141,6 @@ public class Controller {
 			}
 
 		});
-
-
-
-		//net.addUserJ
 	}
 
 	private void initGUIActionListener() {

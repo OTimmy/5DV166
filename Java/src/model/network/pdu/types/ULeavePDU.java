@@ -20,9 +20,9 @@ public class ULeavePDU extends PDU{
 	private void parse(byte[] bytes) {
 		
 		//time stamp
-		int start = TIME_STAMP;
+		int start  = TIME_STAMP;
 		int length = ROW_SIZE;
-		int end   = start + length;
+		int end    = start + length;
 		
 		byte[] timeBytes = new byte[ROW_SIZE];
 		for(int i = 0,j = start; j < end; i++, j++) {

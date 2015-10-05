@@ -32,12 +32,12 @@ public class Network {
     private NetworkTCP tcp;
     private Listener<String> udpErrorListener;
     private Listener<String> tcpErrorListener;
-    private Listener<ServerData> serverListener;
-    private Listener<MessageData> msgListener;
+    private Listener<SListPDU> sListListener;
+    private Listener<MessagePDU> msgListener;
     private Listener<String> nicksListener;
     private Listener<UJoinPDU> uJoinListener;
     private Listener<ULeavePDU> uLeaveListener;
-    private Listener<String> userLeaveListener;
+   
     private Thread udpThread;
     private Thread tcpThread;
     private HashSet<Integer>seqNumbs;
@@ -139,9 +139,10 @@ public class Network {
                         }
 
                         /*Update list*/
-                        for(ServerData server:pdu.getServerData()) {
-                            serverListener.update(server);
-                        }
+//                        for(ServerData server:pdu.getServerData()) {
+//                            serverListener.update(server);
+//                        }
+                        sListListener.update(pdu);
                     }
                     // else if (seqNr = 0) then reset hashset
                 } else {
@@ -213,7 +214,8 @@ public class Network {
 	                break;
 
 		        case MESSAGE:
-		        	msgListener.update(((MessagePDU) pdu).getMessageData());
+		        	//msgListener.update(((MessagePDU) pdu).getMessageData());
+		        	msgListener.update(((MessagePDU) pdu));
 		            break;
 
 		        case UJOIN:
@@ -233,16 +235,16 @@ public class Network {
 
 
 
-	public void addServerListener(Listener<ServerData> serverListener) {
-		this.serverListener = serverListener;
+	public void addServerListener(Listener<SListPDU> sListListener) {
+		this.sListListener = sListListener;
 	}
 
-	public void addMessageListener(Listener<MessageData> msgListener) {
+	public void addMessageListener(Listener<MessagePDU> msgListener) {
 		this.msgListener = msgListener;
 	}
 
-    public void addNicksListener(Listener<String> nickListener) {
-        this.nicksListener = nickListener;
+    public void addNicksListener(Listener<String> nicksListener) {
+        this.nicksListener = nicksListener;
     }
 
     public void addUJoinListener(Listener<UJoinPDU> uJoinListener) {
