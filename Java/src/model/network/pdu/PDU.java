@@ -13,9 +13,10 @@ public abstract class PDU {
         byte[] bytes = new byte[pduBuffSize];
 
         if(inStream != null) {
+           // inStream.read
         	inStream.read(bytes,0,bytes.length);
         	OpCode op = OpCode.getOpCodeBy(bytes[0]);
-        	System.out.println("PDU value: " +op.value);
+//        	System.out.println("PDU value: " +op.value);
         	switch(op) {
 
         	case MESSAGE:
@@ -24,7 +25,7 @@ public abstract class PDU {
         	    if(msgPDU.isValid()) {
         	        return msgPDU;
         	    }
-
+        	    System.out.println("Invalid message pdu");
         	    break;
         	case NICKS:
 
@@ -33,7 +34,7 @@ public abstract class PDU {
         	    if(nicksPDU.isValid()) {
         	        return nicksPDU;
         	    }
-
+        	    System.out.println("Invalid nicks pdu");
         	    break;
         	case SLIST:
         	    SListPDU sListPDU = new SListPDU(bytes);
@@ -61,7 +62,7 @@ public abstract class PDU {
 
     /**
      *
-     * @return 0 for correct padding or numb
+     * @return return the correct number of padding.
      */
     public static int padLengths(int length) {
         return (4 - length % 4) % 4;

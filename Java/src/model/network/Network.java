@@ -174,20 +174,23 @@ public class Network {
 	}
 
 	public void disconnectServer() {
+	    //if(! tcp.isConnected()) {
+	        tcp.disconnect();
+	        try {
+	            System.out.println("Disconnecting sto server");
+	            //if(!tcp.isConnected()) {
+	                tcpThread.interrupt();
+	            //}
+	            tcpThread.join();
 
-		tcp.disconnect();
-		try {
-		    System.out.println("Disconnecting sto server");
-		    tcpThread.interrupt();
-		    tcpThread.join();
+	            System.out.println("Disconnecting sto server");
 
-			System.out.println("Disconnecting sto server");
-
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			//tcpErrorListener.update(e.getMessage());
-		}
-		System.out.println("Disconnecting to server");
+	        } catch (InterruptedException e) {
+	            e.printStackTrace();
+	            //tcpErrorListener.update(e.getMessage());
+	        }
+	        System.out.println("Disconnecting to server");
+	    //}
 	}
 
 	public void SendMessage(String msg, String nick) {

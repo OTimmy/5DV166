@@ -18,10 +18,10 @@ public class SListPDU extends PDU{
 	private boolean validFlag;
 
 	public SListPDU(byte[] bytes) {
-	    this.bytes = bytes;
 	    validFlag = true;
 
 	    servers = parse(bytes);
+
 	}
 
 	/**
@@ -53,18 +53,16 @@ public class SListPDU extends PDU{
 	        //start index for server name
 	        index += 8;
 	        // Getting servers name
-	        String serverName =  "";
+
 	        byte[] nameBytes = new byte[nameLength];
 	        for(int j = 0,k = index; k < (index + nameLength);j++,k++) {
-	            //serverName += (char) (bytes[j] & 0xff);
 	            nameBytes[j] = (byte) (bytes[k] &0xff);
 	        }
-	        serverName = new String(nameBytes,StandardCharsets.UTF_8);
+	        String serverName = new String(nameBytes,StandardCharsets.UTF_8);
 
 	        //Padding for name of server is done correctly
-	        if(!checkPadding(index + nameLength,nameLength)) {
+	        if(!checkPadding(bytes,index + nameLength,nameLength)) {
 	            validFlag = false;
-	            return null;
 	        }
 
 	        index += nameLength + padLengths(nameLength);
@@ -96,7 +94,7 @@ public class SListPDU extends PDU{
 		return OpCode.SLIST.value;
 	}
 
-    private boolean checkPadding(int start,int length) {
+    private boolean checkPadding(byte[] bytes, int start,int length) {
 
        int padded = padLengths(length);
 

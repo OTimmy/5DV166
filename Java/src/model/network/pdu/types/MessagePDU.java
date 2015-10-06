@@ -6,7 +6,6 @@ import java.util.Date;
 
 import model.network.pdu.ByteSequenceBuilder;
 import model.network.pdu.Checksum;
-import model.network.pdu.DateUtils;
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 
@@ -24,12 +23,9 @@ public class MessagePDU extends PDU{
     private Date date;
 
     public MessagePDU(byte[] bytes) {
-        //this.bytes = bytes;
         validFlag = true;
         parseIn(bytes);
-        //Always true
-        validFlag = true;
-
+    //    validFlag = true;
     }
 
 	public MessagePDU(String message) {
@@ -50,7 +46,6 @@ public class MessagePDU extends PDU{
 	    long seconds = (bytes[8] & 0xff) << 24 | (bytes[9] & 0xff) << 16
 	                  | (bytes[10] &0xff) << 8 | (bytes[11] & 0xff);
 
-	    //date = DateUtils.toDate(seconds);
 	    date = new Date(seconds * 1000);
 
 	    //Message
@@ -71,7 +66,6 @@ public class MessagePDU extends PDU{
 	    }
 	    nick = new String(nickBytes, StandardCharsets.UTF_8);
 
-
 	}
 
 	private byte[] parseOut(String msg) {
@@ -80,9 +74,11 @@ public class MessagePDU extends PDU{
 		ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.MESSAGE.value,
 									  PAD, PAD,(byte)0);
 
-		byte[] msgBytes = msg.getBytes();
+
+		byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
+		System.out.println("Message out length: "+ msgBytes.length);
 		//msg length to two bytes, then pad.
-		builder.appendShort((byte) msgBytes.length);
+		builder.appendShort((short) msgBytes.length);
 		//pad remaining 2 bytes
 		builder.pad();
 
@@ -95,13 +91,10 @@ public class MessagePDU extends PDU{
 		//padding
 		builder.pad();
 
-
 		//Done
 		byte[] bytes = builder.toByteArray();
 
-
 		bytes[3] = Checksum.computeChecksum(bytes);
-
 
 	    return bytes;
 	}
@@ -111,35 +104,41 @@ public class MessagePDU extends PDU{
 	 * @param start of padding, length of message or nicks
 	 * @return true if padding is correct otherwise false.
 	 */
-	public boolean checkPadding(byte[] bytes) {
+	 private boolean checkPadding(byte[] bytes) {
 
 	    if((bytes[1] != 0 || bytes[6] != 0 || bytes[7] != 0)) {
 	        return false;
 	    }
 
-        int msgLength  = (int) (bytes[4]<<8 & 0xff) | ( bytes[5] & 0xff);
+        int msgLength  = (int) (bytes[4]<<8  & 0xffff) | ( bytes[5] &  0xffff);
         int msgStart   = 12;
 
+
+        int msgPaddingStart = msgLength + msgStart;
+
 	    //message padding
-	    if(!checkStringPadding(bytes, msgStart,msgLength)) {
+	    if(!checkStringPadding(bytes, msgPaddingStart,msgLength)) {
 	        return false;
 	    }
 
 	    int nickLength = (int) bytes[2];
-        int nickStart  = msgStart + padLengths(msgLength);
+        int nickStart  = msgStart + msgLength + padLengths(msgLength);
 
-	    if(!checkStringPadding(bytes, nickStart,nickLength)) {
+        int nickPaddingStart = nickLength + nickStart;
+
+	    if(!checkStringPadding(bytes, nickPaddingStart,nickLength)) {
 	        return false;
 	    }
 
 	    return true;
 	}
 
-	private boolean checkStringPadding(byte[] bytes, int start, int length) {
-        int end = start + padLengths(length);
+	private boolean checkStringPadding(byte[] bytes, int start,  int length) {
 
-        for(;start < end; start++ ) {
-            if(bytes[start] != 0) {
+	    int endOfPadding = start + padLengths(length);
+
+        for(int i  = start;i < endOfPadding; i++ ) {
+            if(bytes[i] != 0) {
                 return false;
             }
         }

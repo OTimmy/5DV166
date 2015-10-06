@@ -15,38 +15,38 @@ public class UJoinPDU extends PDU{
 
     private Date date;
     private String nick;
+    private boolean valid;
 
     public UJoinPDU(byte[] bytes) {
         parser(bytes);
-
     }
 
     private void parser(byte[] bytes) {
-        for(int i = 0; i < 40; i++) {
-            System.out.println(bytes[i]);
-        }
-        //Time stamp
-        byte[] timeBytes = new byte[TIME_STAMP_LENGTH];
-        int end = TIME_STAMP_START + TIME_STAMP_LENGTH;
 
-        long seconds = ((bytes[4]& 0xff) << 24  ) | ((bytes[5] & 0xff) << 16)
-                       | ((bytes[6] & 0xff) << 8) | ((bytes[7] & 0xff));
-
-        date = new Date(seconds);
-
-
-        //Nick
         int nickLength = (bytes[NICK_LENGTH_BYTE] & 0xff);
 
-        byte[] nickBytes = new byte[nickLength];
-        end = nickLength + NICK_START;
+        valid = checkPadding(bytes,nickLength);
 
-        for(int i = 0, j = NICK_START; j < end; i++,j++) {
-            nickBytes[i]= (byte) (bytes[j]& 0xff) ;
+
+        if(valid) {
+
+            //Time stamp
+            int end = TIME_STAMP_START + TIME_STAMP_LENGTH;
+
+            long seconds = ((bytes[4]& 0xff) << 24  ) | ((bytes[5] & 0xff) << 16)
+                           | ((bytes[6] & 0xff) << 8) | ((bytes[7] & 0xff));
+
+            date = new Date(seconds * 1000);
+
+            //Nick
+            byte[] nickBytes = new byte[nickLength];
+            end = nickLength + NICK_START;
+
+            for(int i = 0, j = NICK_START; j < end; i++,j++) {
+                nickBytes[i]= (byte) (bytes[j]& 0xff) ;
+            }
+            nick = new String(nickBytes, StandardCharsets.UTF_8);
         }
-        nick = new String(nickBytes, StandardCharsets.UTF_8);
-
-
 
     }
 
@@ -58,9 +58,20 @@ public class UJoinPDU extends PDU{
         return date;
     }
 
-    public boolean isValid() {
+    public boolean checkPadding(byte[] bytes, int nickLength) {
+
+        int endOfNick = NICK_START + nickLength;
+        int padded = endOfNick + padLengths(nickLength);
+
+        for(int i = endOfNick; i < padded; i++) {
+            if(bytes[i] != 0) {
+                return false;
+            }
+        }
+
         return true;
     }
+
 
     @Override
     public byte[] toByteArray() {
@@ -79,4 +90,7 @@ public class UJoinPDU extends PDU{
         return OpCode.UJOIN.value;
     }
 
+    public boolean isValid() {
+        return valid;
+    }
 }

@@ -31,6 +31,7 @@ import model.network.pdu.types.MessagePDU;
  * @author c12ton
  * @version 0.0
  */
+//TODO swing invoke utilities later, for updating components
 public class Controller {
 
     private final int KEY_ENTER = 10;
@@ -307,7 +308,7 @@ public class Controller {
 		        gui.clearNicks();
 		        for(String nick:nicks) {
 		            gui.addNick(nick);
-		        }	        	
+		        }
 	        }
 	    }
 	}

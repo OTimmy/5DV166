@@ -56,13 +56,15 @@ public class NetworkTCP {
      */
     public synchronized void disconnect() {
         try {
+            if(outStream != null) {
+                QuitPDU quitPDU = new QuitPDU();
+                outStream.write(quitPDU.toByteArray(), 0, quitPDU.getSize());
+                outStream.flush();
+                outStream.close();
+                inStream.close();
+                socket.close();
+            }
 
-            QuitPDU quitPDU = new QuitPDU();
-            outStream.write(quitPDU.toByteArray(), 0, quitPDU.getSize());
-            outStream.flush();
-            outStream.close();
-            inStream.close();
-            socket.close();
         } catch(SocketException e) {
             //IGNORE becuase of disconnect
         } catch (IOException e) {

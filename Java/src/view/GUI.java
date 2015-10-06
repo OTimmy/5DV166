@@ -1,5 +1,6 @@
 package view;
 
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -12,7 +13,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -23,14 +23,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
 
 
 import model.network.ServerData;
-//TODO add listener for jtable, so that selected row is showed in correct fields
+
 //TODO set limit for characters in chat window
-//TODO add support for nicks to be displayed
 //TODO when connected, ignore talbe listener
 /**
  * @author c12ton
@@ -217,18 +217,15 @@ public class GUI {
 		JPanel chatPanel  = buildChatPanelPanel();
 		JPanel browsPanel = buildBrowsPanel();
 
-		//tabbedPane.addTab("Browse", new JLabel("Stuff"));
 		tabbedPane.addTab("Browse", browsPanel);
 		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 
 
 
 		tabbedPane.addTab("Chat", chatPanel);
-		//tabbedPane.addTab("Chat", new JLabel("Label"));
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 		tabbedPane.setFocusCycleRoot(true);
 
-		//panel.add(new JButton("Refresh"));
 		panel.add(tabbedPane,BorderLayout.CENTER);
 
 		return panel;
@@ -244,7 +241,6 @@ public class GUI {
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(panelSize,
 										     panelSize));
-		//panel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 
 		/*Message board panal*/
 		int msgPanelSize  = 370;
@@ -253,7 +249,6 @@ public class GUI {
 
 		JPanel msgPanel = new JPanel(new BorderLayout());
 		msgPanel.setPreferredSize(new Dimension(msgPanelSize,msgPanelSize));
-		//msgPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
 		msgTextArea = new JTextArea(1,2);
 		msgTextArea.setWrapStyleWord(true);
@@ -324,7 +319,6 @@ public class GUI {
 		/*Server panel*/
 		JPanel northPanel = new JPanel(new BorderLayout());
 		northPanel.setPreferredSize(new Dimension(tablePanelSize,tablePanelSize));
-		//northPanel.setBorder(BorderFactory.createLineBorder(Color.yellow));
 
 		String[] columns = {"Address","Port","Connected","Topic"};
 		Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
@@ -339,7 +333,6 @@ public class GUI {
 		southPanel.setLayout(new BoxLayout(southPanel,BoxLayout.PAGE_AXIS));
 
 		southPanel.setPreferredSize(new Dimension(southSize,southSize));
-		//southPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
 		//Error label
 		browsErrLabel = new JLabel("");
@@ -358,88 +351,131 @@ public class GUI {
 	}
 
     public void addToServerList(ServerData server) {
-        synchronized(tableModel) {
-            int row = tableModel.getRowCount() -1;
-            String value = (String)tableModel.getValueAt(row, 0);
+        int row = tableModel.getRowCount() -1;
+        String value = (String)tableModel.getValueAt(row, 0);
 
-            String address   = server.getAddress();
-            String port      = Integer.toString(server.getPort());
-            String nrClients = Integer.toString(server.getNrClients());
-            String name      = server.getName();
+        String address   = server.getAddress();
+        String port      = Integer.toString(server.getPort());
+        String nrClients = Integer.toString(server.getNrClients());
+        String name      = server.getName();
 
-            Object[] rowData = {address,port,nrClients,name};
+        Object[] rowData = {address,port,nrClients,name};
 
-            //If last value is null then find the first empty (null) in table
-            if(value == null) {
-                int index = 0;
-                for(; index < tableModel.getRowCount()
+        //If last value is null then find the first empty (null) in table
+        if(value == null) {
+            int index = 0;
+            for(; index < tableModel.getRowCount()
                         && tableModel.getValueAt(index, 0) != null; index++);
 
-                tableModel.insertRow(index, rowData);
-                tableModel.removeRow(tableModel.getRowCount() -1);
-            } else { //if last value is not null  then add a new row
-                tableModel.addRow(rowData);
-            }
+            tableModel.insertRow(index, rowData);
+            tableModel.removeRow(tableModel.getRowCount() -1);
+        } else { //if last value is not null  then add a new row
+            tableModel.addRow(rowData);
         }
     }
 
     public void clearTable() {
-        synchronized(tableModel) {
-            String[] columns = {"Address","Port","Connected","Topic"};
-            Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
-        	tableModel.setDataVector(data, columns);
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                String[] columns = {"Address","Port","Connected","Topic"};
+                Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
+                tableModel.setDataVector(data, columns);
+            }
+        });
     }
 
-    public void addNick(String nick) {
-        usrsTextArea.append(nick +"\n");
+    public void addNick(final String nick) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                usrsTextArea.append(nick +"\n");
+            }
+        });
+
     }
 
     public void clearNicks() {
-        usrsTextArea.setText("");
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                usrsTextArea.setText("");
+            }
+        });
+
     }
 
-    public void printOnMessageBoard(String msg) {
-	    synchronized(msgTextArea) {
-	        msgTextArea.append(msg +"\n");
-	    }
+    public void printOnMessageBoard(final String msg) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                msgTextArea.append(msg +"\n");
+            }
+        });
 
     }
 
     public void clearMessageBoard() {
-        synchronized(msgTextArea) {
-            msgTextArea.setText("");
-       }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                msgTextArea.setText("");
+            }
+        });
     }
 
 
-    public void setServerField(String  address, String port) {
-        serverAddressField.setText(address);
-        serverPortField.setText(port);
+    public void setServerField(final String  address, final String port) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                serverAddressField.setText(address);
+                serverPortField.setText(port);
+            }
+        });
+
     }
 
-    public void setConnectNameServerButton(String text) {
-        connectNameServerButton.setText(text);
+    public void setConnectNameServerButton(final String text) {
+        SwingUtilities.invokeLater(new Runnable() {
 
-        //if disconnect
-        // then make field gray
+            @Override
+            public void run() {
+                connectNameServerButton.setText(text);
+            }
+        });
     }
 
-    public void setConnectServerButton(String text) {
-        connectServerButton.setText(text);
+    public void setConnectServerButton(final String text) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                connectServerButton.setText(text);
+            }
+        });
     }
 
     public String getSendTextArea() {
+        String text = sendTextArea.getText();
+        SwingUtilities.invokeLater(new Runnable() {
 
-	    String text = sendTextArea.getText();
-		sendTextArea.setText("");
-		sendTextArea.setCaretPosition(0);
-		return text;
+            @Override
+            public void run() {
+                sendTextArea.setText("");
+                sendTextArea.setCaretPosition(0);
+            }
+        });
+
+	    return text;
 	}
-
-    public void sendTextReset() {
-
-    }
 
 	public String getNameServerAddress() {
 	    return nameServerAddressField.getText();
@@ -463,10 +499,8 @@ public class GUI {
 
 	public String[] getServerAtRow(int row) {
 	    String[] server = new String[2];
-	  //  synchronized(tableModel) {
 	        server[0] = (String) tableModel.getValueAt(row, 0);
 	        server[1] = (String) tableModel.getValueAt(row, 1);
-	    //}
 
 	    return server;
 	}
