@@ -1,7 +1,7 @@
 /*
  * server.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 28/9-15.
+ * Last update: 7/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.h is the header file for the server program.
@@ -66,6 +66,16 @@
  * Notes: Frees dynamically allocated resources given function.
  */
 void fatal_error(char *pmsg, char *msg);
+
+/*
+ * parse_arguments: Parse the input arguments, including the options
+ *      (preceded by -) and set the corresponding values.
+ * Params: argc = the number of arguments in argv.
+ *         argv = array of strings from command line input.
+ * Returns:
+ * Notes: Can alter the value of this files global variables.
+ */
+void parse_arguments(int argc, char *argv[]);
 
 #endif /* SERVER_H_ */
 

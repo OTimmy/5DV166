@@ -1,7 +1,7 @@
 /*
  * name_server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 2/10-15.
+ * Last update: 7/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * name_server.c contains functions for connecting to the name server.
@@ -69,7 +69,7 @@ void *register_at_name_server(void *thread_data_ns)
     pdu_reg reg = thread_data.reg;
 
     int err;
-    int sockfd = connect_to_name_server(ns_name, ns_port);
+    int sockfd = connect_to_name_server(ns_name, ns_port); // ns found
     uint8_t buffer[4] = {0}; /* Same size for ACK, ALIVE and NOTREG */
 
     /* Convert pdu_reg to byte array */
@@ -88,39 +88,40 @@ void *register_at_name_server(void *thread_data_ns)
     /* Register at name server */
     for EVER // break if some global var set? if some signal sent?????????????
     {
-printf("\nPackage size: %d\n", (int) reg_arr_len);
-printf("REG OP: %d\n", reg_array[0]);
-printf("Name length: %d\n", reg_array[1]);
-printf("TCP port: %d\n", (reg_array[2] << 8) | (reg_array[3] & 0xFF));
-printf("Server name (0's for padding):\n");
-for (int i=4; i<reg_arr_len; i++)
-{
-    if  (reg_array[i] == '\0')
-    {
-        printf("0");
-    }
-    else
-    {
-        printf("%c", reg_array[i]);
-    }
-}
-printf("\n\n");
-for (int i=0; i<reg_arr_len; i++)
-{
-    printf("%c", reg_array[i]);
-}
-printf("\n\n");
-for (int i=0; i<reg_arr_len; i++)
-{
-    printf("%u ", reg_array[i]);
-}
-printf("\n\n");
+/*printf("\nPackage size: %d\n", (int) reg_arr_len);*/
+/*printf("REG OP: %d\n", reg_array[0]);*/
+/*printf("Name length: %d\n", reg_array[1]);*/
+/*printf("TCP port: %d\n", (reg_array[2] << 8) | (reg_array[3] & 0xFF));*/
+/*printf("Server name (0's for padding):\n");*/
+/*for (int i=4; i<reg_arr_len; i++)*/
+/*{*/
+/*    if  (reg_array[i] == '\0')*/
+/*    {*/
+/*        printf("0");*/
+/*    }*/
+/*    else*/
+/*    {*/
+/*        printf("%c", reg_array[i]);*/
+/*    }*/
+/*}*/
+/*printf("\n\n");*/
+/*for (int i=0; i<reg_arr_len; i++)*/
+/*{*/
+/*    printf("%c", reg_array[i]);*/
+/*}*/
+/*printf("\n\n");*/
+/*for (int i=0; i<reg_arr_len; i++)*/
+/*{*/
+/*    printf("%u ", reg_array[i]);*/
+/*}*/
+/*printf("\n\n");*/
+        printf("Registering at name server...\n");
         err = send(sockfd, reg_array, reg_arr_len, 0);
-printf("Bytes sent as REG: %d\n", err);
+/*printf("Bytes sent as REG: %d\n", err);*/
         if (err < 0)
         {
             perror("send (reg)");
-            exit(EXIT_FAILURE);
+            exit(EXIT_FAILURE);// just continue??????????????????????????????
         }
         count_down = timeout; /* Reset timeout period for monitoring */
         changed_fds = read_fds; /* Reset file descriptors to monitor */
@@ -132,7 +133,7 @@ printf("Bytes sent as REG: %d\n", err);
         else /* FD_ISSET(sockfd, &read_fds) */
         {
             err = recv(sockfd, buffer, sizeof(buffer), MSG_DONTWAIT);
-printf("Bytes received as REG-ACK: %d\n", err);
+/*printf("Bytes received as REG-ACK: %d\n", err);*/
             if (err < 0)
             {
                 /* select() timed out and no ACK was received */
@@ -146,6 +147,10 @@ printf("Bytes received as REG-ACK: %d\n", err);
                     exit(EXIT_FAILURE);
                 }
             }
+            if (ACK_OP == buffer[0])
+            {
+                printf("Registration successful!\n");
+            }
             sleep(6);
         }
 
@@ -154,13 +159,13 @@ printf("Bytes received as REG-ACK: %d\n", err);
         {
             buffer[0] = ALIVE_OP;
             buffer[1] = get_nrof_clients();
-printf("\nALIVE: %d, ", buffer[0]);
-printf("%d, ", buffer[1]);
-printf("%d, ", buffer[2]);
-printf("%d, ", buffer[3]);
-printf("ID: %d\n", (buffer[2] << 8) | (buffer[3] & 0xFF));
+/*printf("\nALIVE: %d, ", buffer[0]);*/
+/*printf("%d, ", buffer[1]);*/
+/*printf("%d, ", buffer[2]);*/
+/*printf("%d, ", buffer[3]);*/
+/*printf("ID: %d\n", (buffer[2] << 8) | (buffer[3] & 0xFF));*/
             err = send(sockfd, buffer, sizeof(buffer), 0);
-printf("Bytes sent to ALIVE: %d\n", err);
+/*printf("Bytes sent to ALIVE: %d\n", err);*/
             if (err < 0)
             {
                 perror("send (alive)");
@@ -176,7 +181,7 @@ printf("Bytes sent to ALIVE: %d\n", err);
             else /* FD_ISSET(sockfd, &read_fds) */
             {
                 err = recv(sockfd, buffer, sizeof(buffer), MSG_DONTWAIT);
-printf("Bytes received as ALIVE-ACK: %d\n", err);
+/*printf("Bytes received as ALIVE-ACK: %d\n", err);*/
                 if (err < 0)
                 {
                     /* select() timed out and no ACK was received */
@@ -191,15 +196,16 @@ printf("Bytes received as ALIVE-ACK: %d\n", err);
                         exit(EXIT_FAILURE);
                     }
                 }
-printf("ACK: %d, ", buffer[0]);
-printf("%d, ", buffer[1]);
-printf("%d, ", buffer[2]);
-printf("%d, ", buffer[3]);
-printf("ID: %d\n", (buffer[2] << 8) | (buffer[3] & 0xFF));
+/*printf("ACK: %d, ", buffer[0]);*/
+/*printf("%d, ", buffer[1]);*/
+/*printf("%d, ", buffer[2]);*/
+/*printf("%d, ", buffer[3]);*/
+/*printf("ID: %d\n", (buffer[2] << 8) | (buffer[3] & 0xFF));*/
                 sleep(6); /* Only called if a message was received */
             }
         }
     }
+    printf("Left name server!\n");
     close(sockfd);
     return NULL;
 }

@@ -1,18 +1,18 @@
 /*
  * globals.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 1/10-15.
+ * Last update: 7/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.c contains global variables and functions for using them.
  */
 
 /* --- Standard headers --- */
-//#include <stdlib.h>
+#include <stdlib.h>
 //#include <stdio.h>
-//#include <time.h> /* -lrt (sometimes for glibc < 2.17) */
+#include <time.h> /* -lrt (sometimes for glibc < 2.17) */
 //#include <math.h> /* -lm */
-//#include <string.h>
+#include <string.h>
 //#include <sys/wait.h>
 /* --- Data types --- */
 //#include <stdbool.h>
@@ -37,7 +37,7 @@
 /* --- Sockets --- */
 //#include <sys/socket.h>
 //#include <netinet/in.h>
-//#include <arpa/inet.h>
+#include <arpa/inet.h>
 //#include <endian.h>
 //#include <netdb.h>
 /* --- Functions --- */
@@ -45,14 +45,15 @@
 
 /* --- Local headers --- */
 #include "globals.h"
+#include "queue.h"
 
+/* Array of connected clients (dynamic list not necessary since max 255) */
+client *clients[255]; /* Protocol limits number of clients to 255. */
 pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
-client *clients[255]; // Dynamic list not necessary since protocol
-// limits number of clients to 255.
-// add/remove client funcs
 
-pthread_mutex_t nrof_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
+/* Number of clients currently connected to the server */
 uint8_t nrof_clients = 0;
+pthread_mutex_t nrof_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 uint8_t get_nrof_clients()
 {
@@ -76,5 +77,64 @@ void decr_nrof_clients()
     nrof_clients--;
     pthread_mutex_unlock(&nrof_clients_mutex);
     return;
+}
+
+void enqueue(client *cli, pdu_data *pdu)
+{
+    pthread_mutex_lock(&cli->queue_mutex);
+    queue_enqueue(cli->send_queue, pdu);
+    pthread_mutex_unlock(&cli->queue_mutex);
+    pthread_cond_signal(&cli->queue_cond);
+    return;
+}
+
+int add_client(client *cli)
+{
+    int fail = 1;
+    pthread_mutex_lock(&clients_mutex);
+    if (get_nrof_clients() >= 255)
+    {
+        pthread_mutex_unlock(&clients_mutex);
+        return fail;
+    }
+
+    size_t nick_len = strlen(cli->nick);
+    size_t pad = pad_length(nick_len);
+    uint8_t ujoin[8 + nick_len + pad];
+    memset(ujoin, 0, sizeof(ujoin));
+    ujoin[0] = UJOIN_OP;
+    ujoin[1] = nick_len;
+
+    uint32_t unix_time = htonl(time(NULL));
+    size_t i = 4;
+    memcpy(&ujoin[i], &unix_time, sizeof(unix_time));
+    i += sizeof(unix_time);
+    memcpy(&ujoin[i], cli->nick, nick_len);
+
+    for (int i = 0; i < 255; i++)
+    {
+        if (NULL != clients[i])
+        {
+            uint8_t *ujoin_copy = malloc(sizeof(ujoin));
+            memcpy(ujoin_copy, ujoin, sizeof(ujoin));
+            pdu_data *ujoin_pdu = malloc(sizeof(pdu_data));
+            ujoin_pdu->len = sizeof(ujoin);
+            ujoin_pdu->pdu = ujoin_copy;
+            enqueue(clients[i], ujoin_pdu);
+
+/*            uint8_t ujoin_copy[sizeof(ujoin)];*/
+/*            memcpy(ujoin_copy, ujoin, sizeof(ujoin));*/
+/*            pdu_data ujoin_pdu = {sizeof(ujoin), ujoin_copy};*/
+/*            enqueue(clients[i], &ujoin_pdu);*/
+        }
+        else if (1 == fail)
+        {
+            clients[i] = cli;
+            incr_nrof_clients();
+            fail = 0;
+        }
+    }
+    pthread_mutex_unlock(&clients_mutex);
+    return fail;
 }
 

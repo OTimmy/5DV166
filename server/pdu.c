@@ -1,7 +1,7 @@
 /*
  * pdu.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 29/9-15.
+ * Last update: 7/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * pdu.c contains functions for using the PDU data types.
@@ -17,7 +17,7 @@
 /* --- Data types --- */
 //#include <stdbool.h>
 //#include <stdint.h> /* Subset of inttypes.h */
-//#include <inttypes.h> /* Fixed width integers */
+#include <inttypes.h> /* Fixed width integers */
 //#include <sys/types.h>
 //#include <limits.h>
 #include <stddef.h>
@@ -102,5 +102,28 @@ void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len)
     i += name_len;
     memset(&reg_array[i], 0, array_len - i);
     return;
+}
+
+/*
+ * reg_arr_size: Calculates the length needed for an array to store the data
+ *      contained in a pdu_reg struct, including padding to make the array
+ *      length divisible by 4 (to fit evenly in 4 byte words).
+ * Params: reg = pdu_reg struct containing the data to be stored.
+ * Returns: Length needed for an array to store the data, including padding.
+ * Notes:
+ */
+uint8_t get_checksum(uint8_t *bytes, uint32_t len)
+{
+    int sum = 0;
+    for (uint32_t i = 0; i < len; i++) // sum then % 255???
+    {
+        sum += ((int) bytes[i] & 0xFF);
+        if ((sum & 0x100) != 0)
+        {
+            sum &= 0xFF;
+            sum++;
+        }
+    }
+    return (uint8_t) ~(sum & 0xFF);
 }
 

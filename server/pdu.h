@@ -1,7 +1,7 @@
 /*
  * pdu.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 28/9-15.
+ * Last update: 7/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * pdu.h is the header file for the pdu.c file.
@@ -112,6 +112,8 @@ size_t reg_arr_size(pdu_reg reg);
  *      an argument to this function.
  */
 void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len);
+
+uint8_t get_checksum(uint8_t *bytes, uint32_t len);
 
 #endif /* PDU_H_ */
 

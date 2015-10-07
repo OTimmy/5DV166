@@ -1,7 +1,7 @@
 /*
  * doorman.h
  * Written by Joakim Sandman, October 2015.
- * Last update: 1/10-15.
+ * Last update: 5/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * doorman.h is the header file for the doorman.c file.
@@ -50,14 +50,11 @@
 //#include "globals.h"
 
 /*
- * register_at_name_server: Registers at the given name server with the given
- *      info and periodically updates the name server with the number of
- *      connected clients through heartbeats.
- * Params: thread_data_ns = reg_data pointer containing the following values.
- *      ns_name = string with the name of the name server.
- *      ns_port = string representing the port number where the name server
- *                accepts connections.
- *      reg = pdu_reg struct containing this servers name and open port nr.
+ * handle_connecting_clients: Opens the given port for clients to connect,
+ *      accepts connections and creates new threads to read each new clients
+ *      input.
+ * Params: thread_data_dm = string representing the port number where the
+ *                          server accepts connections.
  * Returns: NULL.
  * Notes:
  */
