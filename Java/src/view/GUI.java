@@ -30,6 +30,7 @@ import javax.swing.text.DefaultCaret;
 
 import model.network.ServerData;
 
+//TODO Scroll should be adjusted to frame, not static size
 //TODO set limit for characters in chat window
 //TODO when connected, ignore talbe listener
 /**
@@ -350,14 +351,11 @@ public class GUI {
 		return panel;
 	}
 
-    public void addToServerList(ServerData server) {
+    public void addToServerList(String address, String port, String nrClients,
+                                String name) {
         int row = tableModel.getRowCount() -1;
         String value = (String)tableModel.getValueAt(row, 0);
 
-        String address   = server.getAddress();
-        String port      = Integer.toString(server.getPort());
-        String nrClients = Integer.toString(server.getNrClients());
-        String name      = server.getName();
 
         Object[] rowData = {address,port,nrClients,name};
 

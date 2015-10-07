@@ -61,9 +61,16 @@ public class Controller {
 
 			@Override
 			public void update(SListPDU t) {
-			    for(ServerData server : t.getServerData()) {
-			        gui.addToServerList(server);
+
+			    for(int i = 0; i < t.getServerNames().size(); i++) {
+			        String address = (String) t.getAddresses().get(i);
+			        String port    = (String) t.getPorts().get(i);
+			        String nrClients = (String) t.getClientNumberss().get(i);
+			        String name    = (String) t.getServerNames().get(i);
+
+			        gui.addToServerList(address,port,nrClients,name);
 			    }
+
 			}
 
 		});
@@ -84,7 +91,7 @@ public class Controller {
 
             @Override
             public void update(String t) {
-                System.out.println(t);
+                gui.clearMessageBoard();
                 gui.printOnMessageBoard("Error:"+t);
                 gui.setConnectServerButton("Connect");
                 clearNicks();

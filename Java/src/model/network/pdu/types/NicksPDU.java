@@ -1,66 +1,75 @@
 package model.network.pdu.types;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
-//TOOD CHECK THIS
+//TODO Implement proper check of padding
 public class NicksPDU extends PDU{
 
-    private final int NR_NICKS          = 1;
-    private final int FIRST_NICK        = 4;
-    private final int FIRST_BYTE_LENGTH = 2;
-    private final int SEC_BYTE_LENGTH   = 3;
+    private final int HEADER_SIZE       = 4;
 
     private ArrayList<String> nicks;
     private static boolean validFlag;
+    private ArrayList<Byte> bytes;
 
-    public NicksPDU(byte[] bytes) {
+    public NicksPDU(InputStream inStream) throws IOException {
+        bytes = new ArrayList<Byte>();
+
         validFlag = true;
-        nicks = parse(bytes);
+        nicks = parse(inStream);
+
     }
 
-    private ArrayList<String> parse(byte[] bytes) {
+    private ArrayList<String> parse(InputStream inStream) throws IOException {
         ArrayList<String> nicks = new ArrayList<String>();
-        int nrOfNicks = (byte) bytes[NR_NICKS];
-        int totalLength = (byte) (((bytes[FIRST_BYTE_LENGTH] & 0xff) << 8)
-                            | (bytes[SEC_BYTE_LENGTH] & 0xff)) + FIRST_NICK;
-        int start = FIRST_NICK;
 
-        if(!checkPadding(bytes,totalLength)) {
-            validFlag = false;
-        }
 
-        if(validFlag) {
-            for(int i = 0; i < nrOfNicks; i++) {
+        int nrOfNicks   = inStream.read();
+        //Reading length of names
+        byte[] tempBytes = new byte[2];
+        inStream.read(tempBytes, 0, 2);
+        int nicksLength = ( tempBytes[0] & 0xff ) << 8 | ( tempBytes[1] & 0xff) << 8;
+        int expectedSize = nicksLength + HEADER_SIZE;
+        int startOfNick = 0;
 
-                int length = 0;
-                for(int j = start; bytes[j] != 0 && j < bytes.length; j++,length++);
+        for(int i = 0; i < nrOfNicks; i++) {
 
-                String nick = new String(bytes,start,length,StandardCharsets.UTF_8);
+            int length = 0;
 
-                start += length+1;
-
-                nicks.add(nick);
+            byte b;
+            for(; (b = (byte) inStream.read()) != 0;length++) {
+                bytes.add(b);
             }
-        }
 
-        if(nicks.size() != nrOfNicks) {
-            validFlag = false;
-        }
+
+            String nick = new String(toByteArray(),startOfNick,
+                                     length,StandardCharsets.UTF_8);
+            startOfNick += length+1; // +1 for termination of nick
+
+            nicks.add(nick);
+       }
+//
+//        if(expectedSize < bytes.size()) {
+//            validFlag = false;
+//            return null;
+//        }
+
 
         return nicks;
     }
 
     @Override
     public byte[] toByteArray() {
-        return null;
-    }
+        byte[] result = new byte[bytes.size()];
+        for(int i = 0; i < bytes.size(); i++) {
+            result[i] = bytes.get(i);
+        }
 
-    @Override
-    public int getSize() {
-        return PDU.pduSize();
+        return result;
     }
 
     @Override
@@ -77,13 +86,14 @@ public class NicksPDU extends PDU{
      */
     private boolean checkPadding(byte[] bytes, int length) {
 
-
         int padded = length + padLengths(length);
         if(bytes.length < padded) {
             return false;
         }
-
-        for(int i = length; i < padded && i < bytes.length; i++) {
+//        System.out.println("Length: "+length);
+//        System.out.println("Padded "+padded);
+//        System.out.println("val at 12 "+bytes[12]);
+        for(int i = length; i < bytes.length; i++) {
             if(bytes[i] != 0) {
                return false;
             }
@@ -94,5 +104,11 @@ public class NicksPDU extends PDU{
 
     public boolean isValid() {
         return validFlag;
+    }
+
+    @Override
+    public int getSize() {
+        // TODO Auto-generated method stub
+        return 0;
     }
 }

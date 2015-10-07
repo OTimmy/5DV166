@@ -27,6 +27,7 @@ public class NetworkUDP {
     private String address;
     private int port;
     private volatile boolean connection;
+    private final int buffSize = 65000;
 
 //    public NetworkUDP() {
 //
@@ -94,8 +95,8 @@ public class NetworkUDP {
      */
     public PDU getPDU() {
 
-    		DatagramPacket packet = new DatagramPacket(new byte[PDU.pduSize()],
-    												   PDU.pduSize());
+    		DatagramPacket packet = new DatagramPacket(new byte[buffSize],
+    												   buffSize);
     		InputStream inStream;
     		PDU pdu = null;
     		try {
