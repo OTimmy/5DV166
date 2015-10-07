@@ -1,7 +1,7 @@
 /*
  * globals.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 2/10-15.
+ * Last update: 7/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.h is the header file for the globals.c file.
@@ -58,6 +58,7 @@ typedef struct {
     char *nick;
     int sockfd;
     pthread_mutex_t queue_mutex;
+    pthread_cond_t queue_cond;
     queue *send_queue;
 } client;
 
@@ -68,17 +69,25 @@ typedef struct {
     pdu_reg reg;
 } reg_data;
 
-pthread_mutex_t clients_mutex;
-extern client *clients[255];
+/* Struct containing the data needed to send a PDU */
+typedef struct {
+    size_t len;
+    uint8_t *pdu;
+} pdu_data;
 
-extern pthread_mutex_t nrof_clients_mutex;
+/* Array of connected clients (dynamic list not necessary since max 255) */
+extern client *clients[];
+extern pthread_mutex_t clients_mutex;
 
 /* Number of clients currently connected to the server */
 extern uint8_t nrof_clients;
+extern pthread_mutex_t nrof_clients_mutex;
 
 uint8_t get_nrof_clients();
 void incr_nrof_clients();
 void decr_nrof_clients();
+void enqueue(client *cli, pdu_data *pdu);
+int add_client(client *cli);
 
 #endif /* GLOBALS_H_ */
 

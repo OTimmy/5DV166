@@ -4,7 +4,7 @@
  *
  * queue.c supplies the implementation of a queue (as a directed linked list).
  *
- * Last update: 28/9-15.
+ * Last update: 7/10-15.
  * Version: v0.5.
  * Version notes:
  * Todo: Names (package/lib prefix, snake_case), safety checks.
@@ -90,6 +90,10 @@ void queue_dequeue(queue *q)
 {
     queue_pos oldlink = q->front->next;
     q->front->next = q->front->next->next;
+    if (oldlink == q->back)
+    {
+        q->back = q->front;
+    }
     if (NULL != q->free_func)
     {
         q->free_func(oldlink->value);

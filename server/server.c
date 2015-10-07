@@ -1,14 +1,14 @@
 /*
  * server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 2/10-15.
+ * Last update: 7/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.c implements a chat server.
  */
 
 /*
- * Compile: gcc -g -std=gnu99 -Wall -pedantic -pthread -o server server.c globals.c pdu.c name_server.c -lpthread
+ * Compile: gcc -g -std=gnu99 -Wall -pedantic -pthread -o server server.c globals.c pdu.c name_server.c doorman.c clients.c queue.c -lpthread
  * Memcheck: valgrind --tool=memcheck --leak-check=yes --show-reachable=yes -v ./server
  * Run: ./server "Server name here!"
  */
@@ -27,7 +27,7 @@
 // yeah.
 
 // uchnick, freeall?
-// main 2 threads (or admin client), ack to alive func, nrof_clients getter.
+// main 2 threads (or admin client), ack to alive func.
 // time, server local msges (init, running), main? parser.
 
 /* --- Standard headers --- */
@@ -46,7 +46,7 @@
 //#include <stddef.h>
 //#include <ctype.h> /* E.g. isalnum(), tolower() */
 /* --- System calls --- */
-//#include <unistd.h>
+#include <unistd.h>
 //#include <errno.h>
 //#include <dirent.h>
 //#include <sys/param.h> /* E.g. MAXPATHLEN for getcwd() */
@@ -73,17 +73,26 @@
 #include "doorman.h"
 #include "name_server.h"
 
-void *process_event_queue(void *ignore)
-{
-    
-    return NULL;
-}
+/* Address of the name server */
+char *name_server_address = "itchy.cs.umu.se";
+/* Port where name server accepts server connections */
+char *name_server_port = "1337";
+/* Port where this server accepts client connections */
+char *client_conn_port = "51515";//check len in parser
+/* Server name */
+/*char *name = "Anti-SkyNet";*/
+char *name = "Joshua - \"The only winning move is not to play\"";
+/*char *name = "Transhumanism (H+)";*/
+/*char *name = "Epistemological Cyberneticist";*/
+/*char *name = "Þursa-smiðja";*/
+/*char *name = "¬(µæłø ∨ (Ω»¦«¥⅝²ß)) ∧ ©";*/
 
 /*
  * main: Runs a chat server. It registers at a name server where clients can
  *      find it and then waits for clients to connect. It then relays messages
  *      received from clients back to all clients.
- * Params: (from command line) [server name].
+ * Params: (from command line) [-a name server address] [-p name server port]
+           [server name] [client connection port].
  * Returns: EXIT_FAILURE if error occurred, otherwise EXIT_SUCCESS.
  * Notes:
  */
@@ -96,39 +105,13 @@ int main(int argc, char *argv[])
     clock_t proc_start_time, proc_end_time;
     proc_start_time = clock(); /* Start process timer */
 
+    parse_arguments(argc, argv);
+
     /* Initialize thread attribute to detached */
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-    /* Initialize variables (could be extended to be done dynamically) */
-    char *name_server_address = "itchy.cs.umu.se";
-    char *name_server_port = "1337";
-    char *name;
-    if (1 < argc)
-    {
-        name = argv[1];
-    }
-    else
-    {
-        //name = "Anti-SkyNet";
-        //name = "Joshua - \"The only winning move is not to play\"";
-        //name = "Transhumanism (H+)";
-        name = "Epistemological Cyberneticist";
-        //name = "Þursa-smiðja";
-        //name = "¬(µæłø ∨ (Ω»¦«¥⅝²ß)) ∧ ©";
-    }
-    /* Port where this server accepts client connections */
-    char *client_conn_port = "51515";//chaeck len in parser
-
-    /* Create thread for processing the event queue */
-    pthread_t thread_eq;
-    if (0 != pthread_create(&thread_eq, &attr, process_event_queue, NULL))
-    {
-        fprintf(stderr, "ERROR: Failed to create thread eq!\n");
-        exit(EXIT_FAILURE);
-    }
-    
     /* Create thread for handling new client connections (doorman) */
     pthread_t thread_dm;
     if (0 != pthread_create(&thread_dm, &attr, handle_connecting_clients,
@@ -170,6 +153,46 @@ int main(int argc, char *argv[])
 
     //getchar();
     return 0;
+}
+
+/*
+ * parse_arguments: Parse the input arguments, including the options
+ *      (preceded by -) and set the corresponding values.
+ * Params: argc = the number of arguments in argv.
+ *         argv = array of strings from command line input.
+ * Returns:
+ * Notes: Can alter the value of this files global variables.
+ */
+void parse_arguments(int argc, char *argv[])
+{
+    int opt = 0;
+    while (-1 != (opt = getopt(argc, argv, "a:p:")))
+    {
+        switch (opt)
+        {
+        case 'a':
+            name_server_address = optarg;
+            break;
+        case 'p':
+            name_server_port = optarg; // check num 0 < 65535
+            break;
+        default:
+            fprintf(stderr,
+                    "Usage: %s [-a name server address] [-p name server port]"
+                    " [server name] [client connection port]\n", argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+    if (optind < (argc)) /* There are more arguments in argv */
+    {
+        name = argv[optind];
+        if (optind + 1 < (argc)) /* There is another argument in argv */
+        {
+            client_conn_port = argv[optind + 1]; // check num 0 < 65535
+        }
+    }
+
+    return;
 }
 
 /* ===== WORK IN PROGRESS ===== */
