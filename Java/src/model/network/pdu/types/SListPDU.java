@@ -30,8 +30,6 @@ public class SListPDU extends PDU{
 	 */
 	private ArrayList<ServerData> parse(byte[] bytes) {
 
-
-
 		ArrayList<ServerData>servers = new ArrayList<ServerData>();
 		sequenceNr = (int) ((bytes[1]));
 		int nrOfServers = (int) (((bytes[2] & 0xff )<< 8) | (bytes[3] & 0xff));
@@ -47,13 +45,12 @@ public class SListPDU extends PDU{
 	        }
 
             int port        =  (int) ((( bytes[index +4] & 0xff) << 8) | ( bytes[index +5] & 0xff ));
-	        int nrOfClients =  (int) bytes [index + 6];
-	        int nameLength  =  (int) bytes[index + 7];
+	        int nrOfClients =  (int) bytes [index + 6] & 0xff;
+	        int nameLength  =  (int) bytes[index + 7] & 0xff;
 
 	        //start index for server name
 	        index += 8;
 	        // Getting servers name
-
 	        byte[] nameBytes = new byte[nameLength];
 	        for(int j = 0,k = index; k < (index + nameLength);j++,k++) {
 	            nameBytes[j] = (byte) (bytes[k] &0xff);
@@ -67,6 +64,7 @@ public class SListPDU extends PDU{
 
 	        index += nameLength + padLengths(nameLength);
 	        servers.add(new ServerData(serverName,address,port,nrOfClients));
+
 	    }
 
 		return servers;

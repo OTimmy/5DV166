@@ -39,7 +39,6 @@ public class Controller {
     private Network net;
     private GUI gui;
     private ArrayList<String> nicks;
-    private boolean serverConnected;
     private boolean nameServerConnected;
     private String nick;
 
@@ -50,7 +49,6 @@ public class Controller {
     	initNetworkListener();
     	initGUIActionListener();
 		nameServerConnected = false;
-    	serverConnected = false;
     	nicks = new ArrayList<String>();
 	}
 
@@ -89,9 +87,7 @@ public class Controller {
                 System.out.println(t);
                 gui.printOnMessageBoard("Error:"+t);
                 gui.setConnectServerButton("Connect");
-                net.disconnectServer();
                 clearNicks();
-                serverConnected = false;
             }
         });
 
@@ -120,6 +116,7 @@ public class Controller {
 			public void update(UJoinPDU t) {
 			    String date = DateUtils.format(t.getDate());
 			    gui.printOnMessageBoard(date+" "+t.getNick() + " has joined");
+
 			    addNickToList(t.getNick());
 			}
 
@@ -183,23 +180,21 @@ public class Controller {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
-			    if(!serverConnected) {
+			    System.out.println("connection: "+net.isConnectedToServer());
+			    if(!net.isConnectedToServer()) {
 			        gui.clearMessageBoard();
 			        String address = gui.getServerAddress();
 			        int port = new Integer(gui.getServerPort());
 			        String nick = gui.getNick();
 
-			        serverConnected = net.ConnectToServer(address, port, nick);
+			        net.ConnectToServer(address, port, nick);
 
 			    } else {
-
-			        serverConnected = false;
 			        net.disconnectServer();
 			        clearNicks();
 			    }
 
-			    if(!serverConnected) {
+			    if(!net.isConnectedToServer()) {
 			        gui.setConnectServerButton("Connect");
 			        clearNicks();
 			    } else {
@@ -274,9 +269,7 @@ public class Controller {
                     e.consume();
                     String msg = gui.getSendTextArea();
                     net.SendMessage(msg,nick);
-
                 }
-
             }
 
             @Override
@@ -285,15 +278,12 @@ public class Controller {
 		});
 	}
 
-	private void disconnectServer() {
-	    serverConnected = false;
-	    //synchronized
-	}
-
 	private void addNickToList(String nickName) {
 	    synchronized(nicks) {
-	        nicks.add(nickName);
-	        gui.addNick(nickName);
+	        if(!nicks.contains(nick)) {
+	            nicks.add(nickName);
+	            gui.addNick(nickName);
+	        }
 	    }
 	}
 

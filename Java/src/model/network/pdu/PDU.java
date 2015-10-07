@@ -4,8 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import model.network.pdu.types.*;
-//TODO make a static method in pdu types, that check padding is correct, else return null
-//TODO byte buffer
+
 public abstract class PDU {
 
     private final static int pduBuffSize = 65539;
@@ -13,47 +12,68 @@ public abstract class PDU {
         byte[] bytes = new byte[pduBuffSize];
 
         if(inStream != null) {
-           // inStream.read
         	inStream.read(bytes,0,bytes.length);
-        	OpCode op = OpCode.getOpCodeBy(bytes[0]);
-//        	System.out.println("PDU value: " +op.value);
-        	switch(op) {
+        	if(bytes != null) {    //if its disconnected
 
-        	case MESSAGE:
-        	    MessagePDU msgPDU = new MessagePDU(bytes);
+                OpCode op = OpCode.getOpCodeBy(bytes[0]);
+                switch(op) {
 
-        	    if(msgPDU.isValid()) {
-        	        return msgPDU;
-        	    }
-        	    System.out.println("Invalid message pdu");
-        	    break;
-        	case NICKS:
+                case MESSAGE:
+                    MessagePDU msgPDU = new MessagePDU(bytes);
 
-        	    NicksPDU nicksPDU = new NicksPDU(bytes);
+                    if(msgPDU.isValid()) {
+                        return msgPDU;
+                    }
+                    System.out.println("Invalid msg");
+                    break;
+                case NICKS:
 
-        	    if(nicksPDU.isValid()) {
-        	        return nicksPDU;
-        	    }
-        	    System.out.println("Invalid nicks pdu");
-        	    break;
-        	case SLIST:
-        	    SListPDU sListPDU = new SListPDU(bytes);
+                    NicksPDU nicksPDU = new NicksPDU(bytes);
 
-        	    if(sListPDU.isValid()) {
-        	        return sListPDU;
-        	    }
+                    if(nicksPDU.isValid()) {
+                        return nicksPDU;
+                    }
+                    System.out.println("Invalid nicks");
+                    break;
+                case SLIST:
+                    SListPDU sListPDU = new SListPDU(bytes);
 
-        	    break;
-        	case UCNICK: return new UCNickPDU(bytes);
+                    if(sListPDU.isValid()) {
+                        return sListPDU;
+                    }
+                    System.out.println("Invalid slist");
+                    break;
+                case UCNICK:
+                    UCNickPDU uCNickPDU = new UCNickPDU(bytes);
 
-        	case UJOIN:  return new UJoinPDU(bytes);
+                    if(uCNickPDU.isValid()) {
+                        return new UCNickPDU(bytes);
 
-        	case ULEAVE: return new ULeavePDU(bytes);
+                    }
+                    System.out.println("Invalid ucnick");
+                    break;
+                case UJOIN:
+                    UJoinPDU uJoinPDU = new UJoinPDU(bytes);
 
-        	case QUIT:   return new QuitPDU();
+                    if(uJoinPDU.isValid()) {
+                        return new UJoinPDU(bytes);
+                    }
+                    System.out.println("Invalid ujoin");
+                    break;
+                case ULEAVE:
+                    ULeavePDU uLeavePDU = new ULeavePDU(bytes);
 
-        	default:
-        		break;
+                    if(uLeavePDU.isValid()) {
+                        return new ULeavePDU(bytes);
+                    }
+                    System.out.println("Invalid uleave");
+                    break;
+                case QUIT:   return new QuitPDU();
+
+                default:
+                    break;
+                }
+
         	}
         }
 

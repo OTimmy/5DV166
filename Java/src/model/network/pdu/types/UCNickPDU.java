@@ -46,12 +46,12 @@ public class UCNickPDU extends PDU{
             int start  = NICK_START;
             int end = length + start;
 
-            byte[] nickBytes = new byte[length];
+            byte[] nickBytes1 = new byte[length];
             for(int i = 0, j = start; j < end; j++,i++, start++) {
-                nickBytes[i] = bytes[j];
+                nickBytes1[i] = bytes[j];
             }
 
-            oldNick = new String(nickBytes,StandardCharsets.UTF_8);
+            oldNick = new String(nickBytes1,StandardCharsets.UTF_8);
 
             start += padLengths(length);
 
@@ -59,19 +59,15 @@ public class UCNickPDU extends PDU{
             length = (bytes[NICK_LENGTH2] & 0xff);
             end = length + start;
 
-            nickBytes = new byte[length];
+            byte[] nickBytes2 = new byte[length];
             for(int i= 0,j= start; j < end; i++, j++, start++) {
-                nickBytes[i] = bytes[j];
+                nickBytes2[i] = bytes[j];
             }
 
-            newNick = new String(nickBytes,StandardCharsets.UTF_8);
+            newNick = new String(nickBytes2,StandardCharsets.UTF_8);
 
         }
-
     }
-
-
-   // public
 
     @Override
     public byte[] toByteArray() {
@@ -101,24 +97,33 @@ public class UCNickPDU extends PDU{
     }
 
     public boolean checkPadding(byte[] bytes, int nickLength1, int nickLength2)  {
+
         if(bytes[3] != 0) {
             return false;
         }
 
         int endOfNick1 = NICK_START + nickLength1;
-        int padded = endOfNick1 + padLengths(nickLength1);
+        int paddedNick1 = endOfNick1 + padLengths(nickLength1);
+
+        if(bytes.length < paddedNick1) {
+            return false;
+        }
 
         //pad for old nick
-        for(int i = endOfNick1; i < padded; i++) {
+        for(int i = endOfNick1; i < paddedNick1; i++) {
             if(bytes[i] != 0) {
                 return false;
             }
         }
 
-        int endOfNick2 = endOfNick1 + nickLength2;
-        padded = endOfNick2 + padLengths(nickLength2);
+        int endOfNick2 = paddedNick1 + nickLength2;
+        int paddedNick2 = endOfNick2 + padLengths(nickLength2);
 
-        for(int i = endOfNick2; i < padded; i++) {
+        if(bytes.length <  paddedNick2) {
+            return false;
+        }
+
+        for(int i = endOfNick2; i < paddedNick2; i++) {
             if(bytes[i] != 0) {
                 return false;
             }

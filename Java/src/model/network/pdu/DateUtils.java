@@ -16,7 +16,7 @@ public class DateUtils {
      * The format for printing dates. Feel free to change.
      */
     private static final DateFormat DATE_FORMAT =
-            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            new SimpleDateFormat("HH:mm:ss");
 
     /**
      * Returns the UNIX time in seconds that the Date represents.

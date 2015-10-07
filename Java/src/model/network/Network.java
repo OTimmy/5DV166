@@ -116,7 +116,7 @@ public class Network {
 	 * Read packet from udp, and updates listener with latest servers.
 	 */
 	private void watchServerList() {
-        while(udp.isConnected()) {
+        while(isConnectedToNameServer()) {
 
             SListPDU pdu = (SListPDU) udp.getPDU();
 
@@ -143,7 +143,6 @@ public class Network {
 
                         sListListener.update(pdu);
                     }
-                    // else if (seqNr = 0) then reset hashset
                 } else {
                     //requestList
                     seqNumbs.clear();   //Reset sequenceNumbers
@@ -176,21 +175,15 @@ public class Network {
 	public void disconnectServer() {
 	    //if(! tcp.isConnected()) {
 	        tcp.disconnect();
-	        try {
-	            System.out.println("Disconnecting sto server");
-	            //if(!tcp.isConnected()) {
-	                tcpThread.interrupt();
-	            //}
-	            tcpThread.join();
-
-	            System.out.println("Disconnecting sto server");
-
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	            //tcpErrorListener.update(e.getMessage());
-	        }
-	        System.out.println("Disconnecting to server");
-	    //}
+	        System.out.println("Disconnecting!!!");
+//	        try {
+//
+//	           // tcpThread.join();
+//	            System.out.println("Thread closed");
+//	        } catch (InterruptedException e) {
+//	            e.printStackTrace();
+//	            //tcpErrorListener.update(e.getMessage());
+//	        }
 	}
 
 	public void SendMessage(String msg, String nick) {
@@ -201,9 +194,9 @@ public class Network {
 	    tcp.sendPDU(new ChNickPDU(nick));
 	}
 
+	//TODO specify the wrong pdu
 	private void watchServer() {
-	    boolean gotNicks = false;
-		while(tcp.isConnected()) {
+		while(isConnectedToServer()) {
 
 			System.out.println("waiting");
 		    PDU pdu = tcp.getPDU();
@@ -253,7 +246,13 @@ public class Network {
 	}
 
 
+	public boolean isConnectedToServer() {
+	    return tcp.isConnected();
+	}
 
+	public boolean isConnectedToNameServer() {
+	    return udp.isConnected();
+	}
 
 	public void addServerListener(Listener<SListPDU> sListListener) {
 		this.sListListener = sListListener;

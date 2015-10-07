@@ -76,7 +76,7 @@ public class MessagePDU extends PDU{
 
 
 		byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
-		System.out.println("Message out length: "+ msgBytes.length);
+
 		//msg length to two bytes, then pad.
 		builder.appendShort((short) msgBytes.length);
 		//pad remaining 2 bytes
@@ -133,11 +133,14 @@ public class MessagePDU extends PDU{
 	    return true;
 	}
 
+	 /**
+	  *
+	  */
 	private boolean checkStringPadding(byte[] bytes, int start,  int length) {
 
 	    int endOfPadding = start + padLengths(length);
 
-        for(int i  = start;i < endOfPadding; i++ ) {
+        for(int i  = start;i < endOfPadding && i < bytes.length; i++ ) {
             if(bytes[i] != 0) {
                 return false;
             }

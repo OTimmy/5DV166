@@ -2,7 +2,7 @@ package model.network.pdu.types;
 
 import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
-
+//TODO look this 
 public class QuitPDU extends PDU{
 
     private byte[] bytes;

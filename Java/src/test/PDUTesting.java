@@ -16,20 +16,18 @@ public class PDUTesting {
     @Test
     public void testNicksPDU() {
 
-        //Working PDU
-
-        byte[] bytes = buildWorkingPDU();
+        byte[] bytes = buildWorkingNicksPDU();
         NicksPDU nicksPDU = new NicksPDU(bytes);
 
         assertTrue(nicksPDU.isValid());
 
-        bytes = buildNotWokringPDU();
+        bytes = buildNotWokringNcksPDU();
         nicksPDU = new NicksPDU(bytes);
         assertFalse(nicksPDU.isValid());
 
     }
 
-    private byte[] buildWorkingPDU() {
+    private byte[] buildWorkingNicksPDU() {
 
         String nick1 = "OP";
         String nick2 = "KALLE";
@@ -47,12 +45,12 @@ public class PDUTesting {
 
     }
 
-    private byte[] buildNotWokringPDU() {
+    private byte[] buildNotWokringNcksPDU() {
         String nick1 = "OPS";
         String nick2 = "KALLE";
         ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.NICKS.value);
         builder.append((byte) 2);
-        builder.appendShort((short) 5);
+        builder.appendShort((short) 9);
 
         builder.append(nick1.getBytes());
         builder.append((byte)0);
@@ -63,7 +61,6 @@ public class PDUTesting {
         return builder.toByteArray();
 
     }
-
 
     @Test
     public void testULeavePDU() {
@@ -127,6 +124,7 @@ public class PDUTesting {
         builder.append("TIM".getBytes());
         builder.pad();
 
+
         return builder.toByteArray();
     }
 
@@ -145,15 +143,42 @@ public class PDUTesting {
 
     @Test
     public void testUCNickPDU() {
-        byte[] bytes = buildWorkingUCNickPDU();
-
+        byte[] bytes = buildWorkingUCNickPDU1();
         UCNickPDU pdu = new UCNickPDU(bytes);
-
         assertTrue(pdu.isValid());
+
+        bytes = buildWorkingUCNickPDU2();
+        assertTrue(pdu.isValid());
+
+        bytes = buildNotWorkingUCNickPDU1();
+        pdu = new UCNickPDU(bytes);
+        assertFalse(pdu.isValid());
+
+        bytes = buildNotWorkingUCNickPDU2();
+        pdu = new UCNickPDU(bytes);
+        assertFalse(pdu.isValid());
+
+        bytes = buildNotWorkingUCNickPDU3();
+        pdu = new UCNickPDU(bytes);
+        assertFalse(pdu.isValid());
 
     }
 
-    private byte[] buildWorkingUCNickPDU() {
+    private byte[] buildWorkingUCNickPDU1() {
+        ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.UCNICK.value);
+        builder.append((byte) "TIM".length());
+        builder.append((byte) "TIM".length());
+        builder.pad();
+        builder.appendInt(0);
+
+        builder.append("TIM".getBytes());
+        builder.pad();
+        builder.append("TIM".getBytes());
+        builder.pad();
+        return builder.toByteArray();
+    }
+
+    private byte[] buildWorkingUCNickPDU2() {
         ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.UCNICK.value);
         builder.append((byte) "TIM".length());
         builder.append((byte) "TIMS".length());
@@ -161,9 +186,61 @@ public class PDUTesting {
         builder.appendInt(0);
 
         builder.append("TIM".getBytes());
+        builder.pad();
         builder.append("TIMS".getBytes());
-
+        builder.pad();
         return builder.toByteArray();
     }
+
+
+    private byte[] buildNotWorkingUCNickPDU1() {
+        ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.UCNICK.value);
+        builder.append((byte) "TIM".length());
+        builder.append((byte) "TIMSS".length());
+        builder.pad();
+        builder.appendInt(0);
+
+        builder.append("TIM".getBytes());
+        builder.pad();
+        builder.append("TIMSS".getBytes());
+        //builder.pad();                            //Missing pad
+        return builder.toByteArray();
+    }
+
+    private byte[] buildNotWorkingUCNickPDU2() {
+        ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.UCNICK.value);
+        builder.append((byte) "TIM".length());
+        builder.append((byte) "TIMS".length());
+        builder.pad();
+        builder.appendInt(0);
+
+        builder.append("TIM".getBytes());
+        //builder.pad();                              //Missing pad
+        builder.append("TIMS".getBytes());
+        builder.pad();
+        return builder.toByteArray();
+    }
+
+    private byte[] buildNotWorkingUCNickPDU3() {
+
+        ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.UCNICK.value);
+        builder.append((byte) "TIM".length());
+        builder.append((byte) "TIMSS".length());       //Wrongsize
+        builder.pad();
+        builder.appendInt(0);
+
+        builder.append("TIM".getBytes());
+        builder.pad();
+        builder.append("TIMS".getBytes());
+        builder.pad();
+        return builder.toByteArray();
+    }
+
+    @Test
+    public void testMessagePDU() {
+        ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.MESSAGE.value);
+     //   builder.append(bytes)
+    }
+
 
 }

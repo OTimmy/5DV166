@@ -25,24 +25,28 @@ public class NicksPDU extends PDU{
         ArrayList<String> nicks = new ArrayList<String>();
         int nrOfNicks = (byte) bytes[NR_NICKS];
         int totalLength = (byte) (((bytes[FIRST_BYTE_LENGTH] & 0xff) << 8)
-                            | (bytes[SEC_BYTE_LENGTH] & 0xff)) + 4;
+                            | (bytes[SEC_BYTE_LENGTH] & 0xff)) + FIRST_NICK;
         int start = FIRST_NICK;
 
-        for(int i = 0; i < nrOfNicks; i++) {
-            String nick = "";
-
-            int length = 0;
-
-            for(int j = start; bytes[j] != 0 && j < bytes.length; j++,length++);
-
-            nick = new String(bytes,start,length,StandardCharsets.UTF_8);
-
-            start += length + padLengths(length);
-
-            nicks.add(nick);
+        if(!checkPadding(bytes,totalLength)) {
+            validFlag = false;
         }
 
-        if(nicks.size() != nrOfNicks || !checkPadding(bytes,totalLength)) {
+        if(validFlag) {
+            for(int i = 0; i < nrOfNicks; i++) {
+
+                int length = 0;
+                for(int j = start; bytes[j] != 0 && j < bytes.length; j++,length++);
+
+                String nick = new String(bytes,start,length,StandardCharsets.UTF_8);
+
+                start += length+1;
+
+                nicks.add(nick);
+            }
+        }
+
+        if(nicks.size() != nrOfNicks) {
             validFlag = false;
         }
 
@@ -73,9 +77,13 @@ public class NicksPDU extends PDU{
      */
     private boolean checkPadding(byte[] bytes, int length) {
 
-        int padded = length + padLengths(length);
-        for(int i = length; i < padded && i < bytes.length; i++) {
 
+        int padded = length + padLengths(length);
+        if(bytes.length < padded) {
+            return false;
+        }
+
+        for(int i = length; i < padded && i < bytes.length; i++) {
             if(bytes[i] != 0) {
                return false;
             }

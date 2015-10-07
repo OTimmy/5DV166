@@ -27,6 +27,7 @@ public class NetworkTCP {
     private OutputStream outStream;
     private InputStream inStream;
     private boolean connected;
+    private Object lock;
 
     public boolean connect(String address,int port, String nick) {
         try {
