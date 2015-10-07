@@ -1,5 +1,7 @@
 package model.network.pdu.types;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -12,67 +14,89 @@ import model.network.pdu.*;
  * And parse the returned data.
  */
 public class SListPDU extends PDU{
-	private ArrayList<ServerData> servers;
+    private final int ROW_SIZE = 4;
+
+	private ArrayList<String> addresses;
+	private ArrayList<String> ports;
+	private ArrayList<String> clientNumbers;
+	private ArrayList<String> serverNames;
 	private byte[] bytes;
 	private int sequenceNr;
 	private boolean validFlag;
 
-	public SListPDU(byte[] bytes) {
+	public SListPDU(InputStream inStream) throws IOException {
+	    addresses = new ArrayList<String>();
+	    ports = new ArrayList<String>();
+	    clientNumbers = new ArrayList<String>();
+	    serverNames = new ArrayList<String>();
+
 	    validFlag = true;
 
-	    servers = parse(bytes);
+	    parse(inStream);
 
 	}
 
 	/**
 	 * Parser and store data in appropiate list.
 	 * @return false if parsing failed.
+	 * @throws IOException
 	 */
-	private ArrayList<ServerData> parse(byte[] bytes) {
+	private void parse(InputStream inStream) throws IOException {
 
-		ArrayList<ServerData>servers = new ArrayList<ServerData>();
-		sequenceNr = (int) ((bytes[1]));
-		int nrOfServers = (int) (((bytes[2] & 0xff )<< 8) | (bytes[3] & 0xff));
-		int index = 4;
+	    sequenceNr = inStream.read();
+
+	    //Reading number of servers
+	    byte[] tempBytes = new byte[2];
+	    inStream.read(tempBytes, 0, tempBytes.length);
+		int nrOfServers = (int) ((tempBytes[0] & 0xff ) << 8 | (tempBytes[1] & 0xff));
 
 		for(int i = 0; i < nrOfServers; i++) {
-            String address = "";
-		    for(int j = index; j < index + 4; j++) {
-	                address += "" + ((int) bytes[j] & 0xff);
-	                if( j < (index + 3)) {
-	                    address += ".";
-	                }
-	        }
 
-            int port        =  (int) ((( bytes[index +4] & 0xff) << 8) | ( bytes[index +5] & 0xff ));
-	        int nrOfClients =  (int) bytes [index + 6] & 0xff;
-	        int nameLength  =  (int) bytes[index + 7] & 0xff;
+		    String address = "";
 
-	        //start index for server name
-	        index += 8;
-	        // Getting servers name
+            for(int j = 0; j < ROW_SIZE; j++) {
+                address +=  inStream.read();
+                if(j < ROW_SIZE -1) {
+                    address += ".";
+                }
+            }
+
+            //Reading port
+            tempBytes = new byte[2];
+            inStream.read(tempBytes, 0, tempBytes.length);
+            int port = (int) ((tempBytes[0] & 0xff) << 8 | (tempBytes[1] & 0xff));
+
+	        int nrOfClients =  inStream.read();
+	        int nameLength = inStream.read();
+	        //int nameLength  =  (int) bytes[index + 7] & 0xff;
+
+	        //read server name
 	        byte[] nameBytes = new byte[nameLength];
-	        for(int j = 0,k = index; k < (index + nameLength);j++,k++) {
-	            nameBytes[j] = (byte) (bytes[k] &0xff);
-	        }
+	        inStream.read(nameBytes, 0, nameBytes.length);
 	        String serverName = new String(nameBytes,StandardCharsets.UTF_8);
 
-	        //Padding for name of server is done correctly
-	        if(!checkPadding(bytes,index + nameLength,nameLength)) {
-	            validFlag = false;
-	        }
+	        //read the pads
+	        int padded = padLengths(nameLength);
+	        tempBytes = new byte[padded];
+	        inStream.read(tempBytes, 0, tempBytes.length);
 
-	        index += nameLength + padLengths(nameLength);
-	        servers.add(new ServerData(serverName,address,port,nrOfClients));
+	        //Checking the pads
+//	        for(byte b:tempBytes) {
+//	            if(b != 0) {
+//	                validFlag = false;
+//	                return;
+//	            }
+//	        }
+
+
+	        addresses.add(address);
+	        ports.add(new Integer(port).toString());
+	        clientNumbers.add(new Integer(nrOfClients).toString());
+	        serverNames.add(serverName);
 
 	    }
-
-		return servers;
 	}
 
-	public ArrayList<ServerData> getServerData() {
-	    return servers;
-	}
 
 	public int getSize() {
 	    return bytes.length;
@@ -92,21 +116,23 @@ public class SListPDU extends PDU{
 		return OpCode.SLIST.value;
 	}
 
-    private boolean checkPadding(byte[] bytes, int start,int length) {
-
-       int padded = padLengths(length);
-
-       for(int i = start; i < padded+start; i++) {
-
-           if( bytes[i] != 0 ) {
-               return false;
-           }
-       }
-
-        return true;
-    }
-
     public boolean isValid() {
         return validFlag;
+    }
+
+    public ArrayList getServerNames() {
+        return serverNames;
+    }
+
+    public ArrayList getAddresses() {
+        return addresses;
+    }
+
+    public ArrayList getPorts() {
+        return ports;
+    }
+
+    public ArrayList getClientNumberss() {
+        return clientNumbers;
     }
 }
