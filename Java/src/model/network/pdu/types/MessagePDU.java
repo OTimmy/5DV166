@@ -53,13 +53,10 @@ public class MessagePDU extends PDU{
 	    int padded    = (int) (((tempBytes[2] & 0xff) << 8)  | (tempBytes[3] & 0xff)); //Should be zero
 
 	    //Reading time stamp
-	    tempBytes = new byte[ROW_SIZE];
-	    inStream.read(tempBytes, 0, tempBytes.length);
+	    byte[] timeBytes = new byte[ROW_SIZE];
+	    inStream.read(timeBytes, 0, timeBytes.length);
 
-	    long seconds = (((tempBytes[0] & 0xff) << 24) | ((tempBytes[1] & 0xff) << 16)
-                       |((tempBytes[2] & 0xff) << 8) | (tempBytes[3] & 0xff));
-
-	    date = new Date(seconds * 1000);
+	    date = getDate(timeBytes);
 
 
 	    // Reading message

@@ -3,6 +3,7 @@ package model.network.pdu;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 
 import model.network.pdu.types.*;
 
@@ -22,9 +23,10 @@ public abstract class PDU {
        // if(inStream != null) {
 
             byte opByte = (byte) inStream.read();
-        	if(opByte != -1) {    //if its disconnected
+            OpCode op = OpCode.getOpCodeBy(opByte);
+            if(opByte != -1 || op != null) {    //if its disconnected
 
-                OpCode op = OpCode.getOpCodeBy(opByte);
+                
                 switch(op) {
 
                 case MESSAGE:
@@ -108,6 +110,12 @@ public abstract class PDU {
         return (4 - length % 4) % 4;
     }
 
+    public Date getDate(byte[] bytes) {
+    	long seconds = (bytes[0] & 0xff) << 24 | (bytes[1] & 0xff) << 16;
+    	seconds |= (bytes[2] &0xff) << 8;
+    	seconds |= (bytes[3] & 0xff);
+    	return new Date(seconds * 1000);
+    }
 
 
     public abstract byte[] toByteArray();

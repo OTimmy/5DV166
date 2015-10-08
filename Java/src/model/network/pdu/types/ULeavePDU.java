@@ -32,13 +32,10 @@ public class ULeavePDU extends PDU{
 	    inStream.read(tempBytes, 0, tempBytes.length);
 
 	    //Reading time stamp
-	    tempBytes = new byte[ROW_SIZE];
-	    inStream.read(tempBytes, 0, tempBytes.length);
+	    byte[] timeBytes = new byte[ROW_SIZE];
+	    inStream.read(timeBytes, 0, tempBytes.length);
 
-	    long seconds = (tempBytes[0] & 0xff) << 24 | (tempBytes[1] & 0xff) << 16
-	                   |(tempBytes[2] & 0xff) << 8 | (tempBytes[3] & 0xff);
-
-	    date = new Date(seconds);
+	    date = getDate(timeBytes);
 
 	    //Reading nick
 	    byte[] nickBytes = new byte[nickLength];
