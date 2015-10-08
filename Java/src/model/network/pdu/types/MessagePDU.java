@@ -47,7 +47,7 @@ public class MessagePDU extends PDU{
 
 	    int pad = headerBytes[0];  //should be zero
 	    int nickLength = (int) (headerBytes[1] & 0xff);
-	    int checkSum = (int) (headerBytes[2]);
+	    int checkSum = (int) (headerBytes[2] & 0xff);
 
 	    //Reading message length + padding
 	    byte[] tempBytes = new byte[ROW_SIZE];
