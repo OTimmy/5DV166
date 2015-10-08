@@ -1,0 +1,4 @@
+# These files are in the C language
+*.c linguist-language=C
+*.h linguist-language=C
+
