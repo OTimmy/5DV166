@@ -1,7 +1,7 @@
 /*
  * doorman.c
  * Written by Joakim Sandman, October 2015.
- * Last update: 5/10-15.
+ * Last update: 8/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * doorman.c contains functions for accepting connections from clients.
@@ -79,6 +79,7 @@ void *handle_connecting_clients(void *thread_data_dm)
         perror("listen");
         exit(EXIT_FAILURE);
     }
+    printf("Listening to port %s\n", client_conn_port);
 
     for EVER
     {

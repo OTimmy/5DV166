@@ -1,7 +1,7 @@
 /*
  * clients.c
  * Written by Joakim Sandman, October 2015.
- * Last update: 7/10-15.
+ * Last update: 8/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * clients.c contains functions for handling client input and output.
@@ -74,11 +74,11 @@ void *init_new_client(void *thread_data_cli)
     pthread_mutex_init(&cli->queue_mutex, NULL);
     pthread_cond_init(&cli->queue_cond, NULL);
     cli->send_queue = queue_empty();
-    //queue_setFreeFunc(cli->send_queue, free);
+    //queue_setFreeFunc(cli->send_queue, free); // NO FREEFUNC!!!!!!!!!!!!!!!
 
     /* Create thread for handling the client output queue */
     pthread_t thread_oq;
-    if (0 != pthread_create(&thread_oq, &attr, handle_client_output,
+    if (0 != pthread_create(&thread_oq, &attr, handle_client_output,// DONT LET ESCAPE!!!!!!!!!
                             (void *) cli))
     {
         fprintf(stderr, "ERROR: Failed to create thread oq!\n");
@@ -193,7 +193,7 @@ void *init_new_client(void *thread_data_cli)
     pthread_attr_destroy(&attr);
     pthread_mutex_lock(&cli->queue_mutex);
     queue_free(cli->send_queue);
-    pthread_mutex_unlock(&cli->queue_mutex);
+    pthread_mutex_unlock(&cli->queue_mutex);//nick??????????????????????
     pthread_mutex_destroy(&cli->queue_mutex);
     pthread_cond_destroy(&cli->queue_cond);
     free(cli);
@@ -220,54 +220,47 @@ void *handle_client_output(void *thread_data_oq)
     uint8_t *send_array;
     pdu_data *send_data;
 
-    for EVER // select and EMSGSIZE and cond var, notice disconn, when quit or send err
+    for EVER // EMSGSIZE, notice disconn, when quit or send err??????????????
     {
-        send_data = NULL;
-        pthread_mutex_lock(&cli->queue_mutex);
-        if (queue_isEmpty(cli->send_queue))
-        {
+        send_data = dequeue(cli); /* Blocking call */
+/*        pthread_mutex_lock(&cli->queue_mutex);*/
+/*        if (queue_isEmpty(cli->send_queue))*/
+/*        {*/
 /*            printf("we're waiting!\n");*/
-            pthread_cond_wait(&cli->queue_cond, &cli->queue_mutex);
+/*            pthread_cond_wait(&cli->queue_cond, &cli->queue_mutex);*/
 /*            printf("we're sending again!\n");*/
-        }
-        else
-        {
+/*        }*/
+/*        else*/
+/*        {*/
 /*            printf("we're getting stuff!\n");*/
-            send_data = queue_front(cli->send_queue);
-            queue_dequeue(cli->send_queue);
-        }
-        pthread_mutex_unlock(&cli->queue_mutex);
+/*            send_data = queue_front(cli->send_queue);*/
+/*            queue_dequeue(cli->send_queue);*/
+/*        }*/
+/*        pthread_mutex_unlock(&cli->queue_mutex);*/
 
         if (NULL != send_data) // small loop?
         {
             send_array = send_data->pdu;
             printf("we're sending %d bytes!\n", (uint32_t)send_data->len);
-            err = send(cli->sockfd, send_array, send_data->len, MSG_DONTWAIT);
-            free(send_array); // fix free func???
-            free(send_data);
+            err = send(cli->sockfd, send_array, send_data->len, 0);//MSG_DONTWAIT);
+            free(send_array);
+            free(send_data); //select needed to free???????????????????????
             if (err < 0)
             {
                 /* select() was mistaken and nothing was sent */
-                if (EAGAIN == errno || EWOULDBLOCK == errno)
-                {
-                    perror("send (out block)");
-                    continue; // try again? close conn?
-                }
-                else
-                {
+/*                if (EAGAIN == errno || EWOULDBLOCK == errno)*/
+/*                {*/
+/*                    perror("send (out block)");*/
+/*                    continue; // try again? close conn?*/
+/*                }*/
+/*                else*/
+/*                {*/
                     perror("send (out)");
                     continue; // try again? close conn?
-                }
+/*                }*/
             }
         }
     }
-
-    /* Close the connection, free all thread resources and exit thread */
-/*    close(cli->sockfd);*/
-/*    queue_free(cli->send_queue);*/
-/*    pthread_mutex_destroy(&cli->queue_mutex);*/
-/*    pthread_cond_destroy(&cli->queue_cond);*/
-/*    free(cli);*/
     return NULL;
 }
 
@@ -284,9 +277,6 @@ void *handle_client_output(void *thread_data_oq)
  */
 void handle_client_input(client *cli)
 {
-    /* Extract thread data */
-    //client *cli = (client *) thread_data_oq;
-
     int err;
     int communicating = 1;
     //uint8_t *send_array;
@@ -299,7 +289,7 @@ void handle_client_input(client *cli)
 
     while (communicating)
     {
-        err = recv(cli->sockfd, header, sizeof(header), 0);
+        err = recv(cli->sockfd, header, sizeof(header), 0);// MSG_PEEK MSG_WAITALL
         if (0 == err) /* Client disconnected */
         {
             //communicating = 0;

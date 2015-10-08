@@ -1,7 +1,7 @@
 /*
  * server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 7/10-15.
+ * Last update: 8/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.c implements a chat server.
@@ -10,7 +10,7 @@
 /*
  * Compile: gcc -g -std=gnu99 -Wall -pedantic -pthread -o server server.c globals.c pdu.c name_server.c doorman.c clients.c queue.c -lpthread
  * Memcheck: valgrind --tool=memcheck --leak-check=yes --show-reachable=yes -v ./server
- * Run: ./server "Server name here!"
+ * Run: ./server "Server name here!" 51515
  */
 
 //                                                          with timeout
@@ -41,13 +41,13 @@
 //#include <stdbool.h>
 //#include <stdint.h> /* Subset of inttypes.h */
 #include <inttypes.h> /* Fixed width integers */
-#include <sys/types.h>
+//#include <sys/types.h>
 //#include <limits.h>
 //#include <stddef.h>
 //#include <ctype.h> /* E.g. isalnum(), tolower() */
 /* --- System calls --- */
 #include <unistd.h>
-//#include <errno.h>
+#include <errno.h>
 //#include <dirent.h>
 //#include <sys/param.h> /* E.g. MAXPATHLEN for getcwd() */
 //#include <fcntl.h> /* File control (including sockets) */
@@ -58,11 +58,11 @@
 //#include <setjmp.h>
 #include <pthread.h> /* -pthread &or -lpthread */
 /* --- Sockets --- */
-#include <sys/socket.h>
-#include <netinet/in.h>
+//#include <sys/socket.h>
+//#include <netinet/in.h>
 //#include <arpa/inet.h>
 //#include <endian.h>
-#include <netdb.h>
+//#include <netdb.h>
 /* --- Functions --- */
 //#include <stdarg.h>
 
@@ -73,26 +73,27 @@
 #include "doorman.h"
 #include "name_server.h"
 
+/* --- Static global variables --- */
 /* Address of the name server */
-char *name_server_address = "itchy.cs.umu.se";
+static char *name_server_address = "itchy.cs.umu.se";
 /* Port where name server accepts server connections */
-char *name_server_port = "1337";
+static char *name_server_port = "1337";
 /* Port where this server accepts client connections */
-char *client_conn_port = "51515";//check len in parser
+static char *client_conn_port = "51515";//check len in parser
 /* Server name */
-/*char *name = "Anti-SkyNet";*/
-char *name = "Joshua - \"The only winning move is not to play\"";
-/*char *name = "Transhumanism (H+)";*/
-/*char *name = "Epistemological Cyberneticist";*/
-/*char *name = "Þursa-smiðja";*/
-/*char *name = "¬(µæłø ∨ (Ω»¦«¥⅝²ß)) ∧ ©";*/
+static char *name = "Joshua - \"The only winning move is not to play\"";
+/*static char *name = "Anti-SkyNet";*/
+/*static char *name = "Transhumanism (H+)";*/
+/*static char *name = "Epistemological Cyberneticist";*/
+/*static char *name = "Þursa-smiðja";*/
+/*static char *name = "¬(µæłø ∨ (Ω»¦«¥⅝²ß)) ∧ ©";*/
 
 /*
  * main: Runs a chat server. It registers at a name server where clients can
  *      find it and then waits for clients to connect. It then relays messages
  *      received from clients back to all clients.
  * Params: (from command line) [-a name server address] [-p name server port]
-           [server name] [client connection port].
+           [server name [client connection port]].
  * Returns: EXIT_FAILURE if error occurred, otherwise EXIT_SUCCESS.
  * Notes:
  */
@@ -100,10 +101,6 @@ int main(int argc, char *argv[])
 {
     struct timespec start_time, end_time;
     clock_gettime(CLOCK_MONOTONIC_RAW, &start_time); /* Start timer */
-
-    double proc_runtime = 0;
-    clock_t proc_start_time, proc_end_time;
-    proc_start_time = clock(); /* Start process timer */
 
     parse_arguments(argc, argv);
 
@@ -132,24 +129,44 @@ int main(int argc, char *argv[])
         fprintf(stderr, "ERROR: Failed to create thread ns!\n");
         exit(EXIT_FAILURE);
     }
-    //register_at_name_server(thread_data_ns);
-
     pthread_attr_destroy(&attr);
-    for EVER {} //mini client?
+
+    /* Wait for inputs and follow commands */
+    char cmdline[30];
+    char cmd[20];
+    fflush(stdin);
+    while (NULL != fgets(cmdline, sizeof(cmdline), stdin))
+    {
+        sscanf(cmdline, "%s", cmd);
+        fflush(stdin);
+        if (!strcmp(cmd, "exit")) /* Exit the program */
+        {
+            //cancel rest of program!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            exit(EXIT_FAILURE);
+        }
+        else if (!strcmp(cmd, "up")) /* Print server uptime */
+        {
+            struct timespec curr_time;
+            clock_gettime(CLOCK_MONOTONIC_RAW, &curr_time);
+            uint64_t uptime = curr_time.tv_sec - start_time.tv_sec;
+            fprintf(stderr, "\nUptime: %"PRIu64" days %02"PRIu64
+                    ":%02"PRIu64":%02"PRIu64"\n", uptime/86400,
+                    (uptime%86400)/3600, (uptime%3600)/60, uptime%60);
+        }
+        // kick client, spy on conversation, mini client, etc.?????????
+    }
+    fprintf(stderr, "Server commands unavailable!\n");
+    pause();
 
 /*    if (0 != pthread_join(thread_ns, NULL))*/
 /*    {*/
 /*        fprintf(stderr, "ERROR: Failed to join with thread ns!\n");*/
 /*    }*/
 
-    proc_end_time = clock(); /* End process timer */
-    proc_runtime = (double) (proc_end_time - proc_start_time)/CLOCKS_PER_SEC;
-    fprintf(stderr, "\nProcess runtime: %.2f sec.\n", proc_runtime);
-
     clock_gettime(CLOCK_MONOTONIC_RAW, &end_time); /* End timer */
     double runtime = (end_time.tv_sec - start_time.tv_sec)
                      + (end_time.tv_nsec - start_time.tv_nsec)/1000000000.0;
-    fprintf(stderr, "\nRuntime: %.2f sec.\n", runtime);
+    fprintf(stderr, "\nRuntime: %.2f sec.\n", runtime);//uptime???????????????
 
     //getchar();
     return 0;
@@ -174,25 +191,59 @@ void parse_arguments(int argc, char *argv[])
             name_server_address = optarg;
             break;
         case 'p':
-            name_server_port = optarg; // check num 0 < 65535
+            name_server_port = optarg;
+            if (!is_uint16(name_server_port)) /* Validate port number */
+            {
+                fprintf(stderr, "Warning: %s is not a valid port!\n",
+                        name_server_port);
+                exit(EXIT_FAILURE);
+            }
             break;
         default:
             fprintf(stderr,
                     "Usage: %s [-a name server address] [-p name server port]"
-                    " [server name] [client connection port]\n", argv[0]);
+                    " [server name [client connection port]]\n", argv[0]);
             exit(EXIT_FAILURE);
         }
     }
     if (optind < (argc)) /* There are more arguments in argv */
     {
         name = argv[optind];
+        if (255 < strlen(name)) /* Check server name length */
+        {
+            fprintf(stderr, "Warning: server name longer than 255 bytes!\n");
+            exit(EXIT_FAILURE);
+        }
         if (optind + 1 < (argc)) /* There is another argument in argv */
         {
-            client_conn_port = argv[optind + 1]; // check num 0 < 65535
+            client_conn_port = argv[optind + 1];
+            if (!is_uint16(client_conn_port)) /* Validate port number */
+            {
+                fprintf(stderr, "Warning: %s is not a valid port!\n",
+                        client_conn_port);
+                exit(EXIT_FAILURE);
+            }
         }
     }
-
     return;
+}
+
+/*
+ * is_uint16: Determines if the string represents an integer in [0, 65535].
+ * Params: str = string to evaluate.
+ * Returns: TRUE if the string represents an uint16, FALSE otherwise.
+ * Notes:
+ */
+int is_uint16(const char *str)
+{
+    errno = 0;
+    char *end = NULL;
+    long val = strtol(str, &end, 10);
+    if (errno || str == end || '\0' != *end || val < 0 || val > UINT16_MAX)
+    {
+        return 0;
+    }
+    return 1;
 }
 
 /* ===== WORK IN PROGRESS ===== */

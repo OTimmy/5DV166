@@ -1,11 +1,11 @@
 /*
  * globals.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 7/10-15.
+ * Last update: 8/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.h is the header file for the globals.c file.
- * It also defines some global macros and pthread argument structs.
+ * It also defines some global macros and structs.
  */
 
 #ifndef GLOBALS_H_
@@ -87,6 +87,7 @@ uint8_t get_nrof_clients();
 void incr_nrof_clients();
 void decr_nrof_clients();
 void enqueue(client *cli, pdu_data *pdu);
+pdu_data *dequeue(client *cli);
 int add_client(client *cli);
 
 #endif /* GLOBALS_H_ */

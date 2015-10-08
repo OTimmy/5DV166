@@ -1,7 +1,7 @@
 /*
  * globals.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 7/10-15.
+ * Last update: 8/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.c contains global variables and functions for using them.
@@ -47,13 +47,13 @@
 #include "globals.h"
 #include "queue.h"
 
-/* Array of connected clients (dynamic list not necessary since max 255) */
-client *clients[255]; /* Protocol limits number of clients to 255. */
-pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 /* Number of clients currently connected to the server */
 uint8_t nrof_clients = 0;
 pthread_mutex_t nrof_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/* Array of connected clients (dynamic list not necessary since max 255) */
+client *clients[255]; /* Protocol limits number of clients to 255. */
+pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 uint8_t get_nrof_clients()
 {
@@ -86,6 +86,23 @@ void enqueue(client *cli, pdu_data *pdu)
     pthread_mutex_unlock(&cli->queue_mutex);
     pthread_cond_signal(&cli->queue_cond);
     return;
+}
+
+pdu_data *dequeue(client *cli)
+{
+    pdu_data *data = NULL;
+    pthread_mutex_lock(&cli->queue_mutex);
+    if (queue_isEmpty(cli->send_queue))
+    {
+        pthread_cond_wait(&cli->queue_cond, &cli->queue_mutex);
+    }
+    if (!queue_isEmpty(cli->send_queue))
+    {
+        data = queue_front(cli->send_queue);
+        queue_dequeue(cli->send_queue);
+    }
+    pthread_mutex_unlock(&cli->queue_mutex);
+    return data;
 }
 
 int add_client(client *cli)
@@ -137,4 +154,6 @@ int add_client(client *cli)
     pthread_mutex_unlock(&clients_mutex);
     return fail;
 }
+
+//remove_client
 

@@ -1,7 +1,7 @@
 /*
  * clients.h
  * Written by Joakim Sandman, October 2015.
- * Last update: 6/10-15.
+ * Last update: 8/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * clients.h is the header file for the clients.c file.
@@ -62,17 +62,6 @@
  */
 void *init_new_client(void *thread_data_cli);
 
-/*
- * init_new_client: Initializes the client struct and creates a new thread for
- *      sending output to the client. Then wait for JOIN PDU from the client
- *      followed by adding it to the connected clients array. Unless the JOIN
- *      PDU is late or faulty, in case the connection is closed.
- * Params: thread_data_cli = client pointer containing the following value.
- *      sockfd = integer with the socket file descriptor for communicating
- *               with the new client.
- * Returns: NULL.
- * Notes:
- */
 void *handle_client_output(void *thread_data_oq);
 
 void handle_client_input(client *cli);

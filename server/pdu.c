@@ -1,7 +1,7 @@
 /*
  * pdu.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 7/10-15.
+ * Last update: 8/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * pdu.c contains functions for using the PDU data types.
@@ -45,6 +45,8 @@
 
 /* --- Local headers --- */
 #include "pdu.h"
+
+uint8_t quit[4] = {QUIT_OP, 0, 0, 0};
 
 /*
  * pad_length: Calculates how many bytes are needed as padding to make the
@@ -105,25 +107,43 @@ void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len)
 }
 
 /*
- * reg_arr_size: Calculates the length needed for an array to store the data
- *      contained in a pdu_reg struct, including padding to make the array
- *      length divisible by 4 (to fit evenly in 4 byte words).
- * Params: reg = pdu_reg struct containing the data to be stored.
- * Returns: Length needed for an array to store the data, including padding.
+ * get_checksum: Calculates the checksum of an array of bytes in 8-bit ones'
+ *      complement form. This means that all bytes are added up, and whenever
+ *      the sum surpasses 255 (>255), the sum is subtracted by 255 (-255).
+ *      The checksum is then the bitwise compliment of that sum.
+ * Params: bytes = byte array to calculate checksum for.
+ *         len = length of the byte array.
+ * Returns: The checksum of the (first len bytes of the) given array.
  * Notes:
  */
-uint8_t get_checksum(uint8_t *bytes, uint32_t len)
+uint8_t get_checksum(uint8_t *bytes, int len)
 {
     int sum = 0;
-    for (uint32_t i = 0; i < len; i++) // sum then % 255???
+    for (int i = 0; i < len; i++)
     {
-        sum += ((int) bytes[i] & 0xFF);
-        if ((sum & 0x100) != 0)
+        sum += (int) bytes[i];
+    }
+    if (sum > 255)
+    {
+        sum %= 255;
+        if (0 == sum)
         {
-            sum &= 0xFF;
-            sum++;
+            sum = 255;
         }
     }
-    return (uint8_t) ~(sum & 0xFF);
+    return (uint8_t) ~sum;
 }
+
+/* Original (slower) algorithm, which the above is based on */
+//    int sum = 0;
+//    for (int i = 0; i < len; i++)
+//    {
+//        sum += ((int) bytes[i] & 0xFF); /* Redundant truncation */
+//        if ((sum & 0x100) != 0) /* if sum > 255 then sum -= 255 */
+//        {
+//            sum &= 0xFF;
+//            sum++;
+//        }
+//    }
+//    return (uint8_t) ~(sum & 0xFF); /* Possible last truncation */
 

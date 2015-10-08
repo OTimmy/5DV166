@@ -1,7 +1,7 @@
 /*
  * server.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 7/10-15.
+ * Last update: 8/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.h is the header file for the server program.
@@ -47,27 +47,6 @@
 //#include <stdarg.h>
 
 /*
- * compare: Compares two values and determines which is bigger.
- * Params: p1 = pointer to first value.
- *         p2 = pointer to second value.
- * Returns: < 0 if (p1 < p2), == 0 if (p1 == p2) and > 0 if (p1 > p2).
- * Notes:
- */
-//int compare(const void *p1, const void *p2);
-
-/* ===== WORK IN PROGRESS ===== */
-/*
- * fatal_error: Exits the program (with unsuccessful exit status) after
- *      printing some error messages.
- * Params: pmsg = string to print with perror, denoting what failed.
- *         msg = string to print to stderr, describing the issue. E.g.
- *               "Usage: %s [-t type] start1 [start2 ...] name\n". (%s=argv[0])
- * Returns:
- * Notes: Frees dynamically allocated resources given function.
- */
-void fatal_error(char *pmsg, char *msg);
-
-/*
  * parse_arguments: Parse the input arguments, including the options
  *      (preceded by -) and set the corresponding values.
  * Params: argc = the number of arguments in argv.
@@ -76,6 +55,14 @@ void fatal_error(char *pmsg, char *msg);
  * Notes: Can alter the value of this files global variables.
  */
 void parse_arguments(int argc, char *argv[]);
+
+/*
+ * is_uint16: Determines if the string represents an integer in [0, 65535].
+ * Params: str = string to evaluate.
+ * Returns: TRUE if the string represents an uint16, FALSE otherwise.
+ * Notes:
+ */
+int is_uint16(const char *str);
 
 #endif /* SERVER_H_ */
 
