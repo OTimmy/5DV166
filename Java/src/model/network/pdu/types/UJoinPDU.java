@@ -1,5 +1,6 @@
 package model.network.pdu.types;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -9,45 +10,46 @@ import model.network.pdu.OpCode;
 import model.network.pdu.PDU;
 
 public class UJoinPDU extends PDU{
-    private final int NICK_LENGTH_BYTE     = 1;
-    private final int NICK_START           = 8;
-    private final int TIME_STAMP_START     = 4;
-    private final int TIME_STAMP_LENGTH    = 4;
+
 
     private Date date;
     private String nick;
     private boolean valid;
 
-    public UJoinPDU(InputStream inStream) {
+    public UJoinPDU(InputStream inStream) throws IOException {
         parser(inStream);
     }
 
-    private void parser(InputStream inStream) {
-
-        int nickLength = (bytes[NICK_LENGTH_BYTE] & 0xff);
-
-        valid = checkPadding(bytes,nickLength);
+    private void parser(InputStream inStream) throws IOException {
 
 
-        if(valid) {
+        int nickLength = inStream.read();
 
-            //Time stamp
-            int end = TIME_STAMP_START + TIME_STAMP_LENGTH;
+        //reading the pad
+        byte[] tempBytes = new byte[2];
+        inStream.read(tempBytes, 0, tempBytes.length);
+        //check padding
 
-            long seconds = ((bytes[4]& 0xff) << 24  ) | ((bytes[5] & 0xff) << 16)
-                           | ((bytes[6] & 0xff) << 8) | ((bytes[7] & 0xff));
 
-            date = new Date(seconds * 1000);
+        //Reading time stamp
+        tempBytes = new byte[4];
+        inStream.read(tempBytes, 0, tempBytes.length);
 
-            //Nick
-            byte[] nickBytes = new byte[nickLength];
-            end = nickLength + NICK_START;
+        long seconds = (tempBytes[0] & 0xff) << 24 | (tempBytes[1] & 0xff) << 16
+                       | (tempBytes[2] & 0xff) << 8 | (tempBytes[3] & 0xff);
 
-            for(int i = 0, j = NICK_START; j < end; i++,j++) {
-                nickBytes[i]= (byte) (bytes[j]& 0xff) ;
-            }
-            nick = new String(nickBytes, StandardCharsets.UTF_8);
-        }
+        date = new Date(seconds * 1000);
+
+        //Reading the nick
+        byte[] nickBytes = new byte[nickLength];
+        inStream.read(nickBytes, 0, nickBytes.length);
+
+        //Read padding
+        tempBytes = new byte[padLengths(nickLength)];
+        inStream.read(tempBytes, 0, tempBytes.length);
+        //Check padding
+
+        nick = new String(nickBytes, StandardCharsets.UTF_8);
 
     }
 
@@ -58,21 +60,6 @@ public class UJoinPDU extends PDU{
     public Date getDate() {
         return date;
     }
-
-    public boolean checkPadding(byte[] bytes, int nickLength) {
-
-        int endOfNick = NICK_START + nickLength;
-        int padded = endOfNick + padLengths(nickLength);
-
-        for(int i = endOfNick; i < padded; i++) {
-            if(bytes[i] != 0) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
 
     @Override
     public byte[] toByteArray() {

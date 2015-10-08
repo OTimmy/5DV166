@@ -287,10 +287,10 @@ public class Controller {
 
 	private void addNickToList(String nickName) {
 	    synchronized(nicks) {
-	        if(!nicks.contains(nick)) {
+	       // if(!nicks.contains(nick)) {
 	            nicks.add(nickName);
 	            gui.addNick(nickName);
-	        }
+	       // }
 	    }
 	}
 

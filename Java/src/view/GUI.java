@@ -272,9 +272,11 @@ public class GUI {
 		//usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
 		usrsTextArea = new JTextArea(1,2);
-		usrsTextArea.setWrapStyleWord(true);
-		usrsTextArea.setLineWrap(true);
-		scrollPane = new JScrollPane(usrsTextArea);
+		//usrsTextArea.setWrapStyleWord(true);
+		//usrsTextArea.setLineWrap(true);
+		scrollPane = new JScrollPane(usrsTextArea,
+		        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+	            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scrollPane.setPreferredSize(new Dimension(usrsTextAreaWidth,
 		                                          usrsTextAreaHeight));
 

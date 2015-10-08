@@ -1,5 +1,7 @@
 package model.network.pdu.types;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -7,10 +9,7 @@ import java.util.Date;
 import model.network.pdu.PDU;
 import model.network.pdu.OpCode;
 public class ULeavePDU extends PDU{
-	private final int NICK_LENGTH = 1;
-	private final int TIME_STAMP_START  = 4;
-	private final int TIME_LENGTH = 4;
-	private final int NICK_START = 8;
+	private final int ROW_SIZE = 4;
 
 	private String nick;
 	private Date date;
@@ -18,38 +17,38 @@ public class ULeavePDU extends PDU{
 	private boolean validFlag;
 
 
-	public ULeavePDU(byte[] bytes) {
+	public ULeavePDU(InputStream inStream) throws IOException {
 		validFlag = true;
-	    parse(bytes);
+	    parse(inStream);
 	}
 
 
-	private void parse(byte[] bytes) {
+	private void parse(InputStream inStream) throws IOException {
 
-	    validFlag = checkPadding(bytes);
+	    int nickLength = inStream.read();
 
-	    if(validFlag) {
+	    //reading pad
+	    byte[] tempBytes = new byte[2];
+	    inStream.read(tempBytes, 0, tempBytes.length);
 
-	        long seconds = (bytes[4] & 0xff) << 24 | (bytes[5] & 0xff) << 16
-	                | (bytes[6] & 0xff) << 8 | (bytes[7] & 0xff);
+	    //Reading time stamp
+	    tempBytes = new byte[ROW_SIZE];
+	    inStream.read(tempBytes, 0, tempBytes.length);
 
-	        date = new Date(seconds * 1000);
+	    long seconds = (tempBytes[0] & 0xff) << 24 | (tempBytes[1] & 0xff) << 16
+	                   |(tempBytes[2] & 0xff) << 8 | (tempBytes[3] & 0xff);
 
+	    date = new Date(seconds);
 
-	        //Nick name
-	        int start  = TIME_STAMP_START + TIME_LENGTH;
-	        int length = (bytes[NICK_LENGTH] & 0xff);
-	        int end   = TIME_STAMP_START + TIME_LENGTH + length;
+	    //Reading nick
+	    byte[] nickBytes = new byte[nickLength];
+	    inStream.read(nickBytes, 0, nickBytes.length);
 
+	    //Reading pad of nick
+	    tempBytes = new byte[padLengths(nickLength)];
+	    inStream.read(tempBytes, 0, tempBytes.length);
 
-	        byte[] nickBytes = new byte[length];
-	        for(int i = 0, j = start; j < end;i++,j++) {
-	            nickBytes[i] = (byte) (bytes[j]);
-	        }
-
-	        nick = new String(nickBytes,StandardCharsets.UTF_8);
-	    }
-
+	    nick = new String(nickBytes, StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -77,27 +76,27 @@ public class ULeavePDU extends PDU{
 	    return date;
 	}
 
-	/**
-	 *  @param bytes form inputstream, length is the length of the nickname
-	 */
-	private boolean checkPadding(byte[] bytes) {
-
-	    if(bytes[2] != 0 || bytes[3] != 0) {
-	        return false;
-	    }
-
-	    int length = (bytes[NICK_LENGTH] & 0xff);
-	    int padded = length + padLengths(length) + NICK_START;
-	    int endOfNick = length + NICK_START;
-
-	    for(int i = endOfNick; i < padded; i++) {
-	        if(bytes[i] != 0) {
-	            return false;
-	        }
-	    }
-
-	    return true;
-	}
+//	/**
+//	 *  @param bytes form inputstream, length is the length of the nickname
+//	 */
+//	private boolean checkPadding(byte[] bytes) {
+//
+//	    if(bytes[2] != 0 || bytes[3] != 0) {
+//	        return false;
+//	    }
+//
+//	    int length = (bytes[NICK_LENGTH] & 0xff);
+//	    int padded = length + padLengths(length) + NICK_START;
+//	    int endOfNick = length + NICK_START;
+//
+//	    for(int i = endOfNick; i < padded; i++) {
+//	        if(bytes[i] != 0) {
+//	            return false;
+//	        }
+//	    }
+//
+//	    return true;
+//	}
 
 	public boolean isValid() {
 	    return validFlag;

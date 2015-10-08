@@ -1,6 +1,8 @@
 package model.network.pdu.types;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Date;
@@ -13,6 +15,7 @@ public class UCNickPDU extends PDU{
     private final int NICK_LENGTH1       = 1;
     private final int NICK_LENGTH2       = 2;
     private final int NICK_START         = 8;
+    private final int ROW_SIZE           = 4;
 
 
     private String oldNick;
@@ -21,52 +24,45 @@ public class UCNickPDU extends PDU{
 
     private boolean validFlag;
 
-    public UCNickPDU(byte[] bytes) {
-
-        parse(bytes);
+    public UCNickPDU(InputStream inStream) throws IOException {
+        parse(inStream);
     }
 
-    private void parse(byte[] bytes ) {
+    private void parse(InputStream inStream ) throws IOException {
 
-        int nickLength1 = (bytes[NICK_LENGTH1] & 0xff);
-        int nickLength2 = (bytes[NICK_LENGTH2] & 0xff);
+        int nickLength1 = inStream.read();
+        int nickLength2 = inStream.read();
+        int pad = inStream.read();
 
-        validFlag = checkPadding(bytes, nickLength1, nickLength2);
+        //Reading time stamp
+        byte[] timeBytes = new byte[ROW_SIZE];
+        inStream.read(timeBytes, 0, timeBytes.length);
 
-        if(validFlag) {
+        long seconds = (((timeBytes[0] & 0xff) << 24) | ((timeBytes[1] & 0xff) << 16)
+                       |((timeBytes[2] & 0xff) << 8) | (timeBytes[3] & 0xff));
 
-            //Time stamp
-            long seconds = (bytes[4] & 0xff) << 24 | (bytes[5] & 0xff) << 16
-                          | (bytes[6] & 0xff) <<8 | (bytes[7] & 0xff);
+        date = new Date(seconds);
 
-            date = new Date(seconds * 1000);
+        //Reading old nick
+        byte[] oldNickBytes = new byte[nickLength1];
+        inStream.read(oldNickBytes, 0, oldNickBytes.length);
 
-            //Old nick
-            int length = (bytes[NICK_LENGTH1] & 0xff);
-            int start  = NICK_START;
-            int end = length + start;
+        //Read padding
+        byte[] padBytes = new byte[padLengths(nickLength1)];
+        inStream.read(padBytes, 0, padBytes.length);
 
-            byte[] nickBytes1 = new byte[length];
-            for(int i = 0, j = start; j < end; j++,i++, start++) {
-                nickBytes1[i] = bytes[j];
-            }
+        //Reading new nick
+        byte[] newNickBytes = new byte[nickLength2];
+        inStream.read(newNickBytes, 0, newNickBytes.length);
 
-            oldNick = new String(nickBytes1,StandardCharsets.UTF_8);
+        //Read padding
+        padBytes = new byte[padLengths(nickLength2)];
+        inStream.read(padBytes, 0, padBytes.length);
 
-            start += padLengths(length);
+        oldNick = new String(oldNickBytes,StandardCharsets.UTF_8);
 
-            //New nick
-            length = (bytes[NICK_LENGTH2] & 0xff);
-            end = length + start;
+        newNick = new String(newNickBytes,StandardCharsets.UTF_8);
 
-            byte[] nickBytes2 = new byte[length];
-            for(int i= 0,j= start; j < end; i++, j++, start++) {
-                nickBytes2[i] = bytes[j];
-            }
-
-            newNick = new String(nickBytes2,StandardCharsets.UTF_8);
-
-        }
     }
 
     @Override

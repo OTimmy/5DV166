@@ -20,9 +20,8 @@ public abstract class PDU {
 //        inStream.
 
        // if(inStream != null) {
-            System.out.println("reading opbyte");
+
             byte opByte = (byte) inStream.read();
-            System.out.println("got value: "+opByte);
         	if(opByte != -1) {    //if its disconnected
 
                 OpCode op = OpCode.getOpCodeBy(opByte);
@@ -58,26 +57,30 @@ public abstract class PDU {
                     //}
                //     System.out.println("Invalid slist");
                  //   break;
-//                case UCNICK:
-//                    UCNickPDU uCNickPDU = new UCNickPDU(bytes);
+                case UCNICK:
+                    UCNickPDU uCNickPDU = new UCNickPDU(inStream);
+                    return uCNickPDU;
 //
 //                    if(uCNickPDU.isValid()) {
 //                        return new UCNickPDU(bytes);
 //
 //                    }
 //                    System.out.println("Invalid ucnick");
-//                    break;
+                    //break;
                 case UJOIN:
-//                    UJoinPDU uJoinPDU = new UJoinPDU(bytes);
+                    UJoinPDU uJoinPDU = new UJoinPDU(inStream);
+                    return uJoinPDU;
 //
 //                    if(uJoinPDU.isValid()) {
 //                        return new UJoinPDU(bytes);
 //                    }
 //                    System.out.println("Invalid ujoin");
 //                    break;
-//                case ULEAVE:
-//                    ULeavePDU uLeavePDU = new ULeavePDU(bytes);
-//
+                case ULEAVE:
+
+
+                    ULeavePDU uLeavePDU = new ULeavePDU(inStream);
+                    return uLeavePDU;
 //                    if(uLeavePDU.isValid()) {
 //                        return new ULeavePDU(bytes);
 //                    }
