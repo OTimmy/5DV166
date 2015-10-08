@@ -29,6 +29,9 @@ public abstract class PDU {
                 switch(op) {
 
                 case MESSAGE:
+                    System.out.println("Got message");
+                    MessagePDU msgPDU = new MessagePDU(inStream);
+                    return msgPDU;
 ////                    MessagePDU msgPDU = new MessagePDU(bytes);
 //
 //                    if(msgPDU.isValid()) {
@@ -39,12 +42,13 @@ public abstract class PDU {
                 case NICKS:
 
                     NicksPDU nicksPDU = new NicksPDU(inStream);
-                    System.out.println("getting list");
-                    if(nicksPDU.isValid()) {
-                        return nicksPDU;
-                    }
-                    System.out.println("Invalid nicks");
-                    break;
+                    return nicksPDU;
+                    //System.out.println("getting list");
+//                    if(nicksPDU.isValid()) {
+//                        return nicksPDU;
+//                    }
+                    //System.out.println("Invalid nicks");
+                  //  break;
                 case SLIST:
                     SListPDU sListPDU = new SListPDU(inStream);
 

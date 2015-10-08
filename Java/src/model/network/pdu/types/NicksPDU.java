@@ -29,10 +29,11 @@ public class NicksPDU extends PDU{
 
 
         int nrOfNicks   = inStream.read();
+        System.out.println(nrOfNicks);
         //Reading length of names
         byte[] tempBytes = new byte[2];
         inStream.read(tempBytes, 0, 2);
-        int nicksLength = ( tempBytes[0] & 0xff ) << 8 | ( tempBytes[1] & 0xff) << 8;
+        int nicksLength = ( tempBytes[0] & 0xff ) << 8 | ( tempBytes[1] & 0xff);
         int expectedSize = nicksLength + HEADER_SIZE;
         int startOfNick = 0;
 
@@ -45,13 +46,20 @@ public class NicksPDU extends PDU{
                 bytes.add(b);
             }
 
+            //Removing the zero
+            int nullValue = inStream.read();
 
             String nick = new String(toByteArray(),startOfNick,
                                      length,StandardCharsets.UTF_8);
-            startOfNick += length+1; // +1 for termination of nick
+            System.out.println(nick);
+            startOfNick += length; // +1 for termination of nick
 
             nicks.add(nick);
        }
+
+       //Reading the padding
+       tempBytes = new byte[padLengths(nicksLength)];
+       inStream.read(tempBytes, 0, tempBytes.length);
 //
 //        if(expectedSize < bytes.size()) {
 //            validFlag = false;

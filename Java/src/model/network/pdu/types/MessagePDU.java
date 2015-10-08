@@ -1,6 +1,8 @@
 package model.network.pdu.types;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -11,6 +13,7 @@ import model.network.pdu.PDU;
 
 
 public class MessagePDU extends PDU{
+    private final int ROW_SIZE = 4;
     private final int TIME_START  = 8;
     private final int TIME_LENGTH = 4;
     private final byte PAD = 0;
@@ -22,9 +25,9 @@ public class MessagePDU extends PDU{
     private String nick;
     private Date date;
 
-    public MessagePDU(byte[] bytes) {
+    public MessagePDU(InputStream inStream) throws IOException {
         validFlag = true;
-        parseIn(bytes);
+        parseIn(inStream);
     //    validFlag = true;
     }
 
@@ -33,38 +36,60 @@ public class MessagePDU extends PDU{
 
 	}
 
-	public void parseIn(byte[] bytes) {
+	public void parseIn(InputStream inStream) throws IOException {
 
-		if(Checksum.computeChecksum(bytes) != 0  && !checkPadding(bytes) ) {
-		    validFlag = false;
-		}
+//		if(Checksum.computeChecksum(bytes) != 0  && !checkPadding(bytes) ) {
+//		    validFlag = false;
+//		}
+	    //Reading rest of header
+	    byte[] headerBytes = new byte[ROW_SIZE -1];
+	    inStream.read(headerBytes, 0, headerBytes.length);
 
-	    int nickLength = (int) (bytes[2] & 0xff);
-	    int msgLength = (int) (((bytes[4] & 0xff)<<8) | ( bytes[5] & 0xff) );
+	    int pad = headerBytes[0];  //should be zero
+	    int nickLength = (int) (headerBytes[1] & 0xff);
+	    int checkSum = (int) (headerBytes[2]);
 
-	    //Time stamp
-	    long seconds = (bytes[8] & 0xff) << 24 | (bytes[9] & 0xff) << 16
-	                  | (bytes[10] &0xff) << 8 | (bytes[11] & 0xff);
+	    //Reading message length + padding
+	    byte[] tempBytes = new byte[ROW_SIZE];
+	    inStream.read(tempBytes, 0, tempBytes.length);
+
+	    int msgLength = (int) (((tempBytes[0] & 0xff) << 8 ) | (tempBytes[1] & 0xff));
+	    int padded    = (int) (((tempBytes[2] & 0xff) << 8)  | (tempBytes[3] & 0xff)); //Should be zero
+
+	    //Reading time stamp
+	    tempBytes = new byte[ROW_SIZE];
+	    inStream.read(tempBytes, 0, tempBytes.length);
+
+	    long seconds = (((tempBytes[0] & 0xff) << 24) | ((tempBytes[1] & 0xff) << 16)
+                       |((tempBytes[2] & 0xff) << 8) | (tempBytes[3] & 0xff));
 
 	    date = new Date(seconds * 1000);
 
-	    //Message
-	    int index = TIME_START + TIME_LENGTH;
-	    int end = msgLength + index;
+
+	    // Reading message
 	    byte[] msgBytes = new byte[msgLength];
-	    for(int i = 0; index < end; i++,index++) {
-	        msgBytes[i] = bytes[index];
-	    }
+	    inStream.read(msgBytes, 0, msgBytes.length);
 
-	    msg = new String(msgBytes, StandardCharsets.UTF_8);
-	    index+= padLengths(msgBytes.length);
+        msg = new String(msgBytes, StandardCharsets.UTF_8);
 
-	    //Nick
-	    byte[] nickBytes = new byte[nickLength];
-	    for(int i = 0, j = index; j < (nickLength + index); i++,j++) {
-	        nickBytes[i] = bytes[j];
-	    }
-	    nick = new String(nickBytes, StandardCharsets.UTF_8);
+        //Padding of message
+        tempBytes = new byte[padLengths(msgLength)];
+        inStream.read(tempBytes, 0, tempBytes.length);
+
+        //check padding of message
+
+
+        //nick name
+        byte[] nickBytes = new byte[nickLength];
+        inStream.read(nickBytes, 0, nickBytes.length);
+
+        nick = new String(nickBytes, StandardCharsets.UTF_8);
+
+        //padding of nick
+        tempBytes = new byte[padLengths(nickLength)];
+
+
+        //check padding
 
 	}
 
