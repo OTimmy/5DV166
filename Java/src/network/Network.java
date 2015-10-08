@@ -193,13 +193,13 @@ public class Network {
 	    tcp.sendPDU(new ChNickPDU(nick));
 	}
 
-	//TODO specify the wrong pdu
+	//TODO specify the wrong pdu, by checking if it's valid
 	private void watchServer() {
 		while(isConnectedToServer()) {
 
-			System.out.println("waiting");
+			System.out.println("waiting for input");
 		    PDU pdu = tcp.getPDU();
-		    System.out.println("done");
+		    System.out.println("input recieved");
 
 		    if(pdu != null) {
 
@@ -237,7 +237,7 @@ public class Network {
 		    } else {
 		        if(tcp.isConnected()) {
 		            disconnectServer();
-	                tcpErrorListener.update("Invalid pdu");
+	                tcpErrorListener.update("Unknown pdu");
 		        }
 		    }
 		}

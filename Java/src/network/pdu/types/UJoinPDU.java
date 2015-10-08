@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import network.pdu.DateUtils;
 import network.pdu.OpCode;
 import network.pdu.PDU;
 
@@ -51,7 +52,7 @@ public class UJoinPDU extends PDU{
         byte[] timeBytes = new byte[TIME_SIZE];
         inStream.read(timeBytes, 0, timeBytes.length);
 
-        date = getDateByBytes(timeBytes);
+        date = DateUtils.getDateByBytes(timeBytes);
 
         //Reading the nick
         byte[] nickBytes = new byte[nickLength];

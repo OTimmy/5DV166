@@ -2,7 +2,6 @@ package network.pdu;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 
 import network.pdu.types.*;
 
@@ -14,81 +13,32 @@ public abstract class PDU {
         byte opByte = (byte) inStream.read();
         OpCode op = OpCode.getOpCodeBy(opByte);
 
-        if(opByte != -1 && op != null) {    // OpCode is not working!!
+        if(opByte != -1 && op != null) {  
 
             switch(op) {
-                case MESSAGE:
+            
+                case MESSAGE: return new MessagePDU(inStream);
+                
+                case NICKS:   return new NicksPDU(inStream);
 
-                    MessagePDU msgPDU = new MessagePDU(inStream);
-                    System.out.println("Got message");
-                    return msgPDU;
-////                    MessagePDU msgPDU = new MessagePDU(bytes);
-//
-//                    if(msgPDU.isValid()) {
-//                        return msgPDU;
-//                    }
-//                    System.out.println("Invalid msg");
-//                    break;
-                case NICKS:
+                case SLIST:   return new SListPDU(inStream);
 
-                    NicksPDU nicksPDU = new NicksPDU(inStream);
-                    return nicksPDU;
-                    //System.out.println("getting list");
-//                    if(nicksPDU.isValid()) {
-//                        return nicksPDU;
-//                    }
-                    //System.out.println("Invalid nicks");
-                  //  break;
-                case SLIST:
-                    SListPDU sListPDU = new SListPDU(inStream);
-
-                   // if(sListPDU.isValid()) {
-                        return sListPDU;
-                    //}
-               //     System.out.println("Invalid slist");
-                 //   break;
-                case UCNICK:
-                    UCNickPDU uCNickPDU = new UCNickPDU(inStream);
-                    return uCNickPDU;
-//
-//                    if(uCNickPDU.isValid()) {
-//                        return new UCNickPDU(bytes);
-//
-//                    }
-//                    System.out.println("Invalid ucnick");
-                    //break;
-                case UJOIN:
-                    UJoinPDU uJoinPDU = new UJoinPDU(inStream);
-                    return uJoinPDU;
-//
-//                    if(uJoinPDU.isValid()) {
-//                        return new UJoinPDU(bytes);
-//                    }
-//                    System.out.println("Invalid ujoin");
-//                    break;
-                case ULEAVE:
-
-
-                    ULeavePDU uLeavePDU = new ULeavePDU(inStream);
-                    return uLeavePDU;
-//                    if(uLeavePDU.isValid()) {
-//                        return new ULeavePDU(bytes);
-//                    }
-//                    System.out.println("Invalid uleave");
-//                    break;
-                case QUIT:   return new QuitPDU();
-
-                default:
-                    System.out.println("Unknown pdu: "+op.value);
-                    break;
-                }
+                case UCNICK:  return new UCNickPDU(inStream);
+                
+                case UJOIN:   return new UJoinPDU(inStream);
+                
+                case ULEAVE:  return new ULeavePDU(inStream);
+                
+                case QUIT:    return new QuitPDU();
+            
+            }
         }
 
         return null;
     }
 
     /**
-     *
+     * @param the length of the string that should be padded
      * @return return the correct number of padding.
      */
     public static int padLengths(int length) {
@@ -103,14 +53,6 @@ public abstract class PDU {
         }
         return true;
     }
-
-    public Date getDateByBytes(byte[] bytes) {
-    	long seconds = (bytes[0] & 0xff) << 24 | (bytes[1] & 0xff) << 16;
-    	seconds |= (bytes[2] &0xff) << 8;
-    	seconds |= (bytes[3] & 0xff);
-    	return new Date(seconds * 1000);
-    }
-
 
     public abstract byte[] toByteArray();
 
@@ -136,6 +78,5 @@ public abstract class PDU {
         }
 
         return buffer;
-
     }
 }

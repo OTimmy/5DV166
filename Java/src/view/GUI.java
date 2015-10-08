@@ -267,11 +267,8 @@ public class GUI {
 
 		JPanel usrPanel = new JPanel(new BorderLayout());
 		usrPanel.setPreferredSize(new Dimension(usrsPanelWidth,usrsPanelHeight));
-		//usrPanel.setBorder(BorderFactory.createLineBorder(Color.red));
 
 		usrsTextArea = new JTextArea(1,2);
-		//usrsTextArea.setWrapStyleWord(true);
-		//usrsTextArea.setLineWrap(true);
 		scrollPane = new JScrollPane(usrsTextArea,
 		        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
 	            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -285,7 +282,6 @@ public class GUI {
 		int sendPaneWidth   =  365; //365;
 
 		JPanel sendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		//sendPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 
 		sendTextArea = new JTextArea(1,2);
 		sendTextArea.setWrapStyleWord(true);

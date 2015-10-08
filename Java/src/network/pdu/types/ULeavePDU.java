@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
+import network.pdu.DateUtils;
 import network.pdu.PDU;
 import network.pdu.OpCode;
 
@@ -19,8 +20,8 @@ import network.pdu.OpCode;
  * @version 0.0
  */
 public class ULeavePDU extends PDU{
-    private final int TIME_SIZE = 4;
-    private final int PAD_SIZE = 2;   // Known padded size
+    private final int TIME_LENGTH = 4;
+    private final int PAD_LENGTH = 2;   // Known padded size
 
 	private String nick;
 	private Date date;
@@ -32,7 +33,7 @@ public class ULeavePDU extends PDU{
 	}
 
 	/**
-	 * @param Reads from inputstream by the given standard.
+	 * @param Reads from inputstream by the given standard of the pdu.
 	 * @return a flag.
 	 */
 	private boolean parse(InputStream inStream) throws IOException {
@@ -40,26 +41,22 @@ public class ULeavePDU extends PDU{
 	    int nickLength = inStream.read();
 
 	    //reading pad
-	    byte[] padBytes = new byte[PAD_SIZE];
-	    inStream.read(padBytes, 0, padBytes.length);
+	    byte[] padBytes = readExactly(PAD_LENGTH, inStream);
 
 	    if(!isPaddedBytes(padBytes)) {
 	        return false;
 	    }
 
 	    //Reading time stamp
-	    byte[] timeBytes = new byte[TIME_SIZE];
-	    inStream.read(timeBytes, 0, padBytes.length);
+	    byte[] timeBytes = readExactly(TIME_LENGTH, inStream);
 
-	    date = getDateByBytes(timeBytes);
+	    date = DateUtils.getDateByBytes(timeBytes); 
 
 	    //Reading nick
-	    byte[] nickBytes = new byte[nickLength];
-	    inStream.read(nickBytes, 0, nickBytes.length);
+	    byte[] nickBytes = readExactly(nickLength, inStream);
 
 	    //Reading pad of nick
-	    padBytes = new byte[padLengths(nickLength)];
-	    inStream.read(padBytes, 0, padBytes.length);
+	    padBytes = readExactly(padLengths(nickLength), inStream);
 
 	    if(!isPaddedBytes(padBytes)) {
 	        return false;
@@ -72,13 +69,11 @@ public class ULeavePDU extends PDU{
 
 	@Override
 	public byte[] toByteArray() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public int getSize() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
@@ -98,5 +93,4 @@ public class ULeavePDU extends PDU{
 	public boolean isValid() {
 	    return validFlag;
 	}
-
 }

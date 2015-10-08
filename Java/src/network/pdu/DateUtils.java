@@ -27,4 +27,12 @@ public class DateUtils {
     public static String format(Date date) {
             return "[" + DATE_FORMAT.format(date) + "]";
     }
+    
+    public static Date getDateByBytes(byte[] bytes) {
+    	long seconds = (bytes[0] & 0xff) << 24 | (bytes[1] & 0xff) << 16;
+    	seconds |= (bytes[2] &0xff) << 8;
+    	seconds |= (bytes[3] & 0xff);
+    	return new Date(seconds * 1000);
+    }
+ 
 }

@@ -8,7 +8,6 @@ public class main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-	  //  MessagePDU pdu = new MessagePDU("Hej på er!");
         //if(args.length > 3) {
             Network net = new Network();
             GUI gui = new GUI();

@@ -8,6 +8,7 @@ import java.util.Date;
 
 import network.pdu.ByteSequenceBuilder;
 import network.pdu.Checksum;
+import network.pdu.DateUtils;
 import network.pdu.OpCode;
 import network.pdu.PDU;
 
@@ -55,7 +56,7 @@ public class MessagePDU extends PDU{
 	    inStream.read(tempBytes, 0, tempBytes.length);
 
 	    int msgLength = (int) (((tempBytes[0] & 0xff) << 8 ) | (tempBytes[1] & 0xff));
-	    pad    = (int) (((tempBytes[2] & 0xff) << 8)  | (tempBytes[3] & 0xff)); //Should be zero
+	    pad  = (int) (((tempBytes[2] & 0xff) << 8)  | (tempBytes[3] & 0xff)); //Should be zero
 
 	    System.out.println("SIZE OF MSG: "+msgLength);
 //	    if(pad != 0) {
@@ -66,7 +67,7 @@ public class MessagePDU extends PDU{
 	    byte[] timeBytes = new byte[ROW_SIZE];
 	    inStream.read(timeBytes, 0, timeBytes.length);
 
-	    date = getDateByBytes(timeBytes);
+	    date = DateUtils.getDateByBytes(timeBytes); //getDateByBytes(timeBytes);
 
 
 	    // Reading message
@@ -94,8 +95,6 @@ public class MessagePDU extends PDU{
         //padding of nick
         tempBytes = new byte[padLengths(nickLength)];
         inStream.read(tempBytes, 0, tempBytes.length);
-        //System.out.println("Remaining bytes: "+inStream.available());
-        //check padding
 
         return true;
 	}

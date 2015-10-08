@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.Date;
 
+import network.pdu.DateUtils;
 import network.pdu.OpCode;
 import network.pdu.PDU;
 
@@ -38,7 +39,7 @@ public class UCNickPDU extends PDU{
         byte[] timeBytes = new byte[ROW_SIZE];
         inStream.read(timeBytes, 0, timeBytes.length);
 
-        date = getDateByBytes(timeBytes);
+        date = DateUtils.getDateByBytes(timeBytes);;
 
         //Reading old nick
         byte[] oldNickBytes = readExactly(nickLength1, inStream);
