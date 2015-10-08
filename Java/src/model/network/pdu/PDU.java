@@ -19,18 +19,19 @@ public abstract class PDU {
 //
 //        inStream.
 
-        if(inStream != null) {
-
+       // if(inStream != null) {
+            System.out.println("reading opbyte");
             byte opByte = (byte) inStream.read();
-
+            System.out.println("got value: "+opByte);
         	if(opByte != -1) {    //if its disconnected
 
                 OpCode op = OpCode.getOpCodeBy(opByte);
                 switch(op) {
 
                 case MESSAGE:
-                    System.out.println("Got message");
+
                     MessagePDU msgPDU = new MessagePDU(inStream);
+                    System.out.println(msgPDU.getMsg());
                     return msgPDU;
 ////                    MessagePDU msgPDU = new MessagePDU(bytes);
 //
@@ -90,7 +91,8 @@ public abstract class PDU {
         	} else {
         	    System.out.println("fuuuk");
         	}
-        }
+      //  }
+        System.out.println("Stream null");
 
         return null;
     }

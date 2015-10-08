@@ -29,13 +29,13 @@ public class NicksPDU extends PDU{
 
 
         int nrOfNicks   = inStream.read();
-        
+
         //Reading length of names
         byte[] tempBytes = new byte[2];
         inStream.read(tempBytes, 0, 2);
         int nicksLength = ( tempBytes[0] & 0xff ) << 8 | ( tempBytes[1] & 0xff);
-              
-      
+
+
         for(int i = 0; i < nrOfNicks; i++) {
 
             byte b;
@@ -44,18 +44,18 @@ public class NicksPDU extends PDU{
             	bytes.add(b);
             }
 
-            
+
             byte[] nickBytes = new byte[bytes.size()];
- 
+
             for(int j = 0; j < bytes.size(); j++) {
             	nickBytes[j] = bytes.get(j);
             }
-            
+
             bytes = new ArrayList<Byte>();
-            
+
 
             String nick = new String(nickBytes,0,
-            						nickBytes.length,StandardCharsets.UTF_8);        
+            						nickBytes.length,StandardCharsets.UTF_8);
 
             nicks.add(nick);
        }

@@ -1,5 +1,6 @@
 package model.network.pdu.types;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
@@ -17,11 +18,11 @@ public class UJoinPDU extends PDU{
     private String nick;
     private boolean valid;
 
-    public UJoinPDU(byte[] bytes) {
-        parser(bytes);
+    public UJoinPDU(InputStream inStream) {
+        parser(inStream);
     }
 
-    private void parser(byte[] bytes) {
+    private void parser(InputStream inStream) {
 
         int nickLength = (bytes[NICK_LENGTH_BYTE] & 0xff);
 

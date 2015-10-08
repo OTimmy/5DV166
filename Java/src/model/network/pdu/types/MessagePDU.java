@@ -14,8 +14,6 @@ import model.network.pdu.PDU;
 
 public class MessagePDU extends PDU{
     private final int ROW_SIZE = 4;
-    private final int TIME_START  = 8;
-    private final int TIME_LENGTH = 4;
     private final byte PAD = 0;
 
     private byte[] bytes;
@@ -38,9 +36,7 @@ public class MessagePDU extends PDU{
 
 	public void parseIn(InputStream inStream) throws IOException {
 
-//		if(Checksum.computeChecksum(bytes) != 0  && !checkPadding(bytes) ) {
-//		    validFlag = false;
-//		}
+
 	    //Reading rest of header
 	    byte[] headerBytes = new byte[ROW_SIZE -1];
 	    inStream.read(headerBytes, 0, headerBytes.length);
@@ -87,8 +83,8 @@ public class MessagePDU extends PDU{
 
         //padding of nick
         tempBytes = new byte[padLengths(nickLength)];
-
-
+        inStream.read(tempBytes, 0, tempBytes.length);
+        //System.out.println("Remaining bytes: "+inStream.available());
         //check padding
 
 	}
