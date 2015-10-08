@@ -1,11 +1,10 @@
-package model.network.pdu;
+package network.pdu;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Date;
 
-import model.network.pdu.types.*;
+import network.pdu.types.*;
 
 public abstract class PDU {
 
@@ -24,15 +23,16 @@ public abstract class PDU {
 
             byte opByte = (byte) inStream.read();
             OpCode op = OpCode.getOpCodeBy(opByte);
-            if(opByte != -1 || op != null) {    //if its disconnected
+            System.out.println("!!!!!!!opByte: "+opByte);
+            if(opByte != -1 && op != null) {    // OpCode is not working!!
 
-                
+
                 switch(op) {
 
                 case MESSAGE:
 
                     MessagePDU msgPDU = new MessagePDU(inStream);
-                    System.out.println(msgPDU.getMsg());
+                    System.out.println("Got message");
                     return msgPDU;
 ////                    MessagePDU msgPDU = new MessagePDU(bytes);
 //
@@ -91,10 +91,11 @@ public abstract class PDU {
                 case QUIT:   return new QuitPDU();
 
                 default:
+                    System.out.println("Unknown pdu: "+op.value);
                     break;
                 }
         	} else {
-        	    System.out.println("fuuuk");
+        	    System.out.println("bytes remaining: " + inStream.available());
         	}
       //  }
         System.out.println("Stream null");
@@ -110,7 +111,7 @@ public abstract class PDU {
         return (4 - length % 4) % 4;
     }
 
-    public Date getDate(byte[] bytes) {
+    public Date getDateByBytes(byte[] bytes) {
     	long seconds = (bytes[0] & 0xff) << 24 | (bytes[1] & 0xff) << 16;
     	seconds |= (bytes[2] &0xff) << 8;
     	seconds |= (bytes[3] & 0xff);
@@ -123,4 +124,25 @@ public abstract class PDU {
     public abstract int getSize();
 
     public abstract byte getOpCode();
+
+    /**
+     * Reads exactly the specified amount of bytes from the stream, blocking
+     * until they are available even though some bytes are.
+     *
+     * @param is The InputStream to read from.
+     * @param len The number of bytes to read.
+     */
+    public byte[] readExactly(int length,InputStream inStream) throws IOException {
+
+        byte[] buffer = new byte[length];
+
+        int readCount = 0;
+        while (readCount < length) {
+            int readBytes = inStream.read(buffer, readCount, length - readCount);
+            readCount += readBytes;
+        }
+
+        return buffer;
+
+    }
 }

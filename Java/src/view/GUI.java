@@ -28,8 +28,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
 
 
-import model.network.ServerData;
-
 //TODO Scroll should be adjusted to frame, not static size
 //TODO set limit for characters in chat window
 //TODO when connected, ignore talbe listener
@@ -37,7 +35,7 @@ import model.network.ServerData;
  * @author c12ton
  *
  * Graphical representation of the chat client.
- * Provide methods for adding listeners, and using the graphical
+ * Provide methods for adding listeners, and manipulating the graphical
  * components like the text area.
  *
  * @version 0.0
@@ -51,7 +49,7 @@ public class GUI {
 	private final int CONF_PANEL_WIDTH  = 400;
 	private final int TAB_PANEL_HEIGHT  = 100;
 	private final int TAB_PANEL_WIDTH   = 400;
-	private final int NR_TABLE_COLUMNS  = 4;
+	private final int NR_TABLE_COLUMNS  = 4;   //Starting values for table
 	private final int NR_TABLE_ROWS     = 17;
 
 	private JFrame frame;

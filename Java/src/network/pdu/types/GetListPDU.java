@@ -1,7 +1,7 @@
-package model.network.pdu.types;
+package network.pdu.types;
 
-import model.network.pdu.OpCode;
-import model.network.pdu.PDU;
+import network.pdu.OpCode;
+import network.pdu.PDU;
 
 public class GetListPDU extends PDU{
     private final int  size = 4;

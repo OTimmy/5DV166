@@ -1,4 +1,4 @@
-package model.network.pdu.types;
+package network.pdu.types;
 
 
 import java.io.IOException;
@@ -6,10 +6,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-import model.network.pdu.ByteSequenceBuilder;
-import model.network.pdu.Checksum;
-import model.network.pdu.OpCode;
-import model.network.pdu.PDU;
+import network.pdu.ByteSequenceBuilder;
+import network.pdu.Checksum;
+import network.pdu.OpCode;
+import network.pdu.PDU;
 
 
 public class MessagePDU extends PDU{
@@ -24,9 +24,8 @@ public class MessagePDU extends PDU{
     private Date date;
 
     public MessagePDU(InputStream inStream) throws IOException {
-        validFlag = true;
-        parseIn(inStream);
-    //    validFlag = true;
+        validFlag = parseIn(inStream);
+
     }
 
 	public MessagePDU(String message) {
@@ -34,14 +33,20 @@ public class MessagePDU extends PDU{
 
 	}
 
-	public void parseIn(InputStream inStream) throws IOException {
+	public boolean parseIn(InputStream inStream) throws IOException {
 
 
 	    //Reading rest of header
 	    byte[] headerBytes = new byte[ROW_SIZE -1];
 	    inStream.read(headerBytes, 0, headerBytes.length);
 
-	    int pad = headerBytes[0];  //should be zero
+
+	    int pad = headerBytes[0];
+//
+//	    if(pad != 0) {
+//	        return false;
+//	    }
+
 	    int nickLength = (int) (headerBytes[1] & 0xff);
 	    int checkSum = (int) (headerBytes[2] & 0xff);
 
@@ -50,24 +55,32 @@ public class MessagePDU extends PDU{
 	    inStream.read(tempBytes, 0, tempBytes.length);
 
 	    int msgLength = (int) (((tempBytes[0] & 0xff) << 8 ) | (tempBytes[1] & 0xff));
-	    int padded    = (int) (((tempBytes[2] & 0xff) << 8)  | (tempBytes[3] & 0xff)); //Should be zero
+	    pad    = (int) (((tempBytes[2] & 0xff) << 8)  | (tempBytes[3] & 0xff)); //Should be zero
+
+	    System.out.println("SIZE OF MSG: "+msgLength);
+//	    if(pad != 0) {
+//	        return false;
+//	    }
 
 	    //Reading time stamp
 	    byte[] timeBytes = new byte[ROW_SIZE];
 	    inStream.read(timeBytes, 0, timeBytes.length);
 
-	    date = getDate(timeBytes);
+	    date = getDateByBytes(timeBytes);
 
 
 	    // Reading message
-	    byte[] msgBytes = new byte[msgLength];
-	    inStream.read(msgBytes, 0, msgBytes.length);
+	    byte[] msgBytes = readExactly(msgLength,inStream);
 
         msg = new String(msgBytes, StandardCharsets.UTF_8);
 
         //Padding of message
         tempBytes = new byte[padLengths(msgLength)];
         inStream.read(tempBytes, 0, tempBytes.length);
+
+        for(byte b: tempBytes) {
+
+        }
 
         //check padding of message
 
@@ -84,6 +97,7 @@ public class MessagePDU extends PDU{
         //System.out.println("Remaining bytes: "+inStream.available());
         //check padding
 
+        return true;
 	}
 
 	private byte[] parseOut(String msg) {

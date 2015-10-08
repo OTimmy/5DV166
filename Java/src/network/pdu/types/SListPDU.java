@@ -1,12 +1,11 @@
-package model.network.pdu.types;
+package network.pdu.types;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import model.network.ServerData;
-import model.network.pdu.*;
+import network.pdu.*;
 /**
  * @author c12ton
  * @version 0.0

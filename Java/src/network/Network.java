@@ -1,4 +1,4 @@
-package model.network;
+package network;
 
 
 import java.util.HashSet;
@@ -6,17 +6,16 @@ import java.util.HashSet;
 
 import controller.Listener;
 
-import model.network.pdu.OpCode;
-import model.network.pdu.PDU;
-import model.network.pdu.types.ChNickPDU;
-import model.network.pdu.types.MessagePDU;
-import model.network.pdu.types.NicksPDU;
-import model.network.pdu.types.SListPDU;
-import model.network.pdu.types.UCNickPDU;
-import model.network.pdu.types.UJoinPDU;
-import model.network.pdu.types.ULeavePDU;
-//TODO ServerData nrofclients should be in string not integer
-//TODO Port 64868 gives -668
+import network.pdu.OpCode;
+import network.pdu.PDU;
+import network.pdu.types.ChNickPDU;
+import network.pdu.types.MessagePDU;
+import network.pdu.types.NicksPDU;
+import network.pdu.types.SListPDU;
+import network.pdu.types.UCNickPDU;
+import network.pdu.types.UJoinPDU;
+import network.pdu.types.ULeavePDU;
+
 /**
  * <h1>Network</h2>
  *
@@ -206,7 +205,7 @@ public class Network {
 
 		        OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
 		        switch(op) {
-
+		        //TODO check if it's a valid pdu padded, else report specific problem
 		        case NICKS:
 		            NicksPDU nicksPDU = (NicksPDU) pdu;
 		            for(String nick:nicksPDU.getNicks()) {

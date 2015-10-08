@@ -1,5 +1,5 @@
 import view.GUI;
-import model.network.Network;
+import network.Network;
 import controller.Controller;
 
 public class main {

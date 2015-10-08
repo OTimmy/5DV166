@@ -1,10 +1,10 @@
-package model.network.pdu.types;
+package network.pdu.types;
 
 import java.nio.charset.StandardCharsets;
 
-import model.network.pdu.ByteSequenceBuilder;
-import model.network.pdu.OpCode;
-import model.network.pdu.PDU;
+import network.pdu.ByteSequenceBuilder;
+import network.pdu.OpCode;
+import network.pdu.PDU;
 
 public class JoinPDU extends PDU{
     private byte[] bytes;

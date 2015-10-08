@@ -1,4 +1,4 @@
-package model.network.pdu;
+package network.pdu;
 
 
 import java.util.ArrayList;

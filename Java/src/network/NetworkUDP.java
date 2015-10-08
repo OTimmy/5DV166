@@ -1,4 +1,4 @@
-package model.network;
+package network;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,9 +8,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
-import model.network.pdu.PDU;
-import model.network.pdu.types.GetListPDU;
-import model.network.pdu.types.SListPDU;
+import network.pdu.PDU;
+import network.pdu.types.GetListPDU;
+import network.pdu.types.SListPDU;
 
 import controller.Listener;
 

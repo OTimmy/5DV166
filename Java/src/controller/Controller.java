@@ -15,14 +15,13 @@ import javax.swing.JTable;
 
 import view.GUI;
 
-import model.network.Network;
-import model.network.ServerData;
-import model.network.pdu.DateUtils;
-import model.network.pdu.types.UCNickPDU;
-import model.network.pdu.types.UJoinPDU;
-import model.network.pdu.types.ULeavePDU;
-import model.network.pdu.types.SListPDU;
-import model.network.pdu.types.MessagePDU;
+import network.Network;
+import network.pdu.DateUtils;
+import network.pdu.types.UCNickPDU;
+import network.pdu.types.UJoinPDU;
+import network.pdu.types.ULeavePDU;
+import network.pdu.types.SListPDU;
+import network.pdu.types.MessagePDU;
 
 /**
  * <h1>Listener.java</h1>

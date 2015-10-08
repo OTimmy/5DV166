@@ -1,8 +1,8 @@
-package model.network.pdu.types;
+package network.pdu.types;
 
-import model.network.pdu.OpCode;
-import model.network.pdu.PDU;
-//TODO look this 
+import network.pdu.OpCode;
+import network.pdu.PDU;
+
 public class QuitPDU extends PDU{
 
     private byte[] bytes;

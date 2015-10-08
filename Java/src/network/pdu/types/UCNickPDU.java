@@ -1,4 +1,4 @@
-package model.network.pdu.types;
+package network.pdu.types;
 
 
 import java.io.IOException;
@@ -7,14 +7,11 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.Date;
 
-import model.network.pdu.OpCode;
-import model.network.pdu.PDU;
+import network.pdu.OpCode;
+import network.pdu.PDU;
 
 public class UCNickPDU extends PDU{
 
-    private final int NICK_LENGTH1       = 1;
-    private final int NICK_LENGTH2       = 2;
-    private final int NICK_START         = 8;
     private final int ROW_SIZE           = 4;
 
 
@@ -25,10 +22,10 @@ public class UCNickPDU extends PDU{
     private boolean validFlag;
 
     public UCNickPDU(InputStream inStream) throws IOException {
-        parse(inStream);
+        validFlag = parse(inStream);
     }
 
-    private void parse(InputStream inStream ) throws IOException {
+    private boolean parse(InputStream inStream ) throws IOException {
 
         int nickLength1 = inStream.read();
         int nickLength2 = inStream.read();
@@ -38,7 +35,7 @@ public class UCNickPDU extends PDU{
         byte[] timeBytes = new byte[ROW_SIZE];
         inStream.read(timeBytes, 0, timeBytes.length);
 
-        date = getDate(timeBytes);
+        date = getDateByBytes(timeBytes);
 
         //Reading old nick
         byte[] oldNickBytes = new byte[nickLength1];
@@ -60,6 +57,7 @@ public class UCNickPDU extends PDU{
 
         newNick = new String(newNickBytes,StandardCharsets.UTF_8);
 
+        return true;
     }
 
     @Override
@@ -87,42 +85,6 @@ public class UCNickPDU extends PDU{
 
     public Date getDate(){
         return date;
-    }
-
-    public boolean checkPadding(byte[] bytes, int nickLength1, int nickLength2)  {
-
-        if(bytes[3] != 0) {
-            return false;
-        }
-
-        int endOfNick1 = NICK_START + nickLength1;
-        int paddedNick1 = endOfNick1 + padLengths(nickLength1);
-
-        if(bytes.length < paddedNick1) {
-            return false;
-        }
-
-        //pad for old nick
-        for(int i = endOfNick1; i < paddedNick1; i++) {
-            if(bytes[i] != 0) {
-                return false;
-            }
-        }
-
-        int endOfNick2 = paddedNick1 + nickLength2;
-        int paddedNick2 = endOfNick2 + padLengths(nickLength2);
-
-        if(bytes.length <  paddedNick2) {
-            return false;
-        }
-
-        for(int i = endOfNick2; i < paddedNick2; i++) {
-            if(bytes[i] != 0) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public boolean isValid() {

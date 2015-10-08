@@ -1,4 +1,4 @@
-package model.network;
+package network;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,10 +7,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 
-import model.network.pdu.OpCode;
-import model.network.pdu.PDU;
-import model.network.pdu.types.JoinPDU;
-import model.network.pdu.types.QuitPDU;
+import network.pdu.OpCode;
+import network.pdu.PDU;
+import network.pdu.types.JoinPDU;
+import network.pdu.types.QuitPDU;
 
 import controller.Listener;
 

@@ -1,16 +1,14 @@
-package model.network.pdu.types;
+package network.pdu.types;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import model.network.pdu.OpCode;
-import model.network.pdu.PDU;
+import network.pdu.OpCode;
+import network.pdu.PDU;
 //TODO Implement proper check of padding
 public class NicksPDU extends PDU{
-
-    private final int HEADER_SIZE       = 4;
 
     private ArrayList<String> nicks;
     private static boolean validFlag;
