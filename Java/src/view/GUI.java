@@ -276,7 +276,7 @@ public class GUI {
 		//usrsTextArea.setLineWrap(true);
 		scrollPane = new JScrollPane(usrsTextArea,
 		        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-	            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		scrollPane.setPreferredSize(new Dimension(usrsTextAreaWidth,
 		                                          usrsTextAreaHeight));
 

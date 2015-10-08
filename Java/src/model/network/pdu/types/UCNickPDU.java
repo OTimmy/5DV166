@@ -38,8 +38,8 @@ public class UCNickPDU extends PDU{
         byte[] timeBytes = new byte[ROW_SIZE];
         inStream.read(timeBytes, 0, timeBytes.length);
 
-        long seconds = (((timeBytes[0] & 0xff) << 24) | ((timeBytes[1] & 0xff) << 16)
-                       |((timeBytes[2] & 0xff) << 8) | (timeBytes[3] & 0xff));
+        long seconds = (((timeBytes[3] & 0xff) << 24) | ((timeBytes[2] & 0xff) << 16)
+                       |((timeBytes[1] & 0xff) << 8) | (timeBytes[0] & 0xff));
 
         date = new Date(seconds);
 

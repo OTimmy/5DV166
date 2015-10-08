@@ -31,7 +31,7 @@ import model.network.pdu.types.MessagePDU;
  * @author c12ton
  * @version 0.0
  */
-//TODO swing invoke utilities later, for updating components
+//TODOUae hashmap for users, and and let index be there key?
 public class Controller {
 
     private final int KEY_ENTER = 10;
