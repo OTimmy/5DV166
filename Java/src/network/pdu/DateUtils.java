@@ -19,26 +19,6 @@ public class DateUtils {
             new SimpleDateFormat("HH:mm:ss");
 
     /**
-     * Returns the UNIX time in seconds that the Date represents.
-     *
-     * @param date The date to convert to an int.
-     * @return The time in seconds.
-     */
-    public static int toSeconds(Date date) {
-        return (int) (date.getTime() / 1000);
-    }
-
-    /**
-     * Returns a Date which represents the given UNIX time in seconds.
-     *
-     * @param seconds The number of seconds.
-     * @return The Date represented by the integer.
-     */
-    public static Date toDate(int seconds) {
-        return new Date((((long) seconds) & 0xffff) * 1000);
-    }
-
-    /**
      * Formats the date according to the DateFormat.
      *
      * @param date The date to format.
