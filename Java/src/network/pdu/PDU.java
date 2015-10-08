@@ -11,24 +11,12 @@ public abstract class PDU {
 
     public static PDU fromInputStream(InputStream inStream) throws IOException {
 
-        //read first byte
-        //then ask how many are alaible, then run trought that loop
-//
-//
-//        inStream.read(byteList);
-//
-//        inStream.
+        byte opByte = (byte) inStream.read();
+        OpCode op = OpCode.getOpCodeBy(opByte);
 
-       // if(inStream != null) {
+        if(opByte != -1 && op != null) {    // OpCode is not working!!
 
-            byte opByte = (byte) inStream.read();
-            OpCode op = OpCode.getOpCodeBy(opByte);
-            System.out.println("!!!!!!!opByte: "+opByte);
-            if(opByte != -1 && op != null) {    // OpCode is not working!!
-
-
-                switch(op) {
-
+            switch(op) {
                 case MESSAGE:
 
                     MessagePDU msgPDU = new MessagePDU(inStream);
@@ -94,11 +82,7 @@ public abstract class PDU {
                     System.out.println("Unknown pdu: "+op.value);
                     break;
                 }
-        	} else {
-        	    System.out.println("bytes remaining: " + inStream.available());
-        	}
-      //  }
-        System.out.println("Stream null");
+        }
 
         return null;
     }
@@ -109,6 +93,15 @@ public abstract class PDU {
      */
     public static int padLengths(int length) {
         return (4 - length % 4) % 4;
+    }
+
+    public boolean isPaddedBytes(byte[] bytes) {
+        for(byte b:bytes) {
+            if(b != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public Date getDateByBytes(byte[] bytes) {

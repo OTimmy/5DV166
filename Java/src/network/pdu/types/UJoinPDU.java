@@ -72,15 +72,6 @@ public class UJoinPDU extends PDU{
 
     }
 
-    private boolean isPaddedBytes(byte[] bytes) {
-        for(byte b:bytes) {
-            if(b != 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public String getNick() {
         return nick;
     }

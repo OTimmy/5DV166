@@ -10,6 +10,9 @@ import java.util.Date;
 import network.pdu.OpCode;
 import network.pdu.PDU;
 
+/**
+ *
+ */
 public class UCNickPDU extends PDU{
 
     private final int ROW_SIZE           = 4;
@@ -38,20 +41,16 @@ public class UCNickPDU extends PDU{
         date = getDateByBytes(timeBytes);
 
         //Reading old nick
-        byte[] oldNickBytes = new byte[nickLength1];
-        inStream.read(oldNickBytes, 0, oldNickBytes.length);
+        byte[] oldNickBytes = readExactly(nickLength1, inStream);
 
         //Read padding
-        byte[] padBytes = new byte[padLengths(nickLength1)];
-        inStream.read(padBytes, 0, padBytes.length);
+        byte[] padBytes     = readExactly(padLengths(nickLength1), inStream);
 
         //Reading new nick
-        byte[] newNickBytes = new byte[nickLength2];
-        inStream.read(newNickBytes, 0, newNickBytes.length);
+        byte[] newNickBytes = readExactly(nickLength2, inStream);
 
         //Read padding
-        padBytes = new byte[padLengths(nickLength2)];
-        inStream.read(padBytes, 0, padBytes.length);
+        padBytes            = readExactly(padLengths(nickLength2), inStream);
 
         oldNick = new String(oldNickBytes,StandardCharsets.UTF_8);
 

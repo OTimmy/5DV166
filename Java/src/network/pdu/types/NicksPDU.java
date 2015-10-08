@@ -67,12 +67,7 @@ public class NicksPDU extends PDU{
 
     @Override
     public byte[] toByteArray() {
-        byte[] result = new byte[bytes.size()];
-        for(int i = 0; i < bytes.size(); i++) {
-            result[i] = bytes.get(i);
-        }
-
-        return result;
+        return null;
     }
 
     @Override
@@ -82,27 +77,6 @@ public class NicksPDU extends PDU{
 
     public ArrayList<String> getNicks() {
         return nicks;
-    }
-
-    /**
-     * @param start of padding, and length of nick.
-     */
-    private boolean checkPadding(byte[] bytes, int length) {
-
-        int padded = length + padLengths(length);
-        if(bytes.length < padded) {
-            return false;
-        }
-//        System.out.println("Length: "+length);
-//        System.out.println("Padded "+padded);
-//        System.out.println("val at 12 "+bytes[12]);
-        for(int i = length; i < bytes.length; i++) {
-            if(bytes[i] != 0) {
-               return false;
-            }
-        }
-
-    	return true;
     }
 
     public boolean isValid() {

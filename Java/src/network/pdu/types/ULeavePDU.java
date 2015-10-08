@@ -70,15 +70,6 @@ public class ULeavePDU extends PDU{
 	    return true;
 	}
 
-	private boolean isPaddedBytes(byte[] bytes) {
-	    for(byte b:bytes) {
-	        if(b != 0) {
-	            return false;
-	        }
-	    }
-	        return true;
-	}
-
 	@Override
 	public byte[] toByteArray() {
 		// TODO Auto-generated method stub
