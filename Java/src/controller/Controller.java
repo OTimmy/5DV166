@@ -36,8 +36,6 @@ public class Controller {
     private final int KEY_ENTER = 10;
     private final int TAB_BROWS = 0;
     private final int TAB_CHAT  = 1;
-    private final int SERVER_ADDRESS = 0;
-    private final int SERVER_NAME    = 1;
 
     private Network net;
     private GUI gui;
@@ -94,6 +92,7 @@ public class Controller {
 
             @Override
             public void update(String t) {
+                net.disconnectServer();
                 gui.printOnMessageBoard("Error:"+t);
                 gui.setConnectServerButton("Connect");
                 clearNicks();

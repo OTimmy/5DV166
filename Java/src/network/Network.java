@@ -206,14 +206,17 @@ public class Network {
 		        case MESSAGE:
 		        	msgListener.update(((MessagePDU) pdu));
 		            break;
+
 		        case UJOIN:
 		            UJoinPDU ujoinPDU = (UJoinPDU) pdu;
 		            uJoinListener.update(ujoinPDU);
 		            break;
+
 		        case ULEAVE:
 		            ULeavePDU uLeavePDU = (ULeavePDU) pdu;
 		            uLeaveListener.update(uLeavePDU);
 		        	break;
+
 		        case UCNICK:
 		            UCNickPDU uCNickPDU = (UCNickPDU) pdu;
                     uCNickListener.update(uCNickPDU);
@@ -227,14 +230,11 @@ public class Network {
 
 		    } else {
 		        if(tcp.isConnected()) {
-		            disconnectServer();
 	                tcpErrorListener.update("Unknown pdu");
 		        }
 		    }
 		}
-
 	}
-
 
 	public boolean isConnectedToServer() {
 	    return tcp.isConnected();
