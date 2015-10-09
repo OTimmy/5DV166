@@ -55,7 +55,7 @@ public class GUI {
 	private final int TAB_BROWS         = 0;    //Index values for tabbedpane
 	private final int TAB_CHAT          = 1;
     private final int TAB_MAX_NAME      = 20;
-	private final int SEND_MSG_LIMIT    = 100;
+	private final int SEND_MSG_LIMIT    = 65535;  //From the spec
 
 	private JFrame frame;
 	private DefaultTableModel tableModel;
@@ -311,7 +311,7 @@ public class GUI {
 	}
 
    /**
-    *
+    * @return
     */
    private JTable buildTable() {
 
@@ -365,7 +365,6 @@ public class GUI {
        textArea.setWrapStyleWord(true);
        textArea.setLineWrap(true);
 
-
        textArea.addKeyListener(new KeyListener() {
            @Override
            public void keyTyped(KeyEvent e) {
@@ -382,7 +381,6 @@ public class GUI {
                          }
                      });
                  }
-
              }
            }
 
@@ -398,6 +396,7 @@ public class GUI {
 
 	/**
 	 * Contains the list of servers and buttons for managing the list
+	 * @return
 	 */
 	private JPanel buildBrowsPanel() {
 	    int panelSize = 400;
@@ -429,13 +428,16 @@ public class GUI {
 
 		panel.add(northPanel,BorderLayout.NORTH);
 		panel.add(southPanel,BorderLayout.SOUTH);
-
 		return panel;
 	}
 
 
 	/**
-	 * @param
+	 * Is used to add server information to the graphical table.
+	 *
+	 * @param address for server
+	 * @param nrClients is the number of clients of the current server
+	 * @param name the server name
 	 */
     public void addToTable(String address, String port, String nrClients,
                                 String name) {
@@ -459,7 +461,7 @@ public class GUI {
     }
 
     /**
-     *
+     *  Removes all
      */
     public void clearTable() {
         SwingUtilities.invokeLater(new Runnable() {
