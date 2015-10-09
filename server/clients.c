@@ -72,7 +72,9 @@ void *init_new_client(void *thread_data_cli)
 
     /* Initialize client structure data */
     pthread_mutex_init(&cli->queue_mutex, NULL);
+    pthread_mutex_init(&cli->queue_mutex_exit, NULL);
     pthread_cond_init(&cli->queue_cond, NULL);
+    pthread_cond_init(&cli->queue_cond_exit, NULL);
     cli->send_queue = queue_empty();
 
     /* Create thread for handling the client output queue */
@@ -151,18 +153,16 @@ void *init_new_client(void *thread_data_cli)
                 // JOIN PDU is verified!
                 // check if nick already used
                 // uint8_t nicks[] = get_nicks_pdu(cli);
-                uint8_t nicks[] = {NICKS_OP, 1, 0, 4, 'S', 'i', 'r', '\0'};
-                uint8_t *nicks_copy = malloc(sizeof(nicks));
-                memcpy(nicks_copy, nicks, sizeof(nicks));//watch sizeof!!!
-                pdu_data *nicks_pdu = malloc(sizeof(pdu_data));
-                nicks_pdu->len = sizeof(nicks);//watch sizeof!!!
-                nicks_pdu->pdu = nicks_copy;
-                enqueue(cli, nicks_pdu);
-                
-/*                pdu_data nicks_pdu = {sizeof(nicks), nicks};*/
-/*                enqueue(cli, &nicks_pdu); // ???????????????????????mutex?*/
+/*                uint8_t nicks[] = {NICKS_OP, 1, 0, 4, 'S', 'i', 'r', '\0'};*/
+/*                uint8_t *nicks_copy = malloc(sizeof(nicks));*/
+/*                memcpy(nicks_copy, nicks, sizeof(nicks));//watch sizeof!!!*/
+/*                pdu_data *nicks_pdu = malloc(sizeof(pdu_data));*/
+/*                nicks_pdu->len = sizeof(nicks);//watch sizeof!!!*/
+/*                nicks_pdu->pdu = nicks_copy;*/
+/*                enqueue(cli, nicks_pdu);*/
+                enqueue(cli, get_nicks_pdu(cli));
                 // send UJOIN PDU and sign up on list
-                int fail = add_client(cli);
+                int fail = add_client(cli); //pre nicks?
                 if (fail)
                 {
                     // quit w/ msg full server!
@@ -186,10 +186,10 @@ void *init_new_client(void *thread_data_cli)
             }
         }
     }
-
+//handle cli a thread,, this thread killed, below done in one of others.//mallocs
 /*    enqueue();*/
     // remove client: uleave to all, remove cli,//mutex// signal, wait (out sig when quit)
-    pthread_mutex_lock(&clients_mutex);
+    pthread_mutex_lock(&clients_mutex);//mutex lower!!!!
 
     size_t nick_len = strlen(cli->nick);
     size_t pad = pad_length(nick_len);
@@ -222,20 +222,31 @@ void *init_new_client(void *thread_data_cli)
             enqueue(clients[i], uleave_pdu);
         }
     }
-    pthread_cond_signal(&cli->queue_cond);
+printf("we got this far!!      ");
     pthread_mutex_unlock(&clients_mutex);
-    pthread_cond_wait(&cli->queue_cond, &cli->queue_mutex);
-
+/*    pthread_mutex_lock(&cli->queue_mutex_exit);*/
+    pthread_cond_signal(&cli->queue_cond);
+/*    pthread_cond_wait(&cli->queue_cond_exit, &cli->queue_mutex_exit);*/
+/*    pthread_mutex_unlock(&cli->queue_mutex_exit);*/
+sleep(5);
+printf("Gettttttttttttttterrrrrrrrrrrrr\n");//sometimes not executed!!!!!
     /* Close the connection, free all thread resources and exit thread */
     close(cli->sockfd);
+    free(cli->nick);
     pthread_attr_destroy(&attr);
     //queue_setFreeFunc(cli->send_queue, free); // make freefunc!!!!!!!
     pthread_mutex_lock(&cli->queue_mutex);
     queue_free(cli->send_queue);
-    pthread_mutex_unlock(&cli->queue_mutex);//nick??????????????????????
+    pthread_mutex_unlock(&cli->queue_mutex);
+
     pthread_mutex_destroy(&cli->queue_mutex);
     pthread_cond_destroy(&cli->queue_cond);
+    pthread_mutex_destroy(&cli->queue_mutex_exit);
+    pthread_cond_destroy(&cli->queue_cond_exit);
+    printf("Get to da choppah!!!  ");
     free(cli);
+    printf("Get to da chopererererererer!!!\n");
+    fprintf(stderr, "CLIENT TERMINATED!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     return NULL;
 }
 
@@ -280,10 +291,20 @@ void *handle_client_output(void *thread_data_oq)
         if (NULL != send_data) // small loop?
         {
             send_array = send_data->pdu;
-            printf("we're sending %d bytes!\n", (uint32_t)send_data->len);
-            err = send(cli->sockfd, send_array, send_data->len, 0);//MSG_DONTWAIT);
-            free(send_array);
-            free(send_data); //select needed to free???????????????????????
+            printf("we're sending %d bytes!\n", (uint32_t)send_data->len);//12bytes? MESS?
+/*            printf("MESS: %s\n", send_array);*/
+            err = send(cli->sockfd, send_array, send_data->len, MSG_NOSIGNAL);//MSG_DONTWAIT);
+            if (QUIT_OP == send_array[0])
+            {
+/*                printf("quitting sender!!!!!!!!!!!!!!!!!!!!!!!!!\n");*/
+                fflush(stdout);
+                break;
+            }
+            else
+            {
+                free(send_array);
+                free(send_data); //select needed to free???????????????????????
+            }
             if (err < 0)
             {
                 /* select() was mistaken and nothing was sent */
@@ -295,12 +316,16 @@ void *handle_client_output(void *thread_data_oq)
 /*                else*/
 /*                {*/
                     perror("send (out)");
-                    continue; // try again? close conn?
+                    break; // try again? close conn? depend on error!!!!!!!!!
 /*                }*/
+                // if error cancel other threads (close or shutdown socket)
             }
         }
     }// if send quit or cannot send(error)
-    pthread_cond_signal(&cli->queue_cond);
+    pthread_mutex_lock(&cli->queue_mutex_exit);
+    pthread_cond_signal(&cli->queue_cond_exit);
+    pthread_mutex_unlock(&cli->queue_mutex_exit);
+    printf("quitteddddddddddddd----------------------------!\n");
     return NULL;
 }
 
@@ -481,6 +506,7 @@ void handle_client_input(client *cli)
         if (spam_count > 2)
         {
             // spam msg
+            printf("SPAMMMMMM\n\n\n");
             break; /* Terminate client connection */
         }
         spam_time = spam_time2;

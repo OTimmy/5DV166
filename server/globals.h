@@ -58,7 +58,9 @@ typedef struct {
     char *nick;
     int sockfd;
     pthread_mutex_t queue_mutex;
+    pthread_mutex_t queue_mutex_exit;
     pthread_cond_t queue_cond;
+    pthread_cond_t queue_cond_exit;
     queue *send_queue;
 } client;
 
@@ -68,12 +70,6 @@ typedef struct {
     char *name_server_port;
     pdu_reg reg;
 } reg_data;
-
-/* Struct containing the data needed to send a PDU */
-typedef struct {
-    size_t len;
-    uint8_t *pdu;
-} pdu_data;
 
 extern pdu_data quit_pdu;
 
@@ -91,6 +87,7 @@ void decr_nrof_clients();
 void enqueue(client *cli, pdu_data *pdu);
 pdu_data *dequeue(client *cli);
 int add_client(client *cli);
+pdu_data *get_nicks_pdu(client *cli);
 
 #endif /* GLOBALS_H_ */
 

@@ -67,6 +67,12 @@
 #define UCNICK_OP 18
 #define NICKS_OP 19
 
+/* Struct containing the data needed to send a PDU */
+typedef struct {
+    size_t len;
+    uint8_t *pdu;
+} pdu_data;
+
 /* Struct containing the data for a REG PDU */
 typedef struct {
     uint8_t op;
