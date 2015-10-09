@@ -34,7 +34,11 @@ import network.pdu.types.MessagePDU;
 public class Controller {
 
     private final int KEY_ENTER = 10;
-
+    private final int TAB_BROWS = 0;
+    private final int TAB_CHAT  = 1;
+    private final int SERVER_ADDRESS = 0;
+    private final int SERVER_NAME    = 1;
+    
     private Network net;
     private GUI gui;
     private ArrayList<String> nicks;
@@ -153,6 +157,9 @@ public class Controller {
 		});
 	}
 
+	/**
+	 * Adding action listeners for the gui buttons.
+	 */
 	private void initGUIActionListener() {
 		gui.addConnectNameServerButtonListener(new ActionListener() {
 
@@ -176,6 +183,7 @@ public class Controller {
 
 			    if(nameServerConnected == false) {
 			        button.setText("Connect");
+
 			    } else {
 			        button.setText("Disconnect");
 			    }
@@ -203,8 +211,12 @@ public class Controller {
 			    if(!net.isConnectedToServer()) {
 			        gui.setConnectServerButton("Connect");
 			        clearNicks();
+			        gui.setChatTabTitle("Chat");
+			        gui.openTab(TAB_BROWS);
 			    } else {
 			        gui.setConnectServerButton("Disconnect");
+			    	gui.setChatTabTitle(gui.getServerTopic());
+			        gui.openTab(TAB_CHAT);
 			    }
 
 			}
@@ -222,7 +234,6 @@ public class Controller {
 		});
 
 		gui.addRefreshButtonListener(new ActionListener() {
-			//IF refresh is in progress, user should be able to cancle the refresh, by clicking again on refresh(??MABY NOT))
 			@Override
 			public void actionPerformed(ActionEvent e) {
 			    if(nameServerConnected) {
@@ -240,28 +251,6 @@ public class Controller {
 				net.SendMessage(msg,nick);
 			}
 		});
-
-		gui.addTableListener(new MouseListener() {
-
-            @Override
-            public void mouseReleased(MouseEvent e) {}
-            @Override
-            public void mousePressed(MouseEvent e) {}
-            @Override
-            public void mouseExited(MouseEvent e) {}
-            @Override
-            public void mouseEntered(MouseEvent e) {}
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-                JTable table = (JTable) e.getSource();
-                int row = table.getSelectedRow();
-
-                String[] server = gui.getServerAtRow(row);
-                gui.setServerField(server[0],server[1]);
-            }
-        });
 
 		gui.addSendTextAreaListener(new KeyListener() {
 

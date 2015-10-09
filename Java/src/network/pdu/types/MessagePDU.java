@@ -41,7 +41,7 @@ public class MessagePDU extends PDU{
 	    byte[] headerBytes = new byte[ROW_SIZE -1];
 	    inStream.read(headerBytes, 0, headerBytes.length);
 
-
+	    //{"Address","Port","Connected","Topic"};
 	    int pad = headerBytes[0];
 //
 //	    if(pad != 0) {
