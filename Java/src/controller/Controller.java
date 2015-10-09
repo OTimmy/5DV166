@@ -4,15 +4,10 @@ import java.awt.event.ActionEvent;
 
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-
 
 import view.GUI;
 
@@ -70,7 +65,7 @@ public class Controller {
 			        String nrClients = (String) t.getClientNumberss().get(i);
 			        String name    = (String) t.getServerNames().get(i);
 
-			        gui.addToServerList(address,port,nrClients,name);
+			        gui.addToTable(address,port,nrClients,name);
 			    }
 
 			}
@@ -274,10 +269,8 @@ public class Controller {
 
 	private void addNickToList(String nickName) {
 	    synchronized(nicks) {
-	       // if(!nicks.contains(nick)) {
 	            nicks.add(nickName);
 	            gui.addNick(nickName);
-	       // }
 	    }
 	}
 

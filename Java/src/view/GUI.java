@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -29,8 +28,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
 
-import com.sun.security.sasl.ServerFactoryImpl;
-
 
 //TODO Scroll should be adjusted to frame, not static size
 //TODO set limit for characters in chat window
@@ -47,20 +44,18 @@ import com.sun.security.sasl.ServerFactoryImpl;
  */
 public class GUI {
 
-	private final int FRAME_WIDTH = 590;
-	private final int FRAME_HEIGHT = 520;
+	private final int FRAME_WIDTH       = 590;
+	private final int FRAME_HEIGHT      = 520;
 	private final int CONF_PANEL_HEIGHT = 100;
 	private final int CONF_PANEL_WIDTH  = 400;
 	private final int TAB_PANEL_HEIGHT  = 100;
 	private final int TAB_PANEL_WIDTH   = 400;
-	private final int NR_TABLE_COLUMNS  = 4;   //Starting values for table
+	private final int NR_TABLE_COLUMNS  = 4;
 	private final int NR_TABLE_ROWS     = 17;
-	private final int TAB_BROWS         = 0;
+	private final int TAB_BROWS         = 0;    //Index values for tabbedpane
 	private final int TAB_CHAT          = 1;
-
-    private final int KEY_ENTER = 10;
-    private final int KEY_BACK_SPACE = 8;
-    private final int SEND_MSG_LIMIT = 100;
+    private final int TAB_MAX_NAME      = 20;
+	private final int SEND_MSG_LIMIT    = 100;
 
 	private JFrame frame;
 	private DefaultTableModel tableModel;
@@ -98,9 +93,6 @@ public class GUI {
 		JPanel configPanel = buildConfigPanel();
 		JPanel tabPanel    = buildTabPanel();
 
-		initJTableListener();
-		buildSendTextArea();
-
 		frame.add(configPanel,BorderLayout.NORTH);
 		frame.add(tabPanel,BorderLayout.CENTER);
 		frame.revalidate();
@@ -125,6 +117,9 @@ public class GUI {
 	}
 
 
+    /**
+     * @return
+     */
 	private JPanel buildConfigPanel() {
 		JPanel panel  = new JPanel();
 
@@ -159,11 +154,16 @@ public class GUI {
 		nameServerPortField.setText("1337");
 		panel.add(nameServerPortField,gbc);
 
-		//Button
+		//Button connect
 		gbc.gridx++;
 		connectNameServerButton = new JButton("Connect");
 		panel.add(connectNameServerButton,gbc);
 
+		//Button Refresh
+	    gbc.gridx+=2;
+	    gbc.anchor = GridBagConstraints.LINE_START;
+	    refreshButton = new JButton("Refresh");
+	    panel.add(refreshButton);
 
 		/*Server row*/
 		//Label
@@ -213,12 +213,6 @@ public class GUI {
 		gbc.anchor = GridBagConstraints.LINE_END;
 		okButton = new JButton("Ok");
 		panel.add(okButton,gbc);
-
-		/*Extra column on nick*/
-		gbc.gridx+=2;
-		gbc.anchor = GridBagConstraints.LINE_START;
-		refreshButton = new JButton("Refresh");
-		panel.add(refreshButton);
 
 		return panel;
 	}
@@ -296,14 +290,11 @@ public class GUI {
 
 		/*Send panel*/
 		int sendPaneHeight  = 43;
-		int sendPaneWidth   =  420;//365; //365;
+		int sendPaneWidth   = 420;
 
 		JPanel sendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-		sendTextArea = new JTextArea(1,2);
-		sendTextArea.setWrapStyleWord(true);
-		sendTextArea.setLineWrap(true);
-
+		sendTextArea = buildSendTextArea();
 		scrollPane = new JScrollPane(sendTextArea);
 		scrollPane.setPreferredSize(new Dimension(sendPaneWidth,sendPaneHeight));
 
@@ -318,6 +309,92 @@ public class GUI {
 
 		return panel;
 	}
+
+   /**
+    *
+    */
+   private JTable buildTable() {
+
+       String[] columns = {"Address","Port","Connected","Topic"};
+       Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
+       tableModel = new DefaultTableModel(data,columns);
+
+       final JTable table = new JTable(tableModel);
+
+       table.addMouseListener(new MouseListener() {
+           @Override
+           public void mouseReleased(MouseEvent arg0) {}
+           @Override
+           public void mousePressed(MouseEvent arg0) {}
+           @Override
+           public void mouseExited(MouseEvent arg0) {}
+           @Override
+           public void mouseEntered(MouseEvent arg0) {}
+           @Override
+           public void mouseClicked(MouseEvent arg0) {
+
+             SwingUtilities.invokeLater(new Runnable() {
+
+               @Override
+               public void run() {
+                   int row = table.getSelectedRow();
+                   String address = (String) table.getValueAt(row, 0);
+                   String port = (String) table.getValueAt(row, 1);
+                   serverTopic     = (String) table.getValueAt(row, 3);
+
+                   serverAddressField.setText(address);
+                   serverPortField.setText(port);
+               }
+           });
+
+           }
+       });
+
+       return table;
+   }
+
+
+   /**
+    * Builds a new JTextarea to be used for sending messages.
+    * It also handels the amount of characters that are allowed to be typed.
+    *
+    * @return text area with actionlistener
+    */
+   private JTextArea buildSendTextArea() {
+       JTextArea textArea = new JTextArea(1,2);
+       textArea.setWrapStyleWord(true);
+       textArea.setLineWrap(true);
+
+
+       textArea.addKeyListener(new KeyListener() {
+           @Override
+           public void keyTyped(KeyEvent e) {
+               int size = sendTextArea.getText().length();
+               if(size > SEND_MSG_LIMIT) {
+                 synchronized(sendTextArea) {
+                     final String outmsg = sendTextArea.getText().substring(0,
+                             size - (size - SEND_MSG_LIMIT));
+                     SwingUtilities.invokeLater(new Runnable() {
+                         @Override
+                         public void run() {
+
+                             sendTextArea.setText(outmsg);
+                         }
+                     });
+                 }
+
+             }
+           }
+
+           @Override
+           public void keyPressed(KeyEvent e) {}
+
+           @Override
+           public void keyReleased(KeyEvent e) {}
+       });
+
+       return textArea;
+   }
 
 	/**
 	 * Contains the list of servers and buttons for managing the list
@@ -334,11 +411,7 @@ public class GUI {
 		JPanel northPanel = new JPanel(new BorderLayout());
 		northPanel.setPreferredSize(new Dimension(tablePanelSize,tablePanelSize));
 
-		String[] columns = {"Address","Port","Connected","Topic"};
-		Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
-		tableModel = new DefaultTableModel(data,columns);
-
-		table = new JTable(tableModel);
+		table = buildTable();
 		JScrollPane scrollPane = new JScrollPane(table);
 		northPanel.add(scrollPane,BorderLayout.CENTER);
 
@@ -360,76 +433,11 @@ public class GUI {
 		return panel;
 	}
 
-	             //Change to buildJTable
-	private void initJTableListener() {
-		table.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseReleased(MouseEvent arg0) {}
-			@Override
-			public void mousePressed(MouseEvent arg0) {}
-			@Override
-			public void mouseExited(MouseEvent arg0) {}
-			@Override
-			public void mouseEntered(MouseEvent arg0) {}
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-
-              SwingUtilities.invokeLater(new Runnable() {
-
-				@Override
-				public void run() {
-					int row = table.getSelectedRow();
-					String address = (String) table.getValueAt(row, 0);
-					String port = (String) table.getValueAt(row, 1);
-					serverTopic     = (String) table.getValueAt(row, 3);
-
-					serverAddressField.setText(address);
-					serverPortField.setText(port);
-				}
-			});
-
-			}
-		});
-	}
 
 	/**
-	 * Builds a new JTextarea to be used for sending messages.
-	 * It also handels the amount of characters that are allowed to be typed.
-	 *
-	 * @return text area with actionlistener
+	 * @param
 	 */
-    private JTextArea buildSendTextArea() {
-        JTextArea textArea = new JTextArea(1,1);
-
-        textArea.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                int size = sendTextArea.getText().length();
-                if(size > SEND_MSG_LIMIT) {
-                  final String outmsg = sendTextArea.getText().substring(0,
-                                                size - (size - SEND_MSG_LIMIT));
-
-                  SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        sendTextArea.setText(outmsg);
-                    }
-                });
-              }
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {}
-
-            @Override
-            public void keyReleased(KeyEvent e) {}
-        });
-
-        return textArea;
-    }
-
-
-    public void addToServerList(String address, String port, String nrClients,
+    public void addToTable(String address, String port, String nrClients,
                                 String name) {
         int row = tableModel.getRowCount() -1;
         String value = (String)tableModel.getValueAt(row, 0);
@@ -450,6 +458,9 @@ public class GUI {
         }
     }
 
+    /**
+     *
+     */
     public void clearTable() {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -526,14 +537,41 @@ public class GUI {
         });
     }
 
+    public void setChatTabTitle(final String argTitle) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+
+                String title;
+                if(argTitle.length() > TAB_MAX_NAME) {
+
+                    title = argTitle.substring(0, argTitle.length()
+                            - (argTitle.length() - TAB_MAX_NAME));
+                    title+= "...";
+                } else {
+                    title = argTitle;
+                }
+
+                tabbedPane.setTitleAt(TAB_CHAT, title);
+            }
+        });
+    }
+
+    public void openTab(int index) {
+        tabbedPane.setSelectedIndex(index);
+    }
+
     public String getSendTextArea() {
         String text = sendTextArea.getText();
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                sendTextArea.setText("");
-                sendTextArea.setCaretPosition(0);
+                synchronized(sendTextArea) {
+                    sendTextArea.setText("");
+                    sendTextArea.setCaretPosition(0);
+                }
             }
         });
 
@@ -563,32 +601,6 @@ public class GUI {
 	public String getServerTopic() {
 		return serverTopic;
 	}
-
-	public String[] getServerAtRow(int row) {
-	    String[] server = new String[2];
-	        server[0] = (String) tableModel.getValueAt(row, 0);
-	        server[1] = (String) tableModel.getValueAt(row, 1);
-
-	    return server;
-	}
-
-	public void openTab(int index) {
-		tabbedPane.setSelectedIndex(index);
-	}
-
-	public void setChatTabTitle(final String title) {
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				tabbedPane.setTitleAt(TAB_CHAT, title);
-			}
-		});
-	}
-
-    public void printErrorChat(String errorMsg) {
-        printOnMessageBoard(errorMsg);
-    }
 
     public void printErrorBrowser(String errorMsg) {
         browsErrLabel.setText(errorMsg);
