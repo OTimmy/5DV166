@@ -58,6 +58,10 @@ public class GUI {
 	private final int TAB_BROWS         = 0;
 	private final int TAB_CHAT          = 1;
 
+    private final int KEY_ENTER = 10;
+    private final int KEY_BACK_SPACE = 8;
+    private final int SEND_MSG_LIMIT = 100;
+
 	private JFrame frame;
 	private DefaultTableModel tableModel;
 
@@ -95,6 +99,7 @@ public class GUI {
 		JPanel tabPanel    = buildTabPanel();
 
 		initJTableListener();
+		buildSendTextArea();
 
 		frame.add(configPanel,BorderLayout.NORTH);
 		frame.add(tabPanel,BorderLayout.CENTER);
@@ -291,7 +296,7 @@ public class GUI {
 
 		/*Send panel*/
 		int sendPaneHeight  = 43;
-		int sendPaneWidth   =  430;//365; //365;
+		int sendPaneWidth   =  420;//365; //365;
 
 		JPanel sendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -355,7 +360,7 @@ public class GUI {
 		return panel;
 	}
 
-
+	             //Change to buildJTable
 	private void initJTableListener() {
 		table.addMouseListener(new MouseListener() {
 			@Override
@@ -386,6 +391,43 @@ public class GUI {
 			}
 		});
 	}
+
+	/**
+	 * Builds a new JTextarea to be used for sending messages.
+	 * It also handels the amount of characters that are allowed to be typed.
+	 *
+	 * @return text area with actionlistener
+	 */
+    private JTextArea buildSendTextArea() {
+        JTextArea textArea = new JTextArea(1,1);
+
+        textArea.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                int size = sendTextArea.getText().length();
+                if(size > SEND_MSG_LIMIT) {
+                  final String outmsg = sendTextArea.getText().substring(0,
+                                                size - (size - SEND_MSG_LIMIT));
+
+                  SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        sendTextArea.setText(outmsg);
+                    }
+                });
+              }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {}
+
+            @Override
+            public void keyReleased(KeyEvent e) {}
+        });
+
+        return textArea;
+    }
+
 
     public void addToServerList(String address, String port, String nrClients,
                                 String name) {
@@ -460,18 +502,6 @@ public class GUI {
             @Override
             public void run() {
                 msgTextArea.setText("");
-            }
-        });
-    }
-
-
-    public void setServerField(final String  address, final String port) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                serverAddressField.setText(address);
-                serverPortField.setText(port);
             }
         });
     }
