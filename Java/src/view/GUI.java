@@ -8,9 +8,11 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.BoxLayout;
@@ -26,6 +28,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
+
+import com.sun.security.sasl.ServerFactoryImpl;
 
 
 //TODO Scroll should be adjusted to frame, not static size
@@ -51,7 +55,9 @@ public class GUI {
 	private final int TAB_PANEL_WIDTH   = 400;
 	private final int NR_TABLE_COLUMNS  = 4;   //Starting values for table
 	private final int NR_TABLE_ROWS     = 17;
-
+	private final int TAB_BROWS         = 0;
+	private final int TAB_CHAT          = 1;
+	
 	private JFrame frame;
 	private DefaultTableModel tableModel;
 
@@ -70,10 +76,11 @@ public class GUI {
 
 	//used by tab
     JTabbedPane tabbedPane;
-
+    
     //used by browser panel
 	private JTable table;
-
+	private String serverTopic;
+	
 	//Used by chat panel
 	private JTextArea msgTextArea;
 	private JTextArea usrsTextArea;
@@ -87,7 +94,8 @@ public class GUI {
 		JPanel configPanel = buildConfigPanel();
 		JPanel tabPanel    = buildTabPanel();
 
-
+		initJTableListener();
+		
 		frame.add(configPanel,BorderLayout.NORTH);
 		frame.add(tabPanel,BorderLayout.CENTER);
 		frame.revalidate();
@@ -117,7 +125,6 @@ public class GUI {
 
 		/*panel settings*/
 		panel.setPreferredSize(new Dimension(CONF_PANEL_WIDTH, CONF_PANEL_HEIGHT));
-		//panel.setBorder(BorderFactory.createLineBorder(Color.red));
 		panel.setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets.bottom = 2;
@@ -202,6 +209,12 @@ public class GUI {
 		okButton = new JButton("Ok");
 		panel.add(okButton,gbc);
 
+		/*Extra column on nick*/
+		gbc.gridx+=2;
+		gbc.anchor = GridBagConstraints.LINE_START;
+		refreshButton = new JButton("Refresh");
+		panel.add(refreshButton);
+		
 		return panel;
 	}
 
@@ -217,13 +230,12 @@ public class GUI {
 		JPanel browsPanel = buildBrowsPanel();
 
 		tabbedPane.addTab("Browse", browsPanel);
-		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+		tabbedPane.setMnemonicAt(TAB_BROWS, KeyEvent.VK_1);
 
 
 
 		tabbedPane.addTab("Chat", chatPanel);
-		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
-		tabbedPane.setFocusCycleRoot(true);
+		tabbedPane.setMnemonicAt(TAB_CHAT, KeyEvent.VK_2);
 
 		panel.add(tabbedPane,BorderLayout.CENTER);
 
@@ -260,7 +272,7 @@ public class GUI {
         msgPanel.add(scrollPane);
 
 		/*User panel*/
-		int usrsPanelWidth     = 120; //100;
+		int usrsPanelWidth     = 160; //100;
 		int usrsPanelHeight    = 400;
 		int usrsTextAreaWidth  = 100;
 		int usrsTextAreaHeight = 325;
@@ -279,7 +291,7 @@ public class GUI {
 
 		/*Send panel*/
 		int sendPaneHeight  = 43;
-		int sendPaneWidth   =  365; //365;
+		int sendPaneWidth   =  430;//365; //365;
 
 		JPanel sendPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -337,16 +349,44 @@ public class GUI {
 		browsErrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		southPanel.add(browsErrLabel);
 
-		refreshButton = new JButton("Refresh");
-		refreshButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		southPanel.add(refreshButton);
-
 		panel.add(northPanel,BorderLayout.NORTH);
 		panel.add(southPanel,BorderLayout.SOUTH);
 
 		return panel;
 	}
 
+	
+	private void initJTableListener() {
+		table.addMouseListener(new MouseListener() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {}
+			@Override
+			public void mousePressed(MouseEvent arg0) {}
+			@Override
+			public void mouseExited(MouseEvent arg0) {}
+			@Override
+			public void mouseEntered(MouseEvent arg0) {}
+			@Override
+			public void mouseClicked(MouseEvent arg0) {
+              
+              SwingUtilities.invokeLater(new Runnable() {
+				
+				@Override
+				public void run() {
+					int row = table.getSelectedRow();
+					String address = (String) table.getValueAt(row, 0);
+					String port = (String) table.getValueAt(row, 1);
+					serverTopic     = (String) table.getValueAt(row, 3);
+					
+					serverAddressField.setText(address);
+					serverPortField.setText(port);
+				}
+			});
+              	
+			}
+		});
+	}
+	
     public void addToServerList(String address, String port, String nrClients,
                                 String name) {
         int row = tableModel.getRowCount() -1;
@@ -434,7 +474,6 @@ public class GUI {
                 serverPortField.setText(port);
             }
         });
-
     }
 
     public void setConnectNameServerButton(final String text) {
@@ -490,6 +529,10 @@ public class GUI {
 	public String getNick() {
 	    return nickField.getText();
 	}
+	
+	public String getServerTopic() {
+		return serverTopic; 
+	}
 
 	public String[] getServerAtRow(int row) {
 	    String[] server = new String[2];
@@ -499,6 +542,20 @@ public class GUI {
 	    return server;
 	}
 
+	public void openTab(int index) {
+		tabbedPane.setSelectedIndex(index);
+	}
+	
+	public void setChatTabTitle(final String title) {
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				tabbedPane.setTitleAt(TAB_CHAT, title);				
+			}
+		});
+	}
+	
     public void printErrorChat(String errorMsg) {
         printOnMessageBoard(errorMsg);
     }
