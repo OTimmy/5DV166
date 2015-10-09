@@ -47,7 +47,7 @@ import com.sun.security.sasl.ServerFactoryImpl;
  */
 public class GUI {
 
-	private final int FRAME_WIDTH = 500;
+	private final int FRAME_WIDTH = 590;
 	private final int FRAME_HEIGHT = 520;
 	private final int CONF_PANEL_HEIGHT = 100;
 	private final int CONF_PANEL_WIDTH  = 400;
@@ -57,7 +57,7 @@ public class GUI {
 	private final int NR_TABLE_ROWS     = 17;
 	private final int TAB_BROWS         = 0;
 	private final int TAB_CHAT          = 1;
-	
+
 	private JFrame frame;
 	private DefaultTableModel tableModel;
 
@@ -76,11 +76,11 @@ public class GUI {
 
 	//used by tab
     JTabbedPane tabbedPane;
-    
+
     //used by browser panel
 	private JTable table;
 	private String serverTopic;
-	
+
 	//Used by chat panel
 	private JTextArea msgTextArea;
 	private JTextArea usrsTextArea;
@@ -95,7 +95,7 @@ public class GUI {
 		JPanel tabPanel    = buildTabPanel();
 
 		initJTableListener();
-		
+
 		frame.add(configPanel,BorderLayout.NORTH);
 		frame.add(tabPanel,BorderLayout.CENTER);
 		frame.revalidate();
@@ -214,7 +214,7 @@ public class GUI {
 		gbc.anchor = GridBagConstraints.LINE_START;
 		refreshButton = new JButton("Refresh");
 		panel.add(refreshButton);
-		
+
 		return panel;
 	}
 
@@ -355,7 +355,7 @@ public class GUI {
 		return panel;
 	}
 
-	
+
 	private void initJTableListener() {
 		table.addMouseListener(new MouseListener() {
 			@Override
@@ -368,25 +368,25 @@ public class GUI {
 			public void mouseEntered(MouseEvent arg0) {}
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-              
+
               SwingUtilities.invokeLater(new Runnable() {
-				
+
 				@Override
 				public void run() {
 					int row = table.getSelectedRow();
 					String address = (String) table.getValueAt(row, 0);
 					String port = (String) table.getValueAt(row, 1);
 					serverTopic     = (String) table.getValueAt(row, 3);
-					
+
 					serverAddressField.setText(address);
 					serverPortField.setText(port);
 				}
 			});
-              	
+
 			}
 		});
 	}
-	
+
     public void addToServerList(String address, String port, String nrClients,
                                 String name) {
         int row = tableModel.getRowCount() -1;
@@ -529,9 +529,9 @@ public class GUI {
 	public String getNick() {
 	    return nickField.getText();
 	}
-	
+
 	public String getServerTopic() {
-		return serverTopic; 
+		return serverTopic;
 	}
 
 	public String[] getServerAtRow(int row) {
@@ -545,17 +545,17 @@ public class GUI {
 	public void openTab(int index) {
 		tabbedPane.setSelectedIndex(index);
 	}
-	
+
 	public void setChatTabTitle(final String title) {
 		SwingUtilities.invokeLater(new Runnable() {
-			
+
 			@Override
 			public void run() {
-				tabbedPane.setTitleAt(TAB_CHAT, title);				
+				tabbedPane.setTitleAt(TAB_CHAT, title);
 			}
 		});
 	}
-	
+
     public void printErrorChat(String errorMsg) {
         printOnMessageBoard(errorMsg);
     }

@@ -38,7 +38,7 @@ public class Controller {
     private final int TAB_CHAT  = 1;
     private final int SERVER_ADDRESS = 0;
     private final int SERVER_NAME    = 1;
-    
+
     private Network net;
     private GUI gui;
     private ArrayList<String> nicks;
@@ -94,7 +94,6 @@ public class Controller {
 
             @Override
             public void update(String t) {
-                gui.clearMessageBoard();
                 gui.printOnMessageBoard("Error:"+t);
                 gui.setConnectServerButton("Connect");
                 clearNicks();

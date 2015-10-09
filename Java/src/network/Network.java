@@ -172,17 +172,8 @@ public class Network {
 	}
 
 	public void disconnectServer() {
-	    //if(! tcp.isConnected()) {
-	        tcp.disconnect();
-	        System.out.println("Disconnecting!!!");
-//	        try {
-//
-//	           // tcpThread.join();
-//	            System.out.println("Thread closed");
-//	        } catch (InterruptedException e) {
-//	            e.printStackTrace();
-//	            //tcpErrorListener.update(e.getMessage());
-//	        }
+	    tcp.disconnect();
+	    System.out.println("Disconnecting!!!");
 	}
 
 	public void SendMessage(String msg, String nick) {

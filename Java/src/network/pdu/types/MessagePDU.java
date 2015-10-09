@@ -36,65 +36,49 @@ public class MessagePDU extends PDU{
 
 	public boolean parseIn(InputStream inStream) throws IOException {
 
-
 	    //Reading rest of header
-	    byte[] headerBytes = new byte[ROW_SIZE -1];
-	    inStream.read(headerBytes, 0, headerBytes.length);
+	    byte[] headerBytes = readExactly(ROW_SIZE -1,inStream); //new byte[ROW_SIZE -1];
 
-	    //{"Address","Port","Connected","Topic"};
 	    int pad = headerBytes[0];
-//
-//	    if(pad != 0) {
-//	        return false;
-//	    }
 
 	    int nickLength = (int) (headerBytes[1] & 0xff);
 	    int checkSum = (int) (headerBytes[2] & 0xff);
 
 	    //Reading message length + padding
-	    byte[] tempBytes = new byte[ROW_SIZE];
-	    inStream.read(tempBytes, 0, tempBytes.length);
+	    byte[] tempBytes = readExactly(ROW_SIZE, inStream);
 
 	    int msgLength = (int) (((tempBytes[0] & 0xff) << 8 ) | (tempBytes[1] & 0xff));
 	    pad  = (int) (((tempBytes[2] & 0xff) << 8)  | (tempBytes[3] & 0xff)); //Should be zero
 
 	    System.out.println("SIZE OF MSG: "+msgLength);
-//	    if(pad != 0) {
-//	        return false;
-//	    }
 
 	    //Reading time stamp
-	    byte[] timeBytes = new byte[ROW_SIZE];
-	    inStream.read(timeBytes, 0, timeBytes.length);
-
-	    date = DateUtils.getDateByBytes(timeBytes); //getDateByBytes(timeBytes);
-
+	    byte[] timeBytes = readExactly(ROW_SIZE, inStream);
+	    date = DateUtils.getDateByBytes(timeBytes);
 
 	    // Reading message
 	    byte[] msgBytes = readExactly(msgLength,inStream);
 
+	    System.out.println("Recieved size: "+msgBytes.length);
         msg = new String(msgBytes, StandardCharsets.UTF_8);
 
         //Padding of message
-        tempBytes = new byte[padLengths(msgLength)];
-        inStream.read(tempBytes, 0, tempBytes.length);
-
-        for(byte b: tempBytes) {
-
-        }
-
-        //check padding of message
-
+        tempBytes = readExactly(padLengths(msgLength), inStream);
 
         //nick name
-        byte[] nickBytes = new byte[nickLength];
-        inStream.read(nickBytes, 0, nickBytes.length);
+        byte[] nickBytes = readExactly(nickLength, inStream);
 
-        nick = new String(nickBytes, StandardCharsets.UTF_8);
 
         //padding of nick
-        tempBytes = new byte[padLengths(nickLength)];
-        inStream.read(tempBytes, 0, tempBytes.length);
+        tempBytes = readExactly(padLengths(nickLength), inStream);
+
+        if(nickBytes.length == 0) {
+            nick = "Server";
+        } else {
+            nick = new String(nickBytes, StandardCharsets.UTF_8);
+        }
+
+
 
         return true;
 	}
@@ -107,7 +91,7 @@ public class MessagePDU extends PDU{
 
 
 		byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
-
+		System.out.println("Sending bytes: "+msgBytes.length);
 		//msg length to two bytes, then pad.
 		builder.appendShort((short) msgBytes.length);
 		//pad remaining 2 bytes
@@ -128,56 +112,6 @@ public class MessagePDU extends PDU{
 		bytes[3] = Checksum.computeChecksum(bytes);
 
 	    return bytes;
-	}
-
-
-	/**
-	 * @param start of padding, length of message or nicks
-	 * @return true if padding is correct otherwise false.
-	 */
-	 private boolean checkPadding(byte[] bytes) {
-
-	    if((bytes[1] != 0 || bytes[6] != 0 || bytes[7] != 0)) {
-	        return false;
-	    }
-
-        int msgLength  = (int) (bytes[4]<<8  & 0xffff) | ( bytes[5] &  0xffff);
-        int msgStart   = 12;
-
-
-        int msgPaddingStart = msgLength + msgStart;
-
-	    //message padding
-	    if(!checkStringPadding(bytes, msgPaddingStart,msgLength)) {
-	        return false;
-	    }
-
-	    int nickLength = (int) bytes[2];
-        int nickStart  = msgStart + msgLength + padLengths(msgLength);
-
-        int nickPaddingStart = nickLength + nickStart;
-
-	    if(!checkStringPadding(bytes, nickPaddingStart,nickLength)) {
-	        return false;
-	    }
-
-	    return true;
-	}
-
-	 /**
-	  *
-	  */
-	private boolean checkStringPadding(byte[] bytes, int start,  int length) {
-
-	    int endOfPadding = start + padLengths(length);
-
-        for(int i  = start;i < endOfPadding && i < bytes.length; i++ ) {
-            if(bytes[i] != 0) {
-                return false;
-            }
-        }
-
-        return true;
 	}
 
 	@Override
