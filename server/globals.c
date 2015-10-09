@@ -47,6 +47,8 @@
 #include "globals.h"
 #include "queue.h"
 
+pdu_data quit_pdu = {4, {QUIT_OP, 0, 0, 0}};
+
 /* Number of clients currently connected to the server */
 uint8_t nrof_clients = 0;
 pthread_mutex_t nrof_clients_mutex = PTHREAD_MUTEX_INITIALIZER;

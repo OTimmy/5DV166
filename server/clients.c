@@ -1,7 +1,7 @@
 /*
  * clients.c
  * Written by Joakim Sandman, October 2015.
- * Last update: 8/10-15.
+ * Last update: 9/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * clients.c contains functions for handling client input and output.
@@ -74,7 +74,6 @@ void *init_new_client(void *thread_data_cli)
     pthread_mutex_init(&cli->queue_mutex, NULL);
     pthread_cond_init(&cli->queue_cond, NULL);
     cli->send_queue = queue_empty();
-    //queue_setFreeFunc(cli->send_queue, free); // NO FREEFUNC!!!!!!!!!!!!!!!
 
     /* Create thread for handling the client output queue */
     pthread_t thread_oq;
@@ -188,9 +187,49 @@ void *init_new_client(void *thread_data_cli)
         }
     }
 
+/*    enqueue();*/
+    // remove client: uleave to all, remove cli,//mutex// signal, wait (out sig when quit)
+    pthread_mutex_lock(&clients_mutex);
+
+    size_t nick_len = strlen(cli->nick);
+    size_t pad = pad_length(nick_len);
+    uint8_t uleave[8 + nick_len + pad];
+    memset(uleave, 0, sizeof(uleave));
+    uleave[0] = ULEAVE_OP;
+    uleave[1] = nick_len;
+
+    uint32_t unix_time = htonl(time(NULL));
+    size_t i = 4;
+    memcpy(&uleave[i], &unix_time, sizeof(unix_time));
+    i += sizeof(unix_time);
+    memcpy(&uleave[i], cli->nick, nick_len);
+
+    for (int i = 0; i < 255; i++)
+    {
+        if (cli == clients[i])
+        {
+            clients[i] = NULL;
+            decr_nrof_clients();
+            enqueue(cli, &quit_pdu);
+        }
+        else if (NULL != clients[i])
+        {
+            uint8_t *uleave_copy = malloc(sizeof(uleave));
+            memcpy(uleave_copy, uleave, sizeof(uleave));
+            pdu_data *uleave_pdu = malloc(sizeof(pdu_data));
+            uleave_pdu->len = sizeof(uleave);
+            uleave_pdu->pdu = uleave_copy;
+            enqueue(clients[i], uleave_pdu);
+        }
+    }
+    pthread_cond_signal(&cli->queue_cond);
+    pthread_mutex_unlock(&clients_mutex);
+    pthread_cond_wait(&cli->queue_cond, &cli->queue_mutex);
+
     /* Close the connection, free all thread resources and exit thread */
     close(cli->sockfd);
     pthread_attr_destroy(&attr);
+    //queue_setFreeFunc(cli->send_queue, free); // make freefunc!!!!!!!
     pthread_mutex_lock(&cli->queue_mutex);
     queue_free(cli->send_queue);
     pthread_mutex_unlock(&cli->queue_mutex);//nick??????????????????????
@@ -237,7 +276,7 @@ void *handle_client_output(void *thread_data_oq)
 /*            queue_dequeue(cli->send_queue);*/
 /*        }*/
 /*        pthread_mutex_unlock(&cli->queue_mutex);*/
-
+//QUIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (NULL != send_data) // small loop?
         {
             send_array = send_data->pdu;
@@ -260,7 +299,8 @@ void *handle_client_output(void *thread_data_oq)
 /*                }*/
             }
         }
-    }
+    }// if send quit or cannot send(error)
+    pthread_cond_signal(&cli->queue_cond);
     return NULL;
 }
 
@@ -318,7 +358,7 @@ void handle_client_input(client *cli)
             size_t mess_pad = pad_length(mess_len);
             uint8_t *message = malloc(mess_len + mess_pad);
             //memset 0?
-            // recv rest
+            // recv rest (not if len 0)
             err = recv(cli->sockfd, message, mess_len + mess_pad, 0);
             if (err < 0)
             {
@@ -449,11 +489,7 @@ void handle_client_input(client *cli)
     // remove_client()?????????
 
     /* Close the connection, free all thread resources and exit thread */
-/*    close(cli->sockfd);*/
-/*    queue_free(cli->send_queue);*/
-/*    pthread_mutex_destroy(&cli->queue_mutex);//???????????????????????*/
-/*    pthread_cond_destroy(&cli->queue_cond);*/
-/*    free(cli);*/
+
     return;
 }
 

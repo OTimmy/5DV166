@@ -1,7 +1,7 @@
 /*
  * pdu.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 8/10-15.
+ * Last update: 9/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * pdu.h is the header file for the pdu.c file.
@@ -74,8 +74,6 @@ typedef struct {
     uint16_t tcp_port;
     char *name;
 } pdu_reg;
-
-extern uint8_t quit[4];
 
 /*
  * pad_length: Calculates how many bytes are needed as padding to make the

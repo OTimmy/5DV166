@@ -1,7 +1,7 @@
 /*
  * pdu.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 8/10-15.
+ * Last update: 9/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * pdu.c contains functions for using the PDU data types.
@@ -44,9 +44,8 @@
 //#include <stdarg.h>
 
 /* --- Local headers --- */
+#include "globals.h"
 #include "pdu.h"
-
-uint8_t quit[4] = {QUIT_OP, 0, 0, 0};
 
 /*
  * pad_length: Calculates how many bytes are needed as padding to make the

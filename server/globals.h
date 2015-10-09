@@ -1,7 +1,7 @@
 /*
  * globals.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 8/10-15.
+ * Last update: 9/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.h is the header file for the globals.c file.
@@ -74,6 +74,8 @@ typedef struct {
     size_t len;
     uint8_t *pdu;
 } pdu_data;
+
+extern pdu_data quit_pdu;
 
 /* Array of connected clients (dynamic list not necessary since max 255) */
 extern client *clients[];

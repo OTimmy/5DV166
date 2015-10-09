@@ -1,7 +1,7 @@
 /*
  * server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 8/10-15.
+ * Last update: 9/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.c implements a chat server.
@@ -29,6 +29,10 @@
 // uchnick, freeall?
 // main 2 threads (or admin client), ack to alive func.
 // time, server local msges (init, running), main? parser.
+
+//input quit or conn lost => uleave to all (or q?) => output exits (think of queue)
+//freefunc just before free queue => remove client (earlier?)
+//exit => mass quit/kick => term threads. quit and rem separate?
 
 /* --- Standard headers --- */
 #include <stdlib.h>
