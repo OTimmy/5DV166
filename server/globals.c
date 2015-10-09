@@ -9,7 +9,7 @@
 
 /* --- Standard headers --- */
 #include <stdlib.h>
-//#include <stdio.h>
+#include <stdio.h>
 #include <time.h> /* -lrt (sometimes for glibc < 2.17) */
 //#include <math.h> /* -lm */
 #include <string.h>
@@ -47,7 +47,8 @@
 #include "globals.h"
 #include "queue.h"
 
-pdu_data quit_pdu = {4, {QUIT_OP, 0, 0, 0}};
+uint8_t quit[] = {QUIT_OP, 0, 0, 0};
+pdu_data quit_pdu = {4, quit};
 
 /* Number of clients currently connected to the server */
 uint8_t nrof_clients = 0;
@@ -140,11 +141,6 @@ int add_client(client *cli)
             ujoin_pdu->len = sizeof(ujoin);
             ujoin_pdu->pdu = ujoin_copy;
             enqueue(clients[i], ujoin_pdu);
-
-/*            uint8_t ujoin_copy[sizeof(ujoin)];*/
-/*            memcpy(ujoin_copy, ujoin, sizeof(ujoin));*/
-/*            pdu_data ujoin_pdu = {sizeof(ujoin), ujoin_copy};*/
-/*            enqueue(clients[i], &ujoin_pdu);*/
         }
         else if (1 == fail)
         {
@@ -158,4 +154,63 @@ int add_client(client *cli)
 }
 
 //remove_client
+
+pdu_data *get_nicks_pdu(client *cli)
+{
+    pthread_mutex_lock(&clients_mutex);
+
+    int nrof_nicks = 0;
+    int nicks_len = 0;
+    char *nick_strings[255] = {0};
+    for (int i = 0; i < 255; i++)
+    {
+        if (NULL != clients[i])
+        {
+            nick_strings[nrof_nicks] = clients[i]->nick;
+            nicks_len = strlen(clients[i]->nick) + 1;
+            nrof_nicks++;
+        }
+    }
+    nick_strings[nrof_nicks] = cli->nick;
+    nicks_len = strlen(cli->nick) + 1;
+    nrof_nicks++;
+
+    size_t pad = pad_length(nicks_len);
+    size_t nicks_size = 4 + nicks_len + pad;
+    uint8_t *nicks = malloc(nicks_size);
+    memset(nicks, 0, nicks_size);
+    nicks[0] = NICKS_OP;
+    nicks[1] = nrof_nicks;
+    uint16_t nicks_len_nbo = htons(nicks_len);
+    memcpy(&nicks[2], &nicks_len_nbo, sizeof(nicks_len_nbo));
+    int len = 0;
+    int ind = 4;
+    for (int i = 0; i < nrof_nicks; i++)
+    {
+        len = snprintf((char *) &nicks[ind], nicks_len, "%s", nick_strings[i]);
+        if (len < 0)
+        {
+            perror("snprintf (nicks)");
+            free(nicks);
+            pthread_mutex_unlock(&clients_mutex);
+            return NULL;
+        }
+        ind += len;
+        ind++;
+    }
+
+    pdu_data *nicks_pdu = malloc(sizeof(pdu_data));
+    nicks_pdu->len = nicks_size;
+    nicks_pdu->pdu = nicks;
+
+/*    for (int i = 0; i < 255; i++)*/
+/*    {*/
+/*        if (NULL != clients[i])*/
+/*        {*/
+/*            enqueue(clients[i], nicks_pdu);*/
+/*        }*/
+/*    }*/
+    pthread_mutex_unlock(&clients_mutex);
+    return nicks_pdu;
+}
 

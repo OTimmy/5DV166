@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
     }
     fprintf(stderr, "Server commands unavailable!\n");
     pause();
-
+//to know when threads are dead?????
 /*    if (0 != pthread_join(thread_ns, NULL))*/
 /*    {*/
 /*        fprintf(stderr, "ERROR: Failed to join with thread ns!\n");*/

@@ -1,7 +1,7 @@
 /*
  * doorman.c
  * Written by Joakim Sandman, October 2015.
- * Last update: 8/10-15.
+ * Last update: 9/10-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * doorman.c contains functions for accepting connections from clients.
@@ -93,7 +93,7 @@ void *handle_connecting_clients(void *thread_data_dm)
         }
         else
         {
-            new_client = malloc(sizeof(client));
+            new_client = malloc(sizeof(*new_client));
             if (NULL == new_client)
             {
                 perror("malloc (new cli)");
