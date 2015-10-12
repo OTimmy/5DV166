@@ -34,4 +34,10 @@ public class JoinPDU extends PDU{
 	public byte getOpCode() {
 		return OpCode.JOIN.value;
 	}
+
+	@Override
+	public boolean isValid() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

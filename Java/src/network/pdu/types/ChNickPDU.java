@@ -37,4 +37,9 @@ public class ChNickPDU extends PDU{
     public byte getOpCode() {
         return OpCode.CHNICK.value;
     }
+
+	@Override
+	public boolean isValid() {
+		return false;
+	}
 }

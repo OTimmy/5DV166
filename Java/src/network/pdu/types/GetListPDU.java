@@ -26,4 +26,11 @@ public class GetListPDU extends PDU{
 	public byte getOpCode() {
 		return OpCode.GETLIST.value;
 	}
+
+
+	@Override
+	public boolean isValid() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

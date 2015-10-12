@@ -29,4 +29,11 @@ public class QuitPDU extends PDU{
 		return OpCode.QUIT.value;
 	}
 
+
+	@Override
+	public boolean isValid() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

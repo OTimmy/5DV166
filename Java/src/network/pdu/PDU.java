@@ -53,6 +53,8 @@ public abstract class PDU {
         }
         return true;
     }
+    
+    public abstract boolean isValid();
 
     public abstract byte[] toByteArray();
 

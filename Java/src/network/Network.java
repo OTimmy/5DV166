@@ -203,26 +203,49 @@ public class Network {
 		                nicksListener.update(nick);
 		            }
 	                break;
+
 		        case MESSAGE:
-		        	msgListener.update(((MessagePDU) pdu));
-		            break;
+		        	if(pdu.isValid()) {
+		        		msgListener.update(((MessagePDU) pdu));	
+		        	} else {
+		        		tcpErrorListener.update("invalid message");
+		        	}
+		        	
+		        	break;
 
 		        case UJOIN:
 		            UJoinPDU ujoinPDU = (UJoinPDU) pdu;
-		            uJoinListener.update(ujoinPDU);
+		            if(pdu.isValid()) {
+		                uJoinListener.update(ujoinPDU);	
+		            } else {
+		                tcpErrorListener.update("Invalid ujoin");
+		            }
+		            
 		            break;
 
 		        case ULEAVE:
-		            ULeavePDU uLeavePDU = (ULeavePDU) pdu;
-		            uLeaveListener.update(uLeavePDU);
+		            if(pdu.isValid()) {
+		                ULeavePDU uLeavePDU = (ULeavePDU) pdu;
+			            uLeaveListener.update(uLeavePDU);	
+		            } else {
+		                tcpErrorListener.update("invalid uleave");
+		            }
+		            
 		        	break;
 
 		        case UCNICK:
-		            UCNickPDU uCNickPDU = (UCNickPDU) pdu;
-                    uCNickListener.update(uCNickPDU);
+		        	if(pdu.isValid()) {
+		                UCNickPDU uCNickPDU = (UCNickPDU) pdu;
+		                uCNickListener.update(uCNickPDU);
+				           	
+		        	} else {
+		        		tcpErrorListener.update("invalid ucnick");
+		        	}
+		        	
 		            break;
 
 		        case QUIT:
+		        	
 		            tcpErrorListener.update("Disconnected by admin");
 		            break;
 
