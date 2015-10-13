@@ -205,50 +205,63 @@ public class Network {
 	                break;
 
 		        case MESSAGE:
+		        	MessagePDU msgPDU = (MessagePDU) pdu;
 		        	if(pdu.isValid()) {
-		        		msgListener.update(((MessagePDU) pdu));	
+		        		msgListener.update(msgPDU);
 		        	} else {
 		        		tcpErrorListener.update("invalid message");
+		        		for(String error:msgPDU.getErrors()) {
+		        			tcpErrorListener.update(error);
+		        		}
 		        	}
-		        	
+
 		        	break;
 
 		        case UJOIN:
 		            UJoinPDU ujoinPDU = (UJoinPDU) pdu;
 		            if(pdu.isValid()) {
-		                uJoinListener.update(ujoinPDU);	
+		                uJoinListener.update(ujoinPDU);
 		            } else {
 		                tcpErrorListener.update("Invalid ujoin");
+		                for(String error:ujoinPDU.getErrors()) {
+		                	tcpErrorListener.update(error);
+		                }
 		            }
-		            
+
 		            break;
 
 		        case ULEAVE:
 		            if(pdu.isValid()) {
 		                ULeavePDU uLeavePDU = (ULeavePDU) pdu;
-			            uLeaveListener.update(uLeavePDU);	
+			            uLeaveListener.update(uLeavePDU);
 		            } else {
 		                tcpErrorListener.update("invalid uleave");
+
 		            }
-		            
+
 		        	break;
 
 		        case UCNICK:
 		        	if(pdu.isValid()) {
 		                UCNickPDU uCNickPDU = (UCNickPDU) pdu;
 		                uCNickListener.update(uCNickPDU);
-				           	
+
 		        	} else {
 		        		tcpErrorListener.update("invalid ucnick");
 		        	}
-		        	
+
 		            break;
 
 		        case QUIT:
-		        	
 		            tcpErrorListener.update("Disconnected by admin");
 		            break;
 
+		        }
+		        //If disconnected by any circumstance above.
+		        if(!tcp.isConnected()) {
+		        	for(String error:pdu.getErrors()) {
+		        		tcpErrorListener.update(error);
+		        	}
 		        }
 
 		    } else {

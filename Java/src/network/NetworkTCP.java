@@ -56,22 +56,25 @@ public class NetworkTCP {
      * Quit by sending QuitPDU, then close out,in stream and the socket.
      */
     public synchronized void disconnect() {
-        try {
-            if(outStream != null) {
-                QuitPDU quitPDU = new QuitPDU();
-                outStream.write(quitPDU.toByteArray(), 0, quitPDU.getSize());
-                outStream.flush();
-                outStream.close();
-                inStream.close();
-                socket.close();
-            }
+    	if(isConnected()) {
+            try {
+                if(outStream != null) {
+                    QuitPDU quitPDU = new QuitPDU();
+                    outStream.write(quitPDU.toByteArray(), 0, quitPDU.getSize());
+                    outStream.flush();
+                    outStream.close();
+                    inStream.close();
+                    socket.close();
+                }
 
-        } catch(SocketException e) {
-            //IGNORE becuase of disconnect
-        } catch (IOException e) {
-            e.printStackTrace();
-            errorListener.update(e.getMessage());
-        }
+            } catch(SocketException e) {
+                //IGNORE becuase of disconnect
+            } catch (IOException e) {
+                e.printStackTrace();
+                errorListener.update(e.getMessage());
+            }
+    	}
+
         connected = false;
     }
 

@@ -2,6 +2,7 @@ package network.pdu;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import network.pdu.types.*;
 
@@ -13,24 +14,24 @@ public abstract class PDU {
         byte opByte = (byte) inStream.read();
         OpCode op = OpCode.getOpCodeBy(opByte);
 
-        if(opByte != -1 && op != null) {  
+        if(opByte != -1 && op != null) {
 
             switch(op) {
-            
+
                 case MESSAGE: return new MessagePDU(inStream);
-                
+
                 case NICKS:   return new NicksPDU(inStream);
 
                 case SLIST:   return new SListPDU(inStream);
 
                 case UCNICK:  return new UCNickPDU(inStream);
-                
+
                 case UJOIN:   return new UJoinPDU(inStream);
-                
+
                 case ULEAVE:  return new ULeavePDU(inStream);
-                
+
                 case QUIT:    return new QuitPDU();
-            
+
             }
         }
 
@@ -53,7 +54,7 @@ public abstract class PDU {
         }
         return true;
     }
-    
+
     public abstract boolean isValid();
 
     public abstract byte[] toByteArray();
@@ -61,6 +62,9 @@ public abstract class PDU {
     public abstract int getSize();
 
     public abstract byte getOpCode();
+
+    public abstract ArrayList<String> getErrors();
+
 
     /**
      * Reads exactly the specified amount of bytes from the stream, blocking
