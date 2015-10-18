@@ -37,31 +37,28 @@ public class UJoinPDU extends PDU{
      */
     private String parser(InputStream inStream) throws IOException {
 
-        int nickLength = inStream.read();
+        int nickLength = readExactly(1, inStream)[0] & 0xff;
 
         //reading the pad
-        byte[] padBytes = new byte[PAD_SIZE];
-        inStream.read(padBytes, 0, padBytes.length);
-
+        byte[] padBytes = readExactly(PAD_SIZE, inStream);
+        
         if(!isPaddedBytes(padBytes)) {
-            return "Incorrect pdu padding";
+            return ERROR_PADDING_PDU;
         }
 
         //Reading time stamp
-        byte[] timeBytes = new byte[TIME_SIZE];
-        inStream.read(timeBytes, 0, timeBytes.length);
+        byte[] timeBytes = readExactly(TIME_SIZE, inStream); 
 
         date = DateUtils.getDateByBytes(timeBytes);
 
         //Reading the nick
-        byte[] nickBytes = new byte[nickLength];
-        inStream.read(nickBytes, 0, nickBytes.length);
+        byte[] nickBytes = readExactly(nickLength, inStream); 
 
         //Read padding
         padBytes = readExactly(padLengths(nickLength), inStream);
         
         if(!isPaddedBytes(padBytes)) {
-            return "Incorrect nick padding";
+            return ERROR_PADDING_NICK;
         }
 
         nick = new String(nickBytes, StandardCharsets.UTF_8);
@@ -93,8 +90,8 @@ public class UJoinPDU extends PDU{
         return OpCode.UJOIN.value;
     }
 
-	@Override
-	public String getError() {
-		return error;
-	}
+    @Override
+    public String getError() {
+        return error;
+    }
 }

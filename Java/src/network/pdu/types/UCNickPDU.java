@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 import network.pdu.DateUtils;
@@ -38,13 +37,11 @@ public class UCNickPDU extends PDU{
         byte[] padBytes = readExactly(1, inStream);
         
         if(!isPaddedBytes(padBytes)) {
-        	return "Incorrect padding";
+            return ERROR_PADDING_PDU;
         }
         
         //Reading time stamp
-//        byte[] timeBytes = new byte[ROW_SIZE];
         byte[] timeBytes = readExactly(ROW_SIZE, inStream);
-//        inStream.read(timeBytes, 0, timeBytes.length);
 
         date = DateUtils.getDateByBytes(timeBytes);;
 
@@ -55,7 +52,7 @@ public class UCNickPDU extends PDU{
         padBytes     = readExactly(padLengths(nickLength1), inStream);
 
         if(!isPaddedBytes(padBytes)) {
-        	return "Incorrect nick1 padding";
+        	return ERROR_PADDING_NICK +"1";
         }
         
         //Reading new nick
@@ -65,7 +62,7 @@ public class UCNickPDU extends PDU{
         padBytes            = readExactly(padLengths(nickLength2), inStream);
         
         if(!isPaddedBytes(padBytes)) {
-        	return "Incorrect nick2 padding";
+        	return ERROR_PADDING_NICK+"2";
         }
         
         oldNick = new String(oldNickBytes,StandardCharsets.UTF_8);
@@ -102,8 +99,8 @@ public class UCNickPDU extends PDU{
         return date;
     }
 
-	@Override
-	public String getError() {
-		return error;
-	}
+    @Override
+    public String getError() {
+        return error;
+    }
 }

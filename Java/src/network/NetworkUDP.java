@@ -58,26 +58,26 @@ public class NetworkUDP {
     public boolean sendGetList() {
         System.out.println("Seding");
         InetAddress inetAddress;
-		try {
-			inetAddress = InetAddress.getByName(address);
+        try {
+            inetAddress = InetAddress.getByName(address);
 
-	        GetListPDU pdu = new GetListPDU();
-	        DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
-	                                                    pdu.getSize(),
-	                                                    inetAddress,port);
-			socket.send(packet);
+            GetListPDU pdu = new GetListPDU();
+            DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
+                                                        pdu.getSize(),
+                                                        inetAddress,port);
+            socket.send(packet);
 
-		} catch (IOException e) {
-			e.printStackTrace();
-			errorListener.update(e.getMessage());
-			return false;
-		}
+        } catch (IOException e) {
+            e.printStackTrace();
+            errorListener.update(e.getMessage());
+            return false;
+        }
         return true;
     }
 
     // Change to is socket closed
     public synchronized  boolean isConnected() {
-    	return connection;
+        return connection;
     }
 
     public void setTimer(int timeout) {
@@ -95,30 +95,30 @@ public class NetworkUDP {
      */
     public PDU getPDU() {
 
-    		DatagramPacket packet = new DatagramPacket(new byte[buffSize],
-    												   buffSize);
-    		InputStream inStream;
-    		PDU pdu = null;
-    		try {
+        DatagramPacket packet = new DatagramPacket(new byte[buffSize],
+                                                   buffSize);
+        InputStream inStream;
+        PDU pdu = null;
+        try {
 
-                socket.receive(packet);
-                inStream = new ByteArrayInputStream(packet.getData());
-                pdu = (SListPDU) PDU.fromInputStream(inStream);
+            socket.receive(packet);
+            inStream = new ByteArrayInputStream(packet.getData());
+            pdu = (SListPDU) PDU.fromInputStream(inStream);
 
-    		}catch (IOException e) {
+        }catch (IOException e) {
 
-    		    if(isConnected()) {
-    		        e.printStackTrace();
-    		        errorListener.update(e.getMessage());
-    		    }
+            if(isConnected()) {
+                e.printStackTrace();
+                errorListener.update(e.getMessage());
+            }
 
-    		}
+        }
 
-    	return pdu;
+        return pdu;
     }
 
     public void addErrorListener(Listener<String> errorListener) {
-    	this.errorListener = errorListener;
+        this.errorListener = errorListener;
     }
 
 }

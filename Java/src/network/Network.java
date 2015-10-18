@@ -44,59 +44,59 @@ public class Network {
     private Thread tcpThread;
     private HashSet<Integer>seqNumbs;
 
-	public Network() {
-	    udp = new NetworkUDP();
-	    tcp = new NetworkTCP();
-	    seqNumbs = new HashSet<Integer>();
-	}
+    public Network() {
+        udp = new NetworkUDP();
+        tcp = new NetworkTCP();
+        seqNumbs = new HashSet<Integer>();
+    }
 
-	//UDP-related
-	/**
-	 * If connection was sucessfull, then a monitoring thead will be used
-	 * for reading the udp socket.
-	 * @return true if connection was succesfull, otherwise false.
-	 */
-	public boolean connectToNameServer(String address, int port) {
-		udp.connect(address, port);
+    //UDP-related
+    /**
+     * If connection was sucessfull, then a monitoring thead will be used
+     * for reading the udp socket.
+     * @return true if connection was succesfull, otherwise false.
+     */
+    public boolean connectToNameServer(String address, int port) {
+        udp.connect(address, port);
 
-		if(udp.isConnected()) {
-			udpThread = new Thread() {
-				public void run() {
-					watchServerList();
+        if(udp.isConnected()) {
+            udpThread = new Thread() {
+                public void run() {
+                    watchServerList();
 
-				}
-			};
-			udpThread.start();
-		}
-
-		return udp.isConnected();
-	}
-
-	/**
-	 * Close currentudp socket, clear current sequence numbers.
-	 */
-	public void disconnectNameServer() {
-		udp.disconnect();
-		try {
-			udpThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			udpErrorListener.update(e.getMessage());
-		}
-		synchronized(seqNumbs) {
-			seqNumbs.clear();
-		}
-	}
-
-	/**
-	 *
-	 */
-	public void refreshServers() {
-		udp.sendGetList();
-        synchronized(seqNumbs) {
-        	seqNumbs.clear();    //Should not create a new instance, thus not ruining lock
+                }
+            };
+            udpThread.start();
         }
-	}
+
+        return udp.isConnected();
+    }
+
+    /**
+     * Close currentudp socket, clear current sequence numbers.
+     */
+    public void disconnectNameServer() {
+        udp.disconnect();
+        try {
+            udpThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            udpErrorListener.update(e.getMessage());
+        }
+        synchronized(seqNumbs) {
+            seqNumbs.clear();
+        }
+    }   
+    
+    /**
+     *
+     */
+    public void refreshServers() {
+        udp.sendGetList();
+        synchronized(seqNumbs) {
+            seqNumbs.clear();    //Should not create a new instance, thus not ruining lock
+        }
+    }
 
     //1. get pdu
     //2. if pdu is null                                 (The cause is that it didn't get any pdu in the given time or pdu is incorrect
@@ -111,10 +111,10 @@ public class Network {
 //TODO synchronize seqNumbs, seqNumbs should be resetted in disconnect, and refresh.
 	//TODO keep track of current sequence numbers, if zero appears twice, then clear list.
 	  // if theres missing packets, set a timer to wait to receive
-	/**
-	 * Read packet from udp, and updates listener with latest servers.
-	 */
-	private void watchServerList() {
+    /**
+     * Read packet from udp, and updates listener with latest servers.
+     */
+    private void watchServerList() {
         while(isConnectedToNameServer()) {
 
             SListPDU pdu = (SListPDU) udp.getPDU();
@@ -128,9 +128,9 @@ public class Network {
 
                         //Check for any missing sequence numbers
                         for(int i = 0; i < seqNumbs.size(); i++) {
-                    	    if(!seqNumbs.contains(i)) {
-                    		    seqMissed = true;
-                    	    }
+                            if(!seqNumbs.contains(i)) {
+                                seqMissed = true;
+                            }
                         }
 
                         //If sequence numbers is missed, then to be safe,
@@ -148,147 +148,106 @@ public class Network {
                 }
             }
         }
-	}
+    }
 
-	//TCP-related
-	/**
-	 * @param ip address for server and its port.
-	 * @return List of clients or null if unsuccessful.
-	 *
-	 */
-	public boolean ConnectToServer(String address, int port, String nick) {
-	    tcp.connect(address, port, nick);
-	    if(tcp.isConnected()) {
+    //TCP-related
+    /**
+     * @param ip address for server and its port.
+     * @return List of clients or null if unsuccessful.
+     *
+     */
+    public boolean ConnectToServer(String address, int port, String nick) {
+        tcp.connect(address, port, nick);
+        if(tcp.isConnected()) {
 
-	    	tcpThread = new Thread() {
-	    		public void run() {
-	    			watchServer();
-	    		}
-	    	};
+            tcpThread = new Thread() {
+                public void run() {
+                    watchServer();
+                }
+            };
 
-	    	tcpThread.start();
-	    }
-		return tcp.isConnected();
-	}
+            tcpThread.start();
+        }
+        return tcp.isConnected();
+    }
 
-	public void disconnectServer() {
-	    tcp.disconnect();
-	    System.out.println("Disconnecting!!!");
-	}
+    public void disconnectServer() {
+        tcp.disconnect();
+        System.out.println("Disconnecting!!!");
+    }
 
-	public void SendMessage(String msg, String nick) {
-		tcp.sendPDU(new MessagePDU(msg));
-	}
+    public void SendMessage(String msg, String nick) {
+        tcp.sendPDU(new MessagePDU(msg));
+    }
 
-	public void changeNick(String nick) {
-	    tcp.sendPDU(new ChNickPDU(nick));
-	}
+    public void changeNick(String nick) {
+        tcp.sendPDU(new ChNickPDU(nick));
+    }
 
-	//TODO specify the wrong pdu, by checking if it's valid
-	private void watchServer() {
-		while(isConnectedToServer()) {
+    //TODO specify the wrong pdu, by checking if it's valid
+    private void watchServer() {
+        while(isConnectedToServer()) {
 
-			System.out.println("waiting for input");
-		    PDU pdu = tcp.getPDU();
-		    System.out.println("input recieved");
+            System.out.println("waiting for input");
+            PDU pdu = tcp.getPDU();
+            System.out.println("input recieved");
 
-		    if(pdu != null /*&& pdu.geError == null or !pdu.getError*/) {
+            if(pdu != null && pdu.getError() == null) {
 
-		        OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
-		        switch(op) {
-		        //TODO check if it's a valid pdu padded, else report specific problem
-		        case NICKS:
-		            NicksPDU nicksPDU = (NicksPDU) pdu;
-		            for(String nick:nicksPDU.getNicks()) {
-		                nicksListener.update(nick);
-		            }
-	                break;
+                OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
+                switch(op) {
+                
+                case NICKS:
+                    NicksPDU nicksPDU = (NicksPDU) pdu;
+                    for(String nick:nicksPDU.getNicks()) {
+                        nicksListener.update(nick);
+                    }
+                    break;
+                    
+                case MESSAGE:
+                    msgListener.update((MessagePDU) pdu);
+                    break;
 
-		        case MESSAGE:
-		        	MessagePDU msgPDU = (MessagePDU) pdu;
-		        	if(pdu.isValid()) {
-		        		msgListener.update(msgPDU);
-		        	} else {
-		        		tcpErrorListener.update("invalid message");
-		        		for(String error:msgPDU.getErrors()) {
-		        			tcpErrorListener.update(error);
-		        		}
-		        	}
+                case UJOIN:
+                    uJoinListener.update((UJoinPDU) pdu);
+                    break;
 
-		        	break;
+                case ULEAVE:
+                    uLeaveListener.update((ULeavePDU) pdu);
+                    break;
 
-		        case UJOIN:
-		            UJoinPDU ujoinPDU = (UJoinPDU) pdu;
-		            if(pdu.isValid()) {
-		                uJoinListener.update(ujoinPDU);
-		            } else {
-		                tcpErrorListener.update("Invalid ujoin");
-		                for(String error:ujoinPDU.getErrors()) {
-		                	tcpErrorListener.update(error);
-		                }
-		            }
+                case UCNICK:
+                    uCNickListener.update((UCNickPDU) pdu);
+                    break;
 
-		            break;
+                case QUIT:
+                    tcpErrorListener.update("Disconnected by admin");
+                    break;
+                }
+                
+            } else if(pdu == null){   
+                tcpErrorListener.update("Unknown pdu");
+            } else {
+                tcpErrorListener.update("\n" + pdu.getClass().getSimpleName() 
+                                        + ": " +pdu.getError());
+            }
+        }   
+    }
+    public boolean isConnectedToServer() {
+        return tcp.isConnected();
+    }
 
-		        case ULEAVE:
-		            if(pdu.isValid()) {
-		                ULeavePDU uLeavePDU = (ULeavePDU) pdu;
-			            uLeaveListener.update(uLeavePDU);
-		            } else {
-		                tcpErrorListener.update("invalid uleave");
+    public boolean isConnectedToNameServer() {
+        return udp.isConnected();
+    }
 
-		            }
+    public void addServerListener(Listener<SListPDU> sListListener) {
+        this.sListListener = sListListener;
+    }
 
-		        	break;
-
-		        case UCNICK:
-		        	if(pdu.isValid()) {
-		                UCNickPDU uCNickPDU = (UCNickPDU) pdu;
-		                uCNickListener.update(uCNickPDU);
-
-		        	} else {
-		        		tcpErrorListener.update("invalid ucnick");
-		        	}
-
-		            break;
-
-		        case QUIT:
-		            tcpErrorListener.update("Disconnected by admin");
-		            break;
-
-		        }
-		        //If disconnected by any circumstance above.
-		        if(!tcp.isConnected()) {
-		        	for(String error:pdu.getErrors()) {
-		        		tcpErrorListener.update(error);
-		        	}
-		        }
-
-		    } else { //else if(pdu === null)  
-		        if(tcp.isConnected()) {
-	                tcpErrorListener.update("Unknown pdu");
-		        } // else if(pdu.getErrors) {
-		          // for(String error:pdu.getErrors()
-		              // tcpErrorListener.update(error);
-		    }
-		}
-	}
-
-	public boolean isConnectedToServer() {
-	    return tcp.isConnected();
-	}
-
-	public boolean isConnectedToNameServer() {
-	    return udp.isConnected();
-	}
-
-	public void addServerListener(Listener<SListPDU> sListListener) {
-		this.sListListener = sListListener;
-	}
-
-	public void addMessageListener(Listener<MessagePDU> msgListener) {
-		this.msgListener = msgListener;
-	}
+    public void addMessageListener(Listener<MessagePDU> msgListener) {
+        this.msgListener = msgListener;
+    }
 
     public void addNicksListener(Listener<String> nicksListener) {
         this.nicksListener = nicksListener;

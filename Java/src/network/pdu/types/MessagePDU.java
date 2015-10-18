@@ -18,9 +18,9 @@ public class MessagePDU extends PDU{
     private final int ROW_SIZE = 4;
     private final byte PAD = 0;
 
+    private String error;
+    
     private byte[] bytes;
-
-    private boolean validFlag;
     private ArrayList<String> errors;
 
     private String msg;
@@ -28,85 +28,94 @@ public class MessagePDU extends PDU{
     private Date date;
 
     public MessagePDU(InputStream inStream) throws IOException {
-        validFlag = parseIn(inStream);
+        error = parseIn(inStream);
 
     }
 
-	public MessagePDU(String message) {
-	    bytes = parseOut(message);
+    public MessagePDU(String message) {
+        bytes = parseOut(message);
 
-	}
+    }
 
-	public boolean parseIn(InputStream inStream) throws IOException {
+    public String parseIn(InputStream inStream) throws IOException {
 
-		//TODO temporary arraylist containing all the bytes of the pdu
-		ArrayList<Byte>bytes = new ArrayList<Byte>();
-		bytes.add(getOpCode());
+        //TODO temporary arraylist containing all the bytes of the pdu
+        ArrayList<Byte>bytes = new ArrayList<Byte>();
+        bytes.add(getOpCode());
 
-
-	    //Reading rest of header
-	    byte[] headerBytes = readExactly(ROW_SIZE -1,inStream);
-	    //
-	    for(byte b: headerBytes) {
-	    	bytes.add(b);
-	    }
-
-	    int pad = headerBytes[0];
-
-	    int nickLength = (int) (headerBytes[1] & 0xff);
-	    //int checkSum = (int) (headerBytes[2] & 0xff);
-
-	    //Reading message length + padding
-	    byte[] rowBytes = readExactly(ROW_SIZE, inStream);
-	    //
-	    for(byte b:rowBytes) {
-	    	bytes.add(b);
-	    }
-
-	    int msgLength = (int) (((rowBytes[0] & 0xff) << 8 ) | (rowBytes[1] & 0xff));
-	    pad  = (int) (((rowBytes[2] & 0xff) << 8)  | (rowBytes[3] & 0xff)); //Should be zero
-
-	    //System.out.println("SIZE OF MSG: "+msgLength);
-
-	    //Reading time stamp
-	    byte[] timeBytes = readExactly(ROW_SIZE, inStream);
-	    date = DateUtils.getDateByBytes(timeBytes);
-	    //
-	    for(byte b:timeBytes) {
-	    	bytes.add(b);
-	    }
-
-	    // Reading message
-	    byte[] msgBytes = readExactly(msgLength,inStream);
-	    //
-	    for(byte b:msgBytes) {
-	    	bytes.add(b);
-	    }
-
-	    //System.out.println("Recieved size: "+msgBytes.length);
-        msg = new String(msgBytes, StandardCharsets.UTF_8);
-
-        //Padding of message
-        byte[] paddedBytes = readExactly(padLengths(msgLength), inStream);
-        //
-        for(byte b:paddedBytes) {
-        	bytes.add(b);
+        //reading pdu pad
+        byte[] paddedBytes = readExactly(1, inStream);
+        
+        if(!isPaddedBytes(paddedBytes)) {
+            return ERROR_PADDING_PDU;
         }
+		
+        bytes.add(paddedBytes[0]);
+        
+        byte[] nickLenghByte = readExactly(1, inStream);
+        int nickLength = nickLenghByte[0] & 0xff;
+        bytes.add(nickLenghByte[0]);
+	    
+        //checksum
+        bytes.add(readExactly(1, inStream)[0]);
+    
+        //reading length
+        byte[] msgLenghBytes = readExactly(2, inStream);
+        for(byte b:msgLenghBytes) {
+            bytes.add(b);
+        }
+	    
+        int msgLength = (int) (((msgLenghBytes[0] & 0xff) << 8 ) 
+                              | (msgLenghBytes[1] & 0xff));
+
+        //Reading two padding bytes
+        paddedBytes = readExactly(2, inStream);
+        if(!isPaddedBytes(paddedBytes)) {
+            return ERROR_PADDING_PDU;
+        }
+        for(byte b:paddedBytes) {
+            bytes.add(b);
+        }
+
+        //Reading time stamp
+        byte[] timeBytes = readExactly(ROW_SIZE, inStream);
+        date = DateUtils.getDateByBytes(timeBytes);
+        for(byte b:timeBytes) {
+            bytes.add(b);
+        }
+
+        // Reading message
+        byte[] msgBytes = readExactly(msgLength,inStream);
+        for(byte b:msgBytes) {
+            bytes.add(b);
+        }
+        
+        //Padding of message
+        paddedBytes = readExactly(padLengths(msgLength), inStream);
+        if(!isPaddedBytes(paddedBytes)) {
+            return ERROR_PADDING_MSG;
+        }
+        for(byte b:paddedBytes) {
+            bytes.add(b);
+        }
+        
+        msg = new String(msgBytes, StandardCharsets.UTF_8);
 
         //nick name
         byte[] nickBytes = readExactly(nickLength, inStream);
-        //
         for(byte b:nickBytes) {
-        	bytes.add(b);
+            bytes.add(b);
         }
 
         //padding of nick
         paddedBytes = readExactly(padLengths(nickLength), inStream);
-        //
-        for(byte b:paddedBytes) {
-        	bytes.add(b);
+        if(!isPaddedBytes(paddedBytes)) {
+            return ERROR_PADDING_NICK;
         }
-
+        for(byte b:paddedBytes) {
+            bytes.add(b);
+        }
+        
         if(nickBytes.length == 0) {
             nick = "Server";
         } else {
@@ -116,80 +125,80 @@ public class MessagePDU extends PDU{
         //Create byte array
         byte[] pduBytes = new byte[bytes.size()];
         for(int i = 0; i < bytes.size(); i++) {
-        	pduBytes[i] = bytes.get(i);
+            pduBytes[i] = bytes.get(i);
         }
 
         if(Checksum.computeChecksum(pduBytes) != 0) {
-        	System.out.println("invalid checksum");
-        	errors.add("checksum");
-        	return false;
+            System.out.println("invalid checksum");
+            return "Incorrect checksum";
         }
 
-        return true;
-	}
+        return null;
+    }
 
-	private byte[] parseOut(String msg) {
+    private byte[] parseOut(String msg) {
 
-		//OP-code,pad,nick length, check sum 0 default.
-		ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.MESSAGE.value,
-									  PAD, PAD,(byte)0);
+        //OP-code,pad,nick length, check sum 0 default.
+        ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.MESSAGE.value,
+                                                              PAD, PAD,(byte)0);
 
-		byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
-		System.out.println("Sending bytes: "+msgBytes.length);
-		//msg length to two bytes, then pad.
-		builder.appendShort((short) msgBytes.length);
-		//pad remaining 2 bytes
-		builder.pad();
+        byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
+        System.out.println("Sending bytes: "+msgBytes.length);
+        //msg length to two bytes, then pad.
+        builder.appendShort((short) msgBytes.length);
+        //pad remaining 2 bytes
+        builder.pad();
 
-		//time stamp zero (over 4 bytes)
-		builder.appendInt(0);
+        //time stamp zero (over 4 bytes)
+        builder.appendInt(0);
 
-		//message
-		builder.append(msgBytes);
+        //message
+        builder.append(msgBytes);
 
-		//padding
-		builder.pad();
+        //padding
+        builder.pad();
 
-		//Done
-		byte[] bytes = builder.toByteArray();
+        //Done
+        byte[] bytes = builder.toByteArray();
 
-		bytes[3] = Checksum.computeChecksum(bytes);
+        bytes[3] = Checksum.computeChecksum(bytes);
 
-	    return bytes;
-	}
+        return bytes;
+    }
 
-	@Override
-	public byte[] toByteArray() {
-		return bytes;
-	}
+    @Override
+    public byte[] toByteArray() {
+        return bytes;
+    }
 
-	@Override
-	public int getSize() {
-		return bytes.length;
-	}
+    @Override
+    public int getSize() {
+        return bytes.length;
+    }
 
-	@Override
-	public byte getOpCode() {
-		return OpCode.MESSAGE.value;
-	}
+    @Override
+    public byte getOpCode() {
+        return OpCode.MESSAGE.value;
+    }
+    
+    public ArrayList<String> getErrors() {
+        return errors;
+    }
 
-	public boolean isValid() {
-	    return validFlag;
-	}
+    public String getMsg() {
+        return msg;
+    }
 
-	public ArrayList<String> getErrors() {
-		return errors;
-	}
+    public String getNick() {
+        return nick;
+    }
 
-	public String getMsg() {
-	    return msg;
-	}
+    public Date getDate() {
+        return date;
+    }
 
-	public String getNick() {
-	    return nick;
-	}
-
-	public Date getDate() {
-	    return date;
-	}
+    @Override
+    public String getError() {
+        return error;
+    }
 }

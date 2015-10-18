@@ -33,7 +33,7 @@ public class NetworkTCP {
         try {
             System.out.println("Connecting");
             socket = new Socket();
-        	socket.connect(new InetSocketAddress(address,port),TIME_OUT);
+            socket.connect(new InetSocketAddress(address,port),TIME_OUT);
 
             outStream = socket.getOutputStream();
             inStream = socket.getInputStream();
@@ -56,7 +56,7 @@ public class NetworkTCP {
      * Quit by sending QuitPDU, then close out,in stream and the socket.
      */
     public synchronized void disconnect() {
-    	if(isConnected()) {
+        if(isConnected()) {
             try {
                 if(outStream != null) {
                     QuitPDU quitPDU = new QuitPDU();
@@ -73,13 +73,13 @@ public class NetworkTCP {
                 e.printStackTrace();
                 errorListener.update(e.getMessage());
             }
-    	}
+        }
 
         connected = false;
     }
 
     public synchronized boolean isConnected() {
-    	return connected;
+        return connected;
     }
 
     public void sendPDU(PDU pdu) {
@@ -108,7 +108,7 @@ public class NetworkTCP {
 
         } catch (IOException e) {
             e.printStackTrace();
-        	System.out.println("Exception shit");
+            System.out.println("Exception shit");
             errorListener.update(e.getMessage());
         }
 

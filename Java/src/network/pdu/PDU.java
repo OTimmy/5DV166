@@ -7,7 +7,11 @@ import network.pdu.types.*;
 
 public abstract class PDU {
 
-	public final String PADDING_ERROR = "Incorrect padding";
+	public final String ERROR_PADDING_PDU  = "Incorrect padding of PDU";
+	public final String ERROR_PADDING_NICK = "Incorrect padding of nick";
+	public final String ERROR_PADDING_MSG  = "Incorrect padding of message";
+	public final String ERROR_PADDING_SERVER_NAME = "Incorrect padding of name";
+	
     public static PDU fromInputStream(InputStream inStream) throws IOException {
 
         byte opByte = (byte) inStream.read();

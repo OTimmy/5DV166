@@ -25,14 +25,14 @@ public class QuitPDU extends PDU{
         return bytes.length;
     }
 
-	@Override
-	public byte getOpCode() {
-		return OpCode.QUIT.value;
-	}
+    @Override
+    public byte getOpCode() {
+        return OpCode.QUIT.value;
+    }
 
-	@Override
-	public String getError() {
-		return null;
-	}
+    @Override
+    public String getError() {
+        return null;
+    }
 
 }
