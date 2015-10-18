@@ -1,6 +1,7 @@
 package network.pdu.types;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 import network.pdu.ByteSequenceBuilder;
 import network.pdu.OpCode;
@@ -36,8 +37,8 @@ public class JoinPDU extends PDU{
 	}
 
 	@Override
-	public boolean isValid() {
+	public String getError() {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 }

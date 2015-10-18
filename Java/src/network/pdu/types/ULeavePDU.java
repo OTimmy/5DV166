@@ -26,17 +26,17 @@ public class ULeavePDU extends PDU{
 	private String nick;
 	private Date date;
 	private boolean validFlag;
-
+	private String error;
 
 	public ULeavePDU(InputStream inStream) throws IOException {
-	    validFlag = parse(inStream);
+		error = parse(inStream);
 	}
 
 	/**
 	 * @param Reads from inputstream by the given standard of the pdu.
 	 * @return a flag.
 	 */
-	private boolean parse(InputStream inStream) throws IOException {
+	private String parse(InputStream inStream) throws IOException {
 
 	    int nickLength = inStream.read();
 
@@ -44,7 +44,7 @@ public class ULeavePDU extends PDU{
 	    byte[] padBytes = readExactly(PAD_LENGTH, inStream);
 
 	    if(!isPaddedBytes(padBytes)) {
-	        return false;
+	        return PADDING_ERROR +" of pdu";
 	    }
 
 	    //Reading time stamp
@@ -59,12 +59,12 @@ public class ULeavePDU extends PDU{
 	    padBytes = readExactly(padLengths(nickLength), inStream);
 
 	    if(!isPaddedBytes(padBytes)) {
-	        return false;
+	    	return PADDING_ERROR + "of nick";
 	    }
 
 	    nick = new String(nickBytes, StandardCharsets.UTF_8);
 
-	    return true;
+	    return null;
 	}
 
 	@Override
@@ -92,5 +92,10 @@ public class ULeavePDU extends PDU{
 
 	public boolean isValid() {
 	    return validFlag;
+	}
+
+	@Override
+	public String getError() {
+        return error;
 	}
 }

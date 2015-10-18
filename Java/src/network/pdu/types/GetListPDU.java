@@ -1,5 +1,7 @@
 package network.pdu.types;
 
+import java.util.ArrayList;
+
 import network.pdu.OpCode;
 import network.pdu.PDU;
 
@@ -27,10 +29,9 @@ public class GetListPDU extends PDU{
 		return OpCode.GETLIST.value;
 	}
 
-
 	@Override
-	public boolean isValid() {
+	public String getError() {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
 }

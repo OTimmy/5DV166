@@ -1,5 +1,6 @@
 package network.pdu.types;
 
+
 import network.pdu.OpCode;
 import network.pdu.PDU;
 
@@ -29,11 +30,9 @@ public class QuitPDU extends PDU{
 		return OpCode.QUIT.value;
 	}
 
-
 	@Override
-	public boolean isValid() {
-		// TODO Auto-generated method stub
-		return false;
+	public String getError() {
+		return null;
 	}
 
 }

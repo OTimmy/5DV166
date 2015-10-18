@@ -2,13 +2,12 @@ package network.pdu;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 import network.pdu.types.*;
 
 public abstract class PDU {
 
-
+	public final String PADDING_ERROR = "Incorrect padding";
     public static PDU fromInputStream(InputStream inStream) throws IOException {
 
         byte opByte = (byte) inStream.read();
@@ -55,7 +54,6 @@ public abstract class PDU {
         return true;
     }
 
-    public abstract boolean isValid();
 
     public abstract byte[] toByteArray();
 
@@ -63,7 +61,7 @@ public abstract class PDU {
 
     public abstract byte getOpCode();
 
-    public abstract ArrayList<String> getErrors();
+    public abstract String getError();
 
 
     /**

@@ -1,5 +1,7 @@
 package network.pdu.types;
 
+import java.util.ArrayList;
+
 import network.pdu.ByteSequenceBuilder;
 import network.pdu.OpCode;
 import network.pdu.PDU;
@@ -39,7 +41,7 @@ public class ChNickPDU extends PDU{
     }
 
 	@Override
-	public boolean isValid() {
-		return false;
+	public String getError() {
+        return null;
 	}
 }

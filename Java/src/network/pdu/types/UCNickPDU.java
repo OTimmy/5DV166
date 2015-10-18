@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import network.pdu.DateUtils;
@@ -23,21 +24,27 @@ public class UCNickPDU extends PDU{
     private String newNick;
     private Date date;
 
-    private boolean validFlag;
-
+    private String error;
     public UCNickPDU(InputStream inStream) throws IOException {
-        validFlag = parse(inStream);
+        error = parse(inStream);
     }
 
-    private boolean parse(InputStream inStream ) throws IOException {
+    private String parse(InputStream inStream ) throws IOException {
 
         int nickLength1 = inStream.read();
         int nickLength2 = inStream.read();
-        int pad = inStream.read();
-
+  
+        //int pad = inStream.read();
+        byte[] padBytes = readExactly(1, inStream);
+        
+        if(!isPaddedBytes(padBytes)) {
+        	return "Incorrect padding";
+        }
+        
         //Reading time stamp
-        byte[] timeBytes = new byte[ROW_SIZE];
-        inStream.read(timeBytes, 0, timeBytes.length);
+//        byte[] timeBytes = new byte[ROW_SIZE];
+        byte[] timeBytes = readExactly(ROW_SIZE, inStream);
+//        inStream.read(timeBytes, 0, timeBytes.length);
 
         date = DateUtils.getDateByBytes(timeBytes);;
 
@@ -45,19 +52,27 @@ public class UCNickPDU extends PDU{
         byte[] oldNickBytes = readExactly(nickLength1, inStream);
 
         //Read padding
-        byte[] padBytes     = readExactly(padLengths(nickLength1), inStream);
+        padBytes     = readExactly(padLengths(nickLength1), inStream);
 
+        if(!isPaddedBytes(padBytes)) {
+        	return "Incorrect nick1 padding";
+        }
+        
         //Reading new nick
         byte[] newNickBytes = readExactly(nickLength2, inStream);
 
         //Read padding
         padBytes            = readExactly(padLengths(nickLength2), inStream);
-
+        
+        if(!isPaddedBytes(padBytes)) {
+        	return "Incorrect nick2 padding";
+        }
+        
         oldNick = new String(oldNickBytes,StandardCharsets.UTF_8);
 
         newNick = new String(newNickBytes,StandardCharsets.UTF_8);
 
-        return true;
+        return null;
     }
 
     @Override
@@ -87,7 +102,8 @@ public class UCNickPDU extends PDU{
         return date;
     }
 
-    public boolean isValid() {
-        return validFlag;
-    }
+	@Override
+	public String getError() {
+		return error;
+	}
 }

@@ -10,20 +10,18 @@ import network.pdu.PDU;
 //TODO Implement proper check of padding
 public class NicksPDU extends PDU{
 
+	private String error;
     private ArrayList<String> nicks;
-    private static boolean validFlag;
     private ArrayList<Byte> bytes;
 
     public NicksPDU(InputStream inStream) throws IOException {
         bytes = new ArrayList<Byte>();
-
-        validFlag = true;
-        nicks = parse(inStream);
-
+        
+        error = parse(inStream);
     }
 
-    private ArrayList<String> parse(InputStream inStream) throws IOException {
-        ArrayList<String> nicks = new ArrayList<String>();
+    private String parse(InputStream inStream) throws IOException {
+        nicks = new ArrayList<String>();
 
 
         int nrOfNicks   = inStream.read();
@@ -59,10 +57,13 @@ public class NicksPDU extends PDU{
        }
 
        //Reading the remaining padding
-       tempBytes = new byte[padLengths(nicksLength)];
-       inStream.read(tempBytes, 0, tempBytes.length);
+       byte[] padBytes = readExactly(padLengths(nicksLength), inStream); 
 
-        return nicks;
+       if(!isPaddedBytes(padBytes)) {
+    	   return "Incorrect padding of nicks";
+       }
+       
+        return null;
     }
 
     @Override
@@ -79,13 +80,14 @@ public class NicksPDU extends PDU{
         return nicks;
     }
 
-    public boolean isValid() {
-        return validFlag;
-    }
-
     @Override
     public int getSize() {
         // TODO Auto-generated method stub
         return 0;
     }
+
+	@Override
+	public String getError() {
+		return error;
+	}
 }

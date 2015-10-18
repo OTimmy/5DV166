@@ -23,20 +23,19 @@ public class UJoinPDU extends PDU{
     private final int TIME_SIZE = 4;
     private final int PAD_SIZE  = 2;   //Known padded size
 
+    private String error;
     private Date date;
     private String nick;
-    private boolean validFlag;
-
 
     public UJoinPDU(InputStream inStream) throws IOException {
-        validFlag = parser(inStream);
+        error = parser(inStream);
     }
 
     /**
      * @param Reads from inputstream by the given standard.
      * @return a flag.
      */
-    private boolean parser(InputStream inStream) throws IOException {
+    private String parser(InputStream inStream) throws IOException {
 
         int nickLength = inStream.read();
 
@@ -45,7 +44,7 @@ public class UJoinPDU extends PDU{
         inStream.read(padBytes, 0, padBytes.length);
 
         if(!isPaddedBytes(padBytes)) {
-            return false;
+            return "Incorrect pdu padding";
         }
 
         //Reading time stamp
@@ -59,17 +58,15 @@ public class UJoinPDU extends PDU{
         inStream.read(nickBytes, 0, nickBytes.length);
 
         //Read padding
-        padBytes = new byte[padLengths(nickLength)];
-        inStream.read(padBytes, 0, padBytes.length);
-
+        padBytes = readExactly(padLengths(nickLength), inStream);
+        
         if(!isPaddedBytes(padBytes)) {
-            return false;
+            return "Incorrect nick padding";
         }
-
 
         nick = new String(nickBytes, StandardCharsets.UTF_8);
 
-        return true;
+        return null;
 
     }
 
@@ -83,13 +80,11 @@ public class UJoinPDU extends PDU{
 
     @Override
     public byte[] toByteArray() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public int getSize() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -98,7 +93,8 @@ public class UJoinPDU extends PDU{
         return OpCode.UJOIN.value;
     }
 
-    public boolean isValid() {
-        return validFlag;
-    }
+	@Override
+	public String getError() {
+		return error;
+	}
 }

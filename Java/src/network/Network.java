@@ -192,7 +192,7 @@ public class Network {
 		    PDU pdu = tcp.getPDU();
 		    System.out.println("input recieved");
 
-		    if(pdu != null) {
+		    if(pdu != null /*&& pdu.geError == null or !pdu.getError*/) {
 
 		        OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
 		        switch(op) {
@@ -264,10 +264,12 @@ public class Network {
 		        	}
 		        }
 
-		    } else {
+		    } else { //else if(pdu === null)  
 		        if(tcp.isConnected()) {
 	                tcpErrorListener.update("Unknown pdu");
-		        }
+		        } // else if(pdu.getErrors) {
+		          // for(String error:pdu.getErrors()
+		              // tcpErrorListener.update(error);
 		    }
 		}
 	}

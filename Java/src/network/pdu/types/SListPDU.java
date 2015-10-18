@@ -15,23 +15,20 @@ import network.pdu.*;
 public class SListPDU extends PDU{
     private final int ROW_SIZE = 4;
 
+    private String error;
 	private ArrayList<String> addresses;
 	private ArrayList<String> ports;
 	private ArrayList<String> clientNumbers;
 	private ArrayList<String> serverNames;
 	private byte[] bytes;
 	private int sequenceNr;
-	private boolean validFlag;
-
+	
 	public SListPDU(InputStream inStream) throws IOException {
 	    addresses = new ArrayList<String>();
 	    ports = new ArrayList<String>();
 	    clientNumbers = new ArrayList<String>();
 	    serverNames = new ArrayList<String>();
-
-	    validFlag = true;
-
-	    parse(inStream);
+	    error = parse(inStream);
 
 	}
 
@@ -40,7 +37,7 @@ public class SListPDU extends PDU{
 	 * @return false if parsing failed.
 	 * @throws IOException
 	 */
-	private void parse(InputStream inStream) throws IOException {
+	private String parse(InputStream inStream) throws IOException {
 
 	    sequenceNr = inStream.read();
 
@@ -75,25 +72,20 @@ public class SListPDU extends PDU{
 	        String serverName = new String(nameBytes,StandardCharsets.UTF_8);
 
 	        //read the pads
-	        int padded = padLengths(nameLength);
-	        tempBytes = new byte[padded];
-	        inStream.read(tempBytes, 0, tempBytes.length);
-
-	        //Checking the pads
-//	        for(byte b:tempBytes) {
-//	            if(b != 0) {
-//	                validFlag = false;
-//	                return;
-//	            }
-//	        }
-
+	        byte[] padBytes = readExactly(padLengths(nameLength), inStream);
+	        if(!isPaddedBytes(padBytes)) {
+	        	return PADDING_ERROR;
+	        }
 
 	        addresses.add(address);
 	        ports.add(new Integer(port).toString());
 	        clientNumbers.add(new Integer(nrOfClients).toString());
 	        serverNames.add(serverName);
-
+	        
+	        
 	    }
+		
+		return null;
 	}
 
 
@@ -115,10 +107,6 @@ public class SListPDU extends PDU{
 		return OpCode.SLIST.value;
 	}
 
-    public boolean isValid() {
-        return validFlag;
-    }
-
     public ArrayList getServerNames() {
         return serverNames;
     }
@@ -134,4 +122,9 @@ public class SListPDU extends PDU{
     public ArrayList getClientNumberss() {
         return clientNumbers;
     }
+
+	@Override
+	public String getError() {
+		return error;
+	}
 }
