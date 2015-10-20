@@ -191,10 +191,13 @@ public class Controller {
 			public void actionPerformed(ActionEvent e) {
 			    System.out.println("connection: "+net.isConnectedToServer());
 			    if(!net.isConnectedToServer()) {
-			        gui.clearMessageBoard();
+			        
 			        String address = gui.getServerAddress();
-			        int port = new Integer(gui.getServerPort());
-			        String nick = gui.getNick();
+                    int port = new Integer(gui.getServerPort());
+                    if(address != null) {
+                        gui.clearMessageBoard();
+                        String nick = gui.getNick();                        
+                    }
 
 			        net.ConnectToServer(address, port, nick);
 

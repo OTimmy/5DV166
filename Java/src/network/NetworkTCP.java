@@ -84,9 +84,10 @@ public class NetworkTCP {
 
     public void sendPDU(PDU pdu) {
         try {
-            outStream.write(pdu.toByteArray(),0,pdu.toByteArray().length);
-            outStream.flush();
-
+            if(isConnected()) {
+                outStream.write(pdu.toByteArray(),0,pdu.toByteArray().length);
+                outStream.flush();                
+            }
         } catch (IOException e) {
             e.printStackTrace();
             errorListener.update(e.getMessage());

@@ -89,7 +89,8 @@ public class Network {
     }   
     
     /**
-     *
+     * Send a request for new servers.
+     * And clears sequnce number hashset.
      */
     public void refreshServers() {
         udp.sendGetList();
@@ -98,21 +99,21 @@ public class Network {
         }
     }
 
-    //1. get pdu
-    //2. if pdu is null                                 (The cause is that it didn't get any pdu in the given time or pdu is incorrect
-         //then, send new request repeat step 1
-    //2. remove timer if any is set
-    //3. Check sequence number
-	//    3.1 If sequence number is zero, then reset hashtable, send a new getlist.
-    //3. if any sequence number is missing  /----------> (do this by looping trough list, and if not all numbers between the lowest and higest is found)
-         // then set new timer for next package
-
-
-//TODO synchronize seqNumbs, seqNumbs should be resetted in disconnect, and refresh.
-	//TODO keep track of current sequence numbers, if zero appears twice, then clear list.
-	  // if theres missing packets, set a timer to wait to receive
     /**
      * Read packet from udp, and updates listener with latest servers.
+     * According to following alogrithm:
+     * 
+     * 1. get pdu
+     * 2. if pdu is null
+     *   2.1 clear all sequence numbers from hashset
+     * 3.Remove timer
+     * 4.if pdu's sequence number already exist.
+     *   4.1 ignore the pdu, and return to step 1.   
+     * 5.if any sequence number is missed 
+     *   5.1 set timer for the next coming pdu.
+     * 6. Update listener
+     * 7. return to step 1.
+     *   
      */
     private void watchServerList() {
         while(isConnectedToNameServer()) {
@@ -184,7 +185,6 @@ public class Network {
         tcp.sendPDU(new ChNickPDU(nick));
     }
 
-    //TODO specify the wrong pdu, by checking if it's valid
     private void watchServer() {
         while(isConnectedToServer()) {
 

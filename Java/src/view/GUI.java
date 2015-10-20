@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
+import javax.swing.text.PlainDocument;
 
 
 //TODO Scroll should be adjusted to frame, not static size
@@ -44,60 +45,62 @@ import javax.swing.text.DefaultCaret;
  */
 public class GUI {
 
-	private final int FRAME_WIDTH       = 590;
-	private final int FRAME_HEIGHT      = 520;
-	private final int CONF_PANEL_HEIGHT = 100;
-	private final int CONF_PANEL_WIDTH  = 400;
-	private final int TAB_PANEL_HEIGHT  = 100;
-	private final int TAB_PANEL_WIDTH   = 400;
-	private final int NR_TABLE_COLUMNS  = 4;
-	private final int NR_TABLE_ROWS     = 17;
-	private final int TAB_BROWS         = 0;    //Index values for tabbedpane
-	private final int TAB_CHAT          = 1;
+    private final int FRAME_WIDTH       = 590;
+    private final int FRAME_HEIGHT      = 520;
+    private final int CONF_PANEL_HEIGHT = 100;
+    private final int CONF_PANEL_WIDTH  = 400;
+    private final int TAB_PANEL_HEIGHT  = 100;
+    private final int TAB_PANEL_WIDTH   = 400;
+    private final int NR_TABLE_COLUMNS  = 4;
+    private final int NR_TABLE_ROWS     = 17;
+    private final int TAB_BROWS         = 0;    //Index values for tabbedpane
+    private final int TAB_CHAT          = 1;
     private final int TAB_MAX_NAME      = 20;
-	private final int SEND_MSG_LIMIT    = 65535;  //From the spec
+    private final int SEND_MSG_LIMIT    = 65535;  //From the spec
+    private final int NICK_LIMIT        = 255;
+   
 
-	private JFrame frame;
-	private DefaultTableModel tableModel;
+    private JFrame frame;
+    private DefaultTableModel tableModel;
 
-	//Used by configuration panel
-	private JButton connectNameServerButton;
-	private JButton connectServerButton;
-	private JButton okButton;
-	private JButton refreshButton;
-	private JButton sendButton;
+    //Used by configuration panel
+    private JButton connectNameServerButton;
+    private JButton connectServerButton;
+    private JButton okButton;
+    private JButton refreshButton;
+    private JButton sendButton;
 
-	private JTextField nameServerAddressField;
-	private JTextField nameServerPortField;
-	private JTextField serverAddressField;
-	private JTextField serverPortField;
-	private JTextField nickField;
+    private JTextField nameServerAddressField;
+    private JTextField nameServerPortField;
+    private JTextField serverAddressField;
+    private JTextField serverPortField;
+    private JTextField nickField;
 
-	//used by tab
+    //used by tab
     JTabbedPane tabbedPane;
 
     //used by browser panel
-	private JTable table;
-	private String serverTopic;
+    private JTable table;
+    private String serverTopic;
 
-	//Used by chat panel
-	private JTextArea msgTextArea;
-	private JTextArea usrsTextArea;
-	private JTextArea sendTextArea;
+    //Used by chat panel
+    private JTextArea msgTextArea;
+    private JTextArea usrsTextArea;
+    private JTextArea sendTextArea;
 
-	private JLabel browsErrLabel;
+    private JLabel browsErrLabel;
 
-	public GUI() {
+    public GUI() {
 
-		frame = buildFrame();
-		JPanel configPanel = buildConfigPanel();
-		JPanel tabPanel    = buildTabPanel();
+        frame = buildFrame();
+        JPanel configPanel = buildConfigPanel();
+        JPanel tabPanel    = buildTabPanel();
 
-		frame.add(configPanel,BorderLayout.NORTH);
-		frame.add(tabPanel,BorderLayout.CENTER);
-		frame.revalidate();
+        frame.add(configPanel,BorderLayout.NORTH);
+        frame.add(tabPanel,BorderLayout.CENTER);
+        frame.revalidate();
 
-	}
+    }
 
 
     private JFrame buildFrame() {
@@ -114,121 +117,125 @@ public class GUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         return frame;
-	}
+    }
 
 
     /**
      * @return
      */
-	private JPanel buildConfigPanel() {
-		JPanel panel  = new JPanel();
+    private JPanel buildConfigPanel() {
+        JPanel panel  = new JPanel();
 
-		/*panel settings*/
-		panel.setPreferredSize(new Dimension(CONF_PANEL_WIDTH, CONF_PANEL_HEIGHT));
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.insets.bottom = 2;
-		gbc.insets.right = 5;
+        /*panel settings*/
+        panel.setPreferredSize(new Dimension(CONF_PANEL_WIDTH, CONF_PANEL_HEIGHT));
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets.bottom = 2;
+        gbc.insets.right = 5;
 
-		/*Name server row*/
-		//Label
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.gridx = 0;
-		gbc.gridy = 0;
-		panel.add(new JLabel("Name server:"),gbc);
+        /*Name server row*/
+        //Label
+        gbc.anchor = GridBagConstraints.LINE_END;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(new JLabel("Name server:"),gbc);
 
-		//Field
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.gridx++;
-		nameServerAddressField = new JTextField(15);
-		nameServerAddressField.setText("itchy.cs.umu.se");
-		panel.add(nameServerAddressField,gbc);
+        //Field
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.gridx++;
+        nameServerAddressField = new JTextField(15);
+        nameServerAddressField.setText("itchy.cs.umu.se");
+        panel.add(nameServerAddressField,gbc);
 
-		//Label
-		gbc.gridx++;
-		panel.add(new JLabel("port:"),gbc);
+        //Label
+        gbc.gridx++;
+        panel.add(new JLabel("port:"),gbc);
 
-		//Field
-		gbc.gridx++;
-		nameServerPortField = new JTextField(5);
-		nameServerPortField.setText("1337");
-		panel.add(nameServerPortField,gbc);
+        //Field
+        gbc.gridx++;
+        nameServerPortField = new JTextField(5);
+        nameServerPortField.setText("1337");
+        panel.add(nameServerPortField,gbc);
 
-		//Button connect
-		gbc.gridx++;
-		connectNameServerButton = new JButton("Connect");
-		panel.add(connectNameServerButton,gbc);
+        //Button connect
+        gbc.gridx++;
+        connectNameServerButton = new JButton("Connect");
+        panel.add(connectNameServerButton,gbc);
 
-		//Button Refresh
-	    gbc.gridx+=2;
-	    gbc.anchor = GridBagConstraints.LINE_START;
-	    refreshButton = new JButton("Refresh");
-	    panel.add(refreshButton);
+        //Button Refresh
+        gbc.gridx+=2;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        refreshButton = new JButton("Refresh");
+        panel.add(refreshButton);
 
-		/*Server row*/
-		//Label
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.gridx = 0;
-		gbc.gridy = 1;
-		panel.add(new JLabel("Server:"),gbc);
+        /*Server row*/
+        //Label
+        gbc.anchor = GridBagConstraints.LINE_END;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel.add(new JLabel("Server:"),gbc);
 
-		//Field
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.gridx++;
-		serverAddressField = new JTextField(15);
-		panel.add(serverAddressField,gbc);
+        //Field
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.gridx++;
+        serverAddressField = new JTextField(15);
+        panel.add(serverAddressField,gbc);
 
-		//Label
-		gbc.gridx++;
-		panel.add(new JLabel("port:"),gbc);
+        //Label
+        gbc.gridx++;
+        panel.add(new JLabel("port:"),gbc);
 
-		//Field
-		gbc.gridx++;
-		serverPortField = new JTextField(5);
-		panel.add(serverPortField,gbc);
+        //Field
+        gbc.gridx++;
+        serverPortField = new JTextField(5);
+        panel.add(serverPortField,gbc);
 
-		//Button
-		gbc.gridx++;
-		gbc.gridwidth = 2;
-		connectServerButton = new JButton("Connect");
-		panel.add(connectServerButton,gbc);
+        //Button
+        gbc.gridx++;
+        gbc.gridwidth = 2;
+        connectServerButton = new JButton("Connect");
+        panel.add(connectServerButton,gbc);
 
-		/*Nick row*/
-		//Label
-		gbc.anchor = GridBagConstraints.LINE_END;
-		gbc.gridwidth = 1;
-		gbc.gridx = 0;
-		gbc.gridy = 2;
-		panel.add(new JLabel("Nick"),gbc);
+        /*Nick row*/
+        //Label
+        gbc.anchor = GridBagConstraints.LINE_END;
+        gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        panel.add(new JLabel("Nick"),gbc);
 
-		//Field
-		gbc.anchor = GridBagConstraints.LINE_START;
-		gbc.gridx++;
-		nickField = new JTextField(10);
-		nickField.setText("Neo");
-		panel.add(nickField,gbc);
+        //Field
+        gbc.anchor = GridBagConstraints.LINE_START;
+        gbc.gridx++;
+        nickField = new JTextField(10);
+        
+        ((PlainDocument) nickField.getDocument()).setDocumentFilter(
+                                                new TextAreaFilter(NICK_LIMIT));
+        nickField.setText("Neo");
+        
+        panel.add(nickField,gbc);
 
-		//Button
-		gbc.gridwidth = 1;
-		gbc.anchor = GridBagConstraints.LINE_END;
-		okButton = new JButton("Ok");
-		panel.add(okButton,gbc);
+        //Button
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.LINE_END;
+        okButton = new JButton("Ok");
+        panel.add(okButton,gbc);
 
-		return panel;
-	}
+        return panel;
+    }
 
-	/**
-	 * @return panel with two tabs, that contains the browser and chat
-	 */
-	private JPanel buildTabPanel() {
-		JPanel panel = new JPanel(new BorderLayout());
-		panel.setPreferredSize(new Dimension(TAB_PANEL_WIDTH,TAB_PANEL_HEIGHT));
-		tabbedPane = new JTabbedPane();
+    /**
+     * @return panel with two tabs, that contains the browser and chat
+     */
+    private JPanel buildTabPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setPreferredSize(new Dimension(TAB_PANEL_WIDTH,TAB_PANEL_HEIGHT));
+        tabbedPane = new JTabbedPane();
 
-		JPanel chatPanel  = buildChatPanelPanel();
-		JPanel browsPanel = buildBrowsPanel();
+        JPanel chatPanel  = buildChatPanelPanel();
+        JPanel browsPanel = buildBrowsPanel();
 
-		tabbedPane.addTab("Browse", browsPanel);
+        tabbedPane.addTab("Browse", browsPanel);
 		tabbedPane.setMnemonicAt(TAB_BROWS, KeyEvent.VK_1);
 
 
@@ -364,32 +371,9 @@ public class GUI {
        JTextArea textArea = new JTextArea(1,2);
        textArea.setWrapStyleWord(true);
        textArea.setLineWrap(true);
-
-       textArea.addKeyListener(new KeyListener() {
-           @Override
-           public void keyTyped(KeyEvent e) {
-               int size = sendTextArea.getText().length();
-               if(size > SEND_MSG_LIMIT) {
-                 synchronized(sendTextArea) {
-                     final String outmsg = sendTextArea.getText().substring(0,
-                             size - (size - SEND_MSG_LIMIT));
-                     SwingUtilities.invokeLater(new Runnable() {
-                         @Override
-                         public void run() {
-
-                             sendTextArea.setText(outmsg);
-                         }
-                     });
-                 }
-             }
-           }
-
-           @Override
-           public void keyPressed(KeyEvent e) {}
-
-           @Override
-           public void keyReleased(KeyEvent e) {}
-       });
+       TextAreaFilter filter = new TextAreaFilter(SEND_MSG_LIMIT);
+       
+      ( (PlainDocument) textArea.getDocument()).setDocumentFilter(filter);
 
        return textArea;
    }
