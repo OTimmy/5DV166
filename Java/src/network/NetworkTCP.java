@@ -38,7 +38,9 @@ public class NetworkTCP {
             outStream = socket.getOutputStream();
             inStream = socket.getInputStream();
 
+            connected = true;
             JoinPDU joinPDU = new JoinPDU(nick);
+            System.out.println("Created join");
             sendPDU(joinPDU);
             System.out.println("Connected");
 
@@ -48,7 +50,6 @@ public class NetworkTCP {
             return false;
         }
 
-        connected = true;
         return true;
     }
 

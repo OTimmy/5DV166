@@ -1,7 +1,6 @@
 package network.pdu.types;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 
 import network.pdu.ByteSequenceBuilder;
 import network.pdu.OpCode;
@@ -11,6 +10,7 @@ public class JoinPDU extends PDU{
     private byte[] bytes;
 
     public JoinPDU(String nick) {
+        
         byte[] nickbytes = nick.getBytes(StandardCharsets.UTF_8);
         ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.JOIN.value,
                                                        (byte) nickbytes.length);

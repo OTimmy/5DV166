@@ -193,14 +193,14 @@ public class Controller {
 			    if(!net.isConnectedToServer()) {
 			        
 			        String address = gui.getServerAddress();
-                    int port = new Integer(gui.getServerPort());
-                    if(address != null) {
+                    
+                    if(address.length() != 0) {
                         gui.clearMessageBoard();
-                        String nick = gui.getNick();                        
+                        int port = new Integer(gui.getServerPort());
+                        String nick = gui.getNick();   
+                        net.ConnectToServer(address, port, nick);
                     }
-
-			        net.ConnectToServer(address, port, nick);
-
+                    
 			    } else {
 			        net.disconnectServer();
 			        clearNicks();
