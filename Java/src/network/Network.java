@@ -52,53 +52,49 @@ public class Network {
 
     //UDP-related
     /**
+     * Send a request for new servers.
+     * And clears sequnce number hashset.
+     */
+    public void refreshServers(String address, int port) {
+        udpErrorListener.update(""); // Reset error message.
+        boolean success = udp.sendGetList(address,port);        
+        
+        //Alt running
+        if(udpThread != null) {
+            try {
+                udpThread.join();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        if((udpThread == null || !udpThread.isAlive() ) && success) {
+            System.out.println("Starting thread");
+            startUDPThread();
+        }
+        
+        synchronized(seqNumbs) {
+            seqNumbs.clear();    //Should not create a new instance, thus not ruining lock            
+        }
+    }
+    
+    /**
      * If connection was sucessfull, then a monitoring thead will be used
      * for reading the udp socket.
      * @return true if connection was succesfull, otherwise false.
      */
-    public boolean connectToNameServer(String address, int port) {
-        udp.connect(address, port);
-
-        if(udp.isConnected()) {
-            udpThread = new Thread() {
-                public void run() {
-                    watchServerList();
-
+    public void startUDPThread() {
+        udpErrorListener.update("");
+        udpThread = new Thread() {
+            public void run() {
+                watchServerList();
                 }
-            };
-            udpThread.start();
-        }
-
-        return udp.isConnected();
+        };
+        udpThread.start();
+        
     }
-
-    /**
-     * Close currentudp socket, clear current sequence numbers.
-     */
-    public void disconnectNameServer() {
-        udp.disconnect();
-        try {
-            udpThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            udpErrorListener.update(e.getMessage());
-        }
-        synchronized(seqNumbs) {
-            seqNumbs.clear();
-        }
-    }   
     
-    /**
-     * Send a request for new servers.
-     * And clears sequnce number hashset.
-     */
-    public void refreshServers() {
-        udp.sendGetList();
-        synchronized(seqNumbs) {
-            seqNumbs.clear();    //Should not create a new instance, thus not ruining lock
-        }
-    }
-
     /**
      * Read packet from udp, and updates listener with latest servers.
      * According to following alogrithm:
@@ -116,8 +112,9 @@ public class Network {
      *   
      */
     private void watchServerList() {
-        while(isConnectedToNameServer()) {
-
+        boolean running = true;
+        while(running) {
+            System.out.println("Hello");
             SListPDU pdu = (SListPDU) udp.getPDU();
 
             synchronized(seqNumbs) {
@@ -144,8 +141,11 @@ public class Network {
                         sListListener.update(pdu);
                     }
                 } else {
-                    //requestList
+                    udpErrorListener.update("Didn't recieve server " +
+                                            "before timeout");    
+                    
                     seqNumbs.clear();   //Reset sequenceNumbers
+                    running = false;
                 }
             }
         }

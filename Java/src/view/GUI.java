@@ -24,6 +24,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
@@ -51,8 +52,6 @@ public class GUI {
     private final int CONF_PANEL_WIDTH  = 400;
     private final int TAB_PANEL_HEIGHT  = 100;
     private final int TAB_PANEL_WIDTH   = 400;
-    private final int NR_TABLE_COLUMNS  = 4;
-    private final int NR_TABLE_ROWS     = 17;
     private final int TAB_BROWS         = 0;    //Index values for tabbedpane
     private final int TAB_CHAT          = 1;
     private final int TAB_MAX_NAME      = 20;
@@ -95,13 +94,12 @@ public class GUI {
         frame = buildFrame();
         JPanel configPanel = buildConfigPanel();
         JPanel tabPanel    = buildTabPanel();
-
+ 
         frame.add(configPanel,BorderLayout.NORTH);
         frame.add(tabPanel,BorderLayout.CENTER);
         frame.revalidate();
 
     }
-
 
     private JFrame buildFrame() {
         JFrame frame = new JFrame("Client");
@@ -157,13 +155,8 @@ public class GUI {
         nameServerPortField.setText("1337");
         panel.add(nameServerPortField,gbc);
 
-        //Button connect
-        gbc.gridx++;
-        connectNameServerButton = new JButton("Connect");
-        panel.add(connectNameServerButton,gbc);
-
         //Button Refresh
-        gbc.gridx+=2;
+        gbc.gridx++;
         gbc.anchor = GridBagConstraints.LINE_START;
         refreshButton = new JButton("Refresh");
         panel.add(refreshButton);
@@ -237,8 +230,6 @@ public class GUI {
 
         tabbedPane.addTab("Browse", browsPanel);
 		tabbedPane.setMnemonicAt(TAB_BROWS, KeyEvent.VK_1);
-
-
 
 		tabbedPane.addTab("Chat", chatPanel);
 		tabbedPane.setMnemonicAt(TAB_CHAT, KeyEvent.VK_2);
@@ -318,50 +309,6 @@ public class GUI {
 	}
 
    /**
-    * @return
-    */
-   private JTable buildTable() {
-
-       String[] columns = {"Address","Port","Connected","Topic"};
-       Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
-       tableModel = new DefaultTableModel(data,columns);
-
-       final JTable table = new JTable(tableModel);
-
-       table.addMouseListener(new MouseListener() {
-           @Override
-           public void mouseReleased(MouseEvent arg0) {}
-           @Override
-           public void mousePressed(MouseEvent arg0) {}
-           @Override
-           public void mouseExited(MouseEvent arg0) {}
-           @Override
-           public void mouseEntered(MouseEvent arg0) {}
-           @Override
-           public void mouseClicked(MouseEvent arg0) {
-
-             SwingUtilities.invokeLater(new Runnable() {
-
-               @Override
-               public void run() {
-                   int row = table.getSelectedRow();
-                   String address = (String) table.getValueAt(row, 0);
-                   String port = (String) table.getValueAt(row, 1);
-                   serverTopic     = (String) table.getValueAt(row, 3);
-
-                   serverAddressField.setText(address);
-                   serverPortField.setText(port);
-               }
-           });
-
-           }
-       });
-
-       return table;
-   }
-
-
-   /**
     * Builds a new JTextarea to be used for sending messages.
     * It also handels the amount of characters that are allowed to be typed.
     *
@@ -386,35 +333,80 @@ public class GUI {
 	    int panelSize = 400;
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setPreferredSize(new Dimension(panelSize, panelSize));
+		panel.setBackground(Color.white);
 
-		int tablePanelSize = 300;
-		int southSize = 50;
+		int southSize = 40;
 
 		/*Server panel*/
 		JPanel northPanel = new JPanel(new BorderLayout());
-		northPanel.setPreferredSize(new Dimension(tablePanelSize,tablePanelSize));
-
+		//northPanel.setPreferredSize(new Dimension(tablePanelSize,tablePanelSize));
+		northPanel.setBackground(Color.white);
+		
 		table = buildTable();
 		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setBackground(Color.white);
+		scrollPane.getViewport().setBackground(Color.white);
 		northPanel.add(scrollPane,BorderLayout.CENTER);
 
-		/*Panel with refresh*/
+		/*Panel with error message*/
 		JPanel southPanel = new JPanel();
-		southPanel.setLayout(new BoxLayout(southPanel,BoxLayout.PAGE_AXIS));
-
+		//southPanel.setLayout(new BoxLayout(southPanel,BoxLayout.PAGE_AXIS));
 		southPanel.setPreferredSize(new Dimension(southSize,southSize));
 
 		//Error label
 		browsErrLabel = new JLabel("");
 		browsErrLabel.setForeground(Color.red);
 		browsErrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		southPanel.add(browsErrLabel);
-
-		panel.add(northPanel,BorderLayout.NORTH);
+		browsErrLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+		southPanel.add(browsErrLabel,BorderLayout.CENTER);
+		
 		panel.add(southPanel,BorderLayout.SOUTH);
+		panel.add(northPanel,BorderLayout.CENTER);
 		return panel;
 	}
+	
+    /**
+     * @return
+     */
+     private JTable buildTable() {
+	     String[] columns = {"Address","Port","Connected","Topic"};
+	     tableModel = new DefaultTableModel(null,columns);
+	     
+	     final JTable table = new JTable(tableModel);
 
+	         table.addMouseListener(new MouseListener() {
+	             @Override
+	             public void mouseReleased(MouseEvent arg0) {}
+	             @Override
+	             public void mousePressed(MouseEvent arg0) {}
+	             @Override
+	             public void mouseExited(MouseEvent arg0) {}
+	             @Override
+	             public void mouseEntered(MouseEvent arg0) {}
+	             @Override
+	             public void mouseClicked(MouseEvent arg0) {
+
+                 SwingUtilities.invokeLater(new Runnable() {
+
+	               @Override
+                   public void run() {
+                       int row         = table.getSelectedRow();
+                       String address  = (String) table.getValueAt(row, 0);
+                       String port     = (String) table.getValueAt(row, 1);
+                       serverTopic     = (String) table.getValueAt(row, 3);
+
+                       serverAddressField.setText(address);
+	                   serverPortField.setText(port);
+                   }
+               });
+
+               }
+        });
+	    
+	    table.setShowGrid(false);
+        return table;
+    }
 
 	/**
 	 * Is used to add server information to the graphical table.
@@ -425,23 +417,9 @@ public class GUI {
 	 */
     public void addToTable(String address, String port, String nrClients,
                                 String name) {
-        int row = tableModel.getRowCount() -1;
-        String value = (String)tableModel.getValueAt(row, 0);
-
-
+        
         Object[] rowData = {address,port,nrClients,name};
-
-        //If last value is null then find the first empty (null) in table
-        if(value == null) {
-            int index = 0;
-            for(; index < tableModel.getRowCount()
-                        && tableModel.getValueAt(index, 0) != null; index++);
-
-            tableModel.insertRow(index, rowData);
-            tableModel.removeRow(tableModel.getRowCount() -1);
-        } else { //if last value is not null  then add a new row
-            tableModel.addRow(rowData);
-        }
+        tableModel.addRow(rowData);
     }
 
     /**
@@ -453,8 +431,7 @@ public class GUI {
             @Override
             public void run() {
                 String[] columns = {"Address","Port","Connected","Topic"};
-                Object[][] data = new Object[NR_TABLE_ROWS][NR_TABLE_COLUMNS];
-                tableModel.setDataVector(data, columns);
+                tableModel.setDataVector(null, columns);
             }
         });
     }
@@ -499,16 +476,6 @@ public class GUI {
             @Override
             public void run() {
                 msgTextArea.setText("");
-            }
-        });
-    }
-
-    public void setConnectNameServerButton(final String text) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                connectNameServerButton.setText(text);
             }
         });
     }
@@ -564,6 +531,15 @@ public class GUI {
 	    return text;
 	}
 
+
+    public void printErrorBrowser(String errorMsg) {
+        browsErrLabel.setText(errorMsg);
+    }
+    
+    public void clearErrorBrowser() {
+        browsErrLabel.setText("");
+    }
+    
 	public String getNameServerAddress() {
 	    return nameServerAddressField.getText();
 	}
@@ -587,10 +563,6 @@ public class GUI {
 	public String getServerTopic() {
 		return serverTopic;
 	}
-
-    public void printErrorBrowser(String errorMsg) {
-        browsErrLabel.setText(errorMsg);
-    }
 
 
 	public void addConnectNameServerButtonListener(ActionListener l) {

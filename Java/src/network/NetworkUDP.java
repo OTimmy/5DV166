@@ -23,55 +23,36 @@ import controller.Listener;
 public class NetworkUDP {
 
 	private Listener<String>errorListener;
-    private DatagramSocket socket;
-    private String address;
-    private int port;
     private volatile boolean connection;
+    private DatagramSocket socket;
+    
     private final int buffSize = 65000;
 
-//    public NetworkUDP() {
-//
-//    }
+    public boolean sendGetList(String address, int port) {
 
-    /**
-     *  Connects to name server by sending getlist PDU
-     *  to given address and port.
-     *
-     *  @return true if successful else false.
-     */
-    public void connect(String address,int port) {
-        this.address = address;
-        this.port = port;
-        try {
-            socket = new DatagramSocket();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        connection = sendGetList();
-    }
-
-    public synchronized void disconnect() {
-            connection = false;
-            socket.close();
-    }
-
-    public boolean sendGetList() {
-        System.out.println("Seding");
         InetAddress inetAddress;
         try {
-            inetAddress = InetAddress.getByName(address);
+              
+                 if(socket != null) {
+                     socket.close();
+                 }
+              
+                 socket = new DatagramSocket();
+            
+                 inetAddress = InetAddress.getByName(address);
 
-            GetListPDU pdu = new GetListPDU();
-            DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
-                                                        pdu.getSize(),
-                                                        inetAddress,port);
-            socket.send(packet);
-
+                 GetListPDU pdu = new GetListPDU();
+                 DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
+                                                            pdu.getSize(),
+                                                            inetAddress,port);
+                 System.out.println("Sending pakcet");
+                 socket.send(packet);
         } catch (IOException e) {
-            e.printStackTrace();
-            errorListener.update(e.getMessage());
-            return false;
-        }
+                System.out.println("sendgetList");
+                errorListener.update(e.getMessage()); 
+                return false;
+       }
+        
         return true;
     }
 
@@ -85,6 +66,7 @@ public class NetworkUDP {
             socket.setSoTimeout(timeout);
         } catch (SocketException e) {
             e.printStackTrace();
+            System.out.println("isConnected");
             errorListener.update(e.getMessage());
         }
     }
@@ -100,25 +82,24 @@ public class NetworkUDP {
         InputStream inStream;
         PDU pdu = null;
         try {
-
+            System.out.println("Waiting");
             socket.receive(packet);
+            System.out.println("packet recieved");
             inStream = new ByteArrayInputStream(packet.getData());
             pdu = (SListPDU) PDU.fromInputStream(inStream);
 
         }catch (IOException e) {
 
             if(isConnected()) {
+                System.out.println("getPDU");
                 e.printStackTrace();
                 errorListener.update(e.getMessage());
             }
-
         }
-
         return pdu;
     }
 
     public void addErrorListener(Listener<String> errorListener) {
         this.errorListener = errorListener;
     }
-
 }
