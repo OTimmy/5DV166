@@ -23,7 +23,6 @@ import controller.Listener;
 public class NetworkUDP {
 
 	private Listener<String>errorListener;
-    private volatile boolean connection;
     private DatagramSocket socket;
     
     private final int buffSize = 65000;
@@ -31,8 +30,7 @@ public class NetworkUDP {
     public boolean sendGetList(String address, int port) {
 
         InetAddress inetAddress;
-        try {
-              
+        try {              
                  if(socket != null) {
                      socket.close();
                  }
@@ -45,10 +43,8 @@ public class NetworkUDP {
                  DatagramPacket packet = new DatagramPacket(pdu.toByteArray(),
                                                             pdu.getSize(),
                                                             inetAddress,port);
-                 System.out.println("Sending pakcet");
                  socket.send(packet);
         } catch (IOException e) {
-                System.out.println("sendgetList");
                 errorListener.update(e.getMessage()); 
                 return false;
        }
@@ -56,17 +52,11 @@ public class NetworkUDP {
         return true;
     }
 
-    // Change to is socket closed
-    public synchronized  boolean isConnected() {
-        return connection;
-    }
-
     public void setTimer(int timeout) {
         try {
             socket.setSoTimeout(timeout);
         } catch (SocketException e) {
             e.printStackTrace();
-            System.out.println("isConnected");
             errorListener.update(e.getMessage());
         }
     }
@@ -82,19 +72,12 @@ public class NetworkUDP {
         InputStream inStream;
         PDU pdu = null;
         try {
-            System.out.println("Waiting");
             socket.receive(packet);
-            System.out.println("packet recieved");
             inStream = new ByteArrayInputStream(packet.getData());
             pdu = (SListPDU) PDU.fromInputStream(inStream);
 
         }catch (IOException e) {
-
-            if(isConnected()) {
-                System.out.println("getPDU");
-                e.printStackTrace();
-                errorListener.update(e.getMessage());
-            }
+            errorListener.update(e.getMessage());
         }
         return pdu;
     }

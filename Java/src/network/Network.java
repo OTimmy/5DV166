@@ -57,8 +57,8 @@ public class Network {
      */
     public void refreshServers(String address, int port) {
         udpErrorListener.update(""); // Reset error message.
-        boolean success = udp.sendGetList(address,port);        
-        
+        boolean packetSent = udp.sendGetList(address,port);        
+       
         //Alt running
         if(udpThread != null) {
             try {
@@ -69,8 +69,7 @@ public class Network {
             }
         }
         
-        if((udpThread == null || !udpThread.isAlive() ) && success) {
-            System.out.println("Starting thread");
+        if((udpThread == null || !udpThread.isAlive() ) && packetSent) {
             startUDPThread();
         }
         
@@ -112,9 +111,9 @@ public class Network {
      *   
      */
     private void watchServerList() {
-        boolean running = true;
-        while(running) {
-            System.out.println("Hello");
+        boolean run = true;
+        boolean seqMissed = false;
+        while(run) {
             SListPDU pdu = (SListPDU) udp.getPDU();
 
             synchronized(seqNumbs) {
@@ -122,7 +121,7 @@ public class Network {
                     udp.setTimer(0); // reset timer
                     if(!seqNumbs.contains(pdu.getSequenceNr())) {
                         seqNumbs.add(pdu.getSequenceNr());
-                        boolean seqMissed = false;
+                        seqMissed = false;
 
                         //Check for any missing sequence numbers
                         for(int i = 0; i < seqNumbs.size(); i++) {
@@ -141,11 +140,14 @@ public class Network {
                         sListListener.update(pdu);
                     }
                 } else {
-                    udpErrorListener.update("Didn't recieve server " +
-                                            "before timeout");    
+
+                    if(seqMissed) {
+                        udpErrorListener.update("Didn't recieve server " +
+                                                "before timeout");    
+                    }
                     
                     seqNumbs.clear();   //Reset sequenceNumbers
-                    running = false;
+                    run = false;
                 }
             }
         }
@@ -174,7 +176,6 @@ public class Network {
 
     public void disconnectServer() {
         tcp.disconnect();
-        System.out.println("Disconnecting!!!");
     }
 
     public void SendMessage(String msg, String nick) {
@@ -188,9 +189,7 @@ public class Network {
     private void watchServer() {
         while(isConnectedToServer()) {
 
-            System.out.println("waiting for input");
             PDU pdu = tcp.getPDU();
-            System.out.println("input recieved");
 
             if(pdu != null && pdu.getError() == null) {
 
@@ -237,9 +236,6 @@ public class Network {
         return tcp.isConnected();
     }
 
-    public boolean isConnectedToNameServer() {
-        return udp.isConnected();
-    }
 
     public void addServerListener(Listener<SListPDU> sListListener) {
         this.sListListener = sListListener;

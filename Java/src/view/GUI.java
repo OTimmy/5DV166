@@ -89,8 +89,26 @@ public class GUI {
 
     private JLabel browsErrLabel;
 
-    public GUI() {
+    public GUI(String nameServerAddress,String nameServerPort, 
+               String serverAddress, String serverPort) {
+        
+        setup();
+        
+        nameServerAddressField.setText(nameServerAddress);
+        nameServerPortField.setText(nameServerPort);
+        serverAddressField.setText(serverAddress);
+        serverPortField.setText(serverPort);                 
 
+    }
+    
+    public GUI(final String nameServerAddress,final String nameServerPort) {
+        setup();
+        
+        nameServerAddressField.setText(nameServerAddress);
+        nameServerPortField.setText(nameServerPort);
+    }
+    
+    private void setup() {
         frame = buildFrame();
         JPanel configPanel = buildConfigPanel();
         JPanel tabPanel    = buildTabPanel();
@@ -98,8 +116,9 @@ public class GUI {
         frame.add(configPanel,BorderLayout.NORTH);
         frame.add(tabPanel,BorderLayout.CENTER);
         frame.revalidate();
-
+        
     }
+    
 
     private JFrame buildFrame() {
         JFrame frame = new JFrame("Client");
@@ -142,7 +161,6 @@ public class GUI {
         gbc.anchor = GridBagConstraints.LINE_START;
         gbc.gridx++;
         nameServerAddressField = new JTextField(15);
-        nameServerAddressField.setText("itchy.cs.umu.se");
         panel.add(nameServerAddressField,gbc);
 
         //Label
@@ -152,7 +170,6 @@ public class GUI {
         //Field
         gbc.gridx++;
         nameServerPortField = new JTextField(5);
-        nameServerPortField.setText("1337");
         panel.add(nameServerPortField,gbc);
 
         //Button Refresh

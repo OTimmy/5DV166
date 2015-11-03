@@ -73,11 +73,17 @@ public class Controller {
 			@Override
 			public void update(MessagePDU t) {
 			    String date = DateUtils.format(t.getDate());
-
-			    gui.printOnMessageBoard(date +"<"+t.getNick()+"> "
-			                            +t.getMsg());
+			    String nick;
+			    if(t.getNick().length() == 0) {
+			        nick = " **Server** ";
+			    } else {
+			        nick = " <" + t.getNick() +"> ";
+			    }
+			    
+                gui.printOnMessageBoard(date +nick
+                        +t.getMsg());
+			    
 			}
-
 		});
 
 
@@ -96,7 +102,6 @@ public class Controller {
 
             @Override
             public void update(String t) {
-                System.out.println("Printing: "+t);
                 gui.printErrorBrowser(t);
             }
         });
@@ -155,12 +160,16 @@ public class Controller {
 	    gui.addRefreshButtonListener(new ActionListener() {
 	        @Override
 	        public void actionPerformed(ActionEvent e) {
-	            String address = gui.getNameServerAddress();
-	            int port = new Integer(gui.getNameServerPort());
+	            if(gui.getNameServerAddress().length() != 0 
+	                    && gui.getNameServerPort().contains("[0 - 9]+")) {
 	                
-	            gui.clearTable();
-	            net.refreshServers(address,port);
-	               
+	                String address = gui.getNameServerAddress();
+	                
+	                int port = new Integer(gui.getNameServerPort());
+	           
+	                gui.clearTable();
+	                net.refreshServers(address,port);
+	            }
 	        }
         });
 
@@ -169,7 +178,6 @@ public class Controller {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("connection: "+net.isConnectedToServer());
                 if(!net.isConnectedToServer()) {
 			        
                     String address = gui.getServerAddress();
@@ -205,7 +213,6 @@ public class Controller {
             @Override
             public void actionPerformed(ActionEvent e) {
                 nick = gui.getNick();
-                System.out.println("Nick: "+nick);
                 net.changeNick(nick);
             }
         });

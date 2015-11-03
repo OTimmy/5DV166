@@ -27,11 +27,9 @@ public class NetworkTCP {
     private OutputStream outStream;
     private InputStream inStream;
     private boolean connected;
-    private Object lock;
 
     public boolean connect(String address,int port, String nick) {
         try {
-            System.out.println("Connecting");
             socket = new Socket();
             socket.connect(new InetSocketAddress(address,port),TIME_OUT);
 
@@ -40,12 +38,9 @@ public class NetworkTCP {
 
             connected = true;
             JoinPDU joinPDU = new JoinPDU(nick);
-            System.out.println("Created join");
             sendPDU(joinPDU);
-            System.out.println("Connected");
 
         } catch (IOException e) {
-           // e.printStackTrace();
             errorListener.update(e.getMessage());
             return false;
         }
@@ -92,7 +87,6 @@ public class NetworkTCP {
         } catch (IOException e) {
             e.printStackTrace();
             errorListener.update(e.getMessage());
-            System.out.println("Error write");
         }
     }
 
@@ -104,13 +98,10 @@ public class NetworkTCP {
             return PDU.fromInputStream(inStream);
         } catch(SocketException e) {
            if(isConnected()) {
-               e.printStackTrace();
                errorListener.update(e.getMessage());
            }
 
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Exception shit");
             errorListener.update(e.getMessage());
         }
 

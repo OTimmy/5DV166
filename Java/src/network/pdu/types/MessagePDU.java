@@ -116,11 +116,8 @@ public class MessagePDU extends PDU{
             bytes.add(b);
         }
         
-        if(nickBytes.length == 0) {
-            nick = "Server";
-        } else {
-            nick = new String(nickBytes, StandardCharsets.UTF_8);
-        }
+  
+        nick = new String(nickBytes, StandardCharsets.UTF_8);
 
         //Create byte array
         byte[] pduBytes = new byte[bytes.size()];
@@ -129,7 +126,6 @@ public class MessagePDU extends PDU{
         }
 
         if(Checksum.computeChecksum(pduBytes) != 0) {
-            System.out.println("invalid checksum");
             return "Incorrect checksum";
         }
 
@@ -143,7 +139,6 @@ public class MessagePDU extends PDU{
                                                               PAD, PAD,(byte)0);
 
         byte[] msgBytes = msg.getBytes(StandardCharsets.UTF_8);
-        System.out.println("Sending bytes: "+msgBytes.length);
         //msg length to two bytes, then pad.
         builder.appendShort((short) msgBytes.length);
         //pad remaining 2 bytes
