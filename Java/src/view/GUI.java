@@ -548,13 +548,17 @@ public class GUI {
 	}
 
 
-    public void printErrorBrowser(String errorMsg) {
-        browsErrLabel.setText(errorMsg);
+    public void printErrorBrowser(final String errorMsg) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                browsErrLabel.setText(errorMsg);
+            }
+        });
+     
     }
     
-    public void clearErrorBrowser() {
-        browsErrLabel.setText("");
-    }
     
 	public String getNameServerAddress() {
 	    return nameServerAddressField.getText();

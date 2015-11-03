@@ -26,6 +26,7 @@ public class NetworkTCP {
     private OutputStream outStream;
     private InputStream inStream;
     private boolean connected;
+    private final String ERROR_CONNECT = "Couldn't connect to server";
 
     public boolean connect(String address,int port, String nick) {
         try {
@@ -40,7 +41,7 @@ public class NetworkTCP {
             sendPDU(joinPDU);
 
         } catch (IOException e) {
-            errorListener.update(e.getMessage());
+            errorListener.update(ERROR_CONNECT);
             return false;
         }
 

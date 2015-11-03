@@ -30,7 +30,9 @@ public class Controller {
     private final int KEY_ENTER = 10;
     private final int TAB_BROWS = 0;
     private final int TAB_CHAT  = 1;
-
+    
+    private final String ERROR_TCP_CONNECT = "Couldn't connect to server";
+    
     private Network net;
     private GUI gui;
     private ArrayList<String> nicks;
@@ -91,8 +93,14 @@ public class Controller {
 
             @Override
             public void update(String t) {
+                
+                if(t.compareTo(ERROR_TCP_CONNECT) == 0) {
+                    gui.printErrorBrowser(ERROR_TCP_CONNECT);
+                } else {
+                    gui.printOnMessageBoard("Error:"+t);                    
+                }
+                
                 net.disconnectServer();
-                gui.printOnMessageBoard("Error:"+t);
                 gui.setConnectServerButton("Connect");
                 clearNicks();
             }
@@ -179,6 +187,7 @@ public class Controller {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                gui.printErrorBrowser(""); // reset
                 if(!net.isConnectedToServer()) {
 			        
                     String address = gui.getServerAddress();
@@ -195,10 +204,11 @@ public class Controller {
                     net.disconnectServer();
                     clearNicks();
                 }
-
+               
+                
                 if(!net.isConnectedToServer()) {
                     gui.setConnectServerButton("Connect");
-                    clearNicks();
+                    clearNicks();    
                     gui.setChatTabTitle("Chat");
                     gui.openTab(TAB_BROWS);
                 } else {
