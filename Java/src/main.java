@@ -32,6 +32,6 @@ public class main {
 
         Network net = new Network();
                  
-        Controller controller = new Controller(net,gui);
+        new Controller(net,gui);
 	}
 }

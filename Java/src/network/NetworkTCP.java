@@ -7,7 +7,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 
-import network.pdu.OpCode;
 import network.pdu.PDU;
 import network.pdu.types.JoinPDU;
 import network.pdu.types.QuitPDU;

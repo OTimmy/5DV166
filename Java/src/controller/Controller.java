@@ -160,14 +160,15 @@ public class Controller {
 	    gui.addRefreshButtonListener(new ActionListener() {
 	        @Override
 	        public void actionPerformed(ActionEvent e) {
+	            gui.clearTable();
+	            
 	            if(gui.getNameServerAddress().length() != 0 
-	                    && gui.getNameServerPort().contains("[0 - 9]+")) {
+	                    && gui.getNameServerPort().matches("[0-9]+")) {
 	                
 	                String address = gui.getNameServerAddress();
 	                
 	                int port = new Integer(gui.getNameServerPort());
 	           
-	                gui.clearTable();
 	                net.refreshServers(address,port);
 	            }
 	        }
@@ -182,7 +183,8 @@ public class Controller {
 			        
                     String address = gui.getServerAddress();
                     
-                    if(address.length() != 0) {
+                    if(address.length() != 0 
+                            && gui.getServerPort().matches("[0-9]+") ) {
                         gui.clearMessageBoard();
                         int port = new Integer(gui.getServerPort());
                         String nick = gui.getNick();   

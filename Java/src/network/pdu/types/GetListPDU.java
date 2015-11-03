@@ -1,6 +1,5 @@
 package network.pdu.types;
 
-import java.util.ArrayList;
 
 import network.pdu.OpCode;
 import network.pdu.PDU;
