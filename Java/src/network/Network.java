@@ -27,7 +27,7 @@ import network.pdu.types.ULeavePDU;
  */
 public class Network {
 
-    private final int udpTimer = 20;
+    private final int udpTimer = 40;
 
     private NetworkUDP udp;
     private NetworkTCP tcp;
@@ -57,8 +57,8 @@ public class Network {
      */
     public void refreshServers(String address, int port) {
         udpErrorListener.update(""); // Reset error message.
-        boolean packetSent = udp.sendGetList(address,port);        
-       
+        boolean packetSent = udp.sendGetList(address,port);
+
         //Alt running
         if(udpThread != null) {
             try {
@@ -68,16 +68,16 @@ public class Network {
                 e.printStackTrace();
             }
         }
-        
+
         if((udpThread == null || !udpThread.isAlive() ) && packetSent) {
             startUDPThread();
         }
-        
+
         synchronized(seqNumbs) {
-            seqNumbs.clear();    //Should not create a new instance, thus not ruining lock            
+            seqNumbs.clear();    //Should not create a new instance, thus not ruining lock
         }
     }
-    
+
     /**
      * If connection was sucessfull, then a monitoring thead will be used
      * for reading the udp socket.
@@ -91,24 +91,24 @@ public class Network {
                 }
         };
         udpThread.start();
-        
+
     }
-    
+
     /**
      * Read packet from udp, and updates listener with latest servers.
      * According to following alogrithm:
-     * 
+     *
      * 1. get pdu
      * 2. if pdu is null
      *   2.1 clear all sequence numbers from hashset
      * 3.Remove timer
      * 4.if pdu's sequence number already exist.
-     *   4.1 ignore the pdu, and return to step 1.   
-     * 5.if any sequence number is missed 
+     *   4.1 ignore the pdu, and return to step 1.
+     * 5.if any sequence number is missed
      *   5.1 set timer for the next coming pdu.
      * 6. Update listener
      * 7. return to step 1.
-     *   
+     *
      */
     private void watchServerList() {
         boolean run = true;
@@ -143,9 +143,9 @@ public class Network {
 
                     if(seqMissed) {
                         udpErrorListener.update("Didn't recieve server " +
-                                                "before timeout");    
+                                                "before timeout");
                     }
-                    
+
                     seqNumbs.clear();   //Reset sequenceNumbers
                     run = false;
                 }
@@ -195,14 +195,14 @@ public class Network {
 
                 OpCode op = OpCode.getOpCodeBy(pdu.getOpCode());
                 switch(op) {
-                
+
                 case NICKS:
                     NicksPDU nicksPDU = (NicksPDU) pdu;
                     for(String nick:nicksPDU.getNicks()) {
                         nicksListener.update(nick);
                     }
                     break;
-                    
+
                 case MESSAGE:
                     msgListener.update((MessagePDU) pdu);
                     break;
@@ -223,14 +223,14 @@ public class Network {
                     tcpErrorListener.update("Disconnected by admin");
                     break;
                 }
-                
-            } else if(pdu == null){   
+
+            } else if(pdu == null){
                 tcpErrorListener.update("Unknown pdu");
             } else {
-                tcpErrorListener.update("\n" + pdu.getClass().getSimpleName() 
+                tcpErrorListener.update("\n" + pdu.getClass().getSimpleName()
                                         + ": " +pdu.getError());
             }
-        }   
+        }
     }
     public boolean isConnectedToServer() {
         return tcp.isConnected();
