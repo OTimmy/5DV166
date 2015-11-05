@@ -1,7 +1,7 @@
 /*
  * pdu.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 9/10-15.
+ * Last update: 5/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * pdu.c contains functions for using the PDU data types.
@@ -15,7 +15,7 @@
 #include <string.h>
 //#include <sys/wait.h>
 /* --- Data types --- */
-//#include <stdbool.h>
+#include <stdbool.h>
 //#include <stdint.h> /* Subset of inttypes.h */
 #include <inttypes.h> /* Fixed width integers */
 //#include <sys/types.h>
@@ -106,6 +106,118 @@ void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len)
 }
 
 /*
+ * verify_join: Verifies that the join PDU is valid.
+ * Params: pdu = array of the join PDU to verify.
+ *         len = length of the array in bytes.
+ * Returns: TRUE if the PDU is valid, FALSE otherwise.
+ * Notes: len must be >= 4 + pdu[1].
+ */
+bool verify_join(uint8_t pdu[], size_t len)
+{
+    bool valid = true;
+    if (JOIN_OP != pdu[0] || 0 == pdu[1] || 0 != pdu[2] || 0 != pdu[3])
+    {
+        valid = false;
+    }
+    else
+    {
+        for (int i = 4; i < 4 + pdu[1]; i++)
+        {
+            if ('\0' == pdu[i])
+            {
+                valid = false;
+            }
+        }
+        for (int i = 4 + pdu[1]; i < len; i++)
+        {
+            if ('\0' != pdu[i])
+            {
+                valid = false;
+            }
+        }
+    }
+    return valid;
+}
+
+/*
+ * verify_mess: Verifies that the mess PDU is valid.
+ * Params: pdu = array of the mess PDU to verify.
+ *         len = length of the array in bytes.
+ * Returns: TRUE if the PDU is valid, FALSE otherwise.
+ * Notes: len must be >= 12 + (pdu[4] << 8 | pdu[5]).
+ */
+bool verify_mess(uint8_t pdu[], size_t len)
+{
+    bool valid = true;
+    if (MESS_OP != pdu[0] || 0 != pdu[1] || 0 != pdu[2]
+        || 0 != pdu[6] || 0 != pdu[7]
+        || 0 != pdu[8] || 0 != pdu[9] || 0 != pdu[10] || 0 != pdu[11])
+    {
+        valid = false;
+    }
+    else
+    {
+        if (0 != get_checksum(pdu, len))
+        {
+            valid = false;
+        }
+        else
+        {
+            uint16_t mess_len = (pdu[4] << 8) | (pdu[5] & 0xFF);
+            for (int i = 12; i < 12 + mess_len; i++)
+            {
+                if ('\0' == pdu[i])
+                {
+                    valid = false;
+                }
+            }
+            for (int i = 12 + mess_len; i < len; i++)
+            {
+                if ('\0' != pdu[i])
+                {
+                    valid = false;
+                }
+            }
+        }
+    }
+    return valid;
+}
+
+/*
+ * verify_chnick: Verifies that the chnick PDU is valid.
+ * Params: pdu = array of the chnick PDU to verify.
+ *         len = length of the array in bytes.
+ * Returns: TRUE if the PDU is valid, FALSE otherwise.
+ * Notes: len must be >= 4 + pdu[1].
+ */
+bool verify_chnick(uint8_t pdu[], size_t len)
+{
+    bool valid = true;
+    if (CHNICK_OP != pdu[0] || 0 == pdu[1] || 0 != pdu[2] || 0 != pdu[3])
+    {
+        valid = false;
+    }
+    else
+    {
+        for (int i = 4; i < 4 + pdu[1]; i++)
+        {
+            if ('\0' == pdu[i])
+            {
+                valid = false;
+            }
+        }
+        for (int i = 4 + pdu[1]; i < len; i++)
+        {
+            if ('\0' != pdu[i])
+            {
+                valid = false;
+            }
+        }
+    }
+    return valid;
+}
+
+/*
  * get_checksum: Calculates the checksum of an array of bytes in 8-bit ones'
  *      complement form. This means that all bytes are added up, and whenever
  *      the sum surpasses 255 (>255), the sum is subtracted by 255 (-255).
@@ -115,7 +227,7 @@ void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len)
  * Returns: The checksum of the (first len bytes of the) given array.
  * Notes:
  */
-uint8_t get_checksum(uint8_t *bytes, int len)
+uint8_t get_checksum(uint8_t bytes[], int len)
 {
     int sum = 0;
     for (int i = 0; i < len; i++)

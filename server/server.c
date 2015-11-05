@@ -1,7 +1,7 @@
 /*
  * server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 9/10-15.
+ * Last update: 3/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.c implements a chat server.
@@ -33,6 +33,7 @@
 //input quit or conn lost => uleave to all (or q?) => output exits (think of queue)
 //freefunc just before free queue => remove client (earlier?)
 //exit => mass quit/kick => term threads. quit and rem separate?
+//error with ns => orderly shutdown?
 
 /* --- Standard headers --- */
 #include <stdlib.h>
@@ -83,7 +84,7 @@ static char *name_server_address = "itchy.cs.umu.se";
 /* Port where name server accepts server connections */
 static char *name_server_port = "1337";
 /* Port where this server accepts client connections */
-static char *client_conn_port = "51515";//check len in parser
+static char *client_conn_port = "51515";
 /* Server name */
 static char *name = "Joshua - \"The only winning move is not to play\"";
 /*static char *name = "Anti-SkyNet";*/
@@ -136,8 +137,9 @@ int main(int argc, char *argv[])
     pthread_attr_destroy(&attr);
 
     /* Wait for inputs and follow commands */
-    char cmdline[30];
+    char cmdline[20];
     char cmd[20];
+    int exit_flag = 0;
     fflush(stdin);
     while (NULL != fgets(cmdline, sizeof(cmdline), stdin))
     {
@@ -145,8 +147,9 @@ int main(int argc, char *argv[])
         fflush(stdin);
         if (!strcmp(cmd, "exit")) /* Exit the program */
         {
-            //cancel rest of program!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            exit(EXIT_FAILURE);
+            //cancel rest of program??????????????
+            exit_flag = 1;
+            break;
         }
         else if (!strcmp(cmd, "up")) /* Print server uptime */
         {
@@ -159,8 +162,13 @@ int main(int argc, char *argv[])
         }
         // kick client, spy on conversation, mini client, etc.?????????
     }
-    fprintf(stderr, "Server commands unavailable!\n");
-    pause();
+    if (!exit_flag)
+    {
+        fprintf(stderr, "Server commands unavailable!\n");
+        pause(); /* Until program manually terminated */
+    }
+
+// if rest of program cancelled????????
 //to know when threads are dead?????
 /*    if (0 != pthread_join(thread_ns, NULL))*/
 /*    {*/
@@ -170,9 +178,8 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_MONOTONIC_RAW, &end_time); /* End timer */
     double runtime = (end_time.tv_sec - start_time.tv_sec)
                      + (end_time.tv_nsec - start_time.tv_nsec)/1000000000.0;
-    fprintf(stderr, "\nRuntime: %.2f sec.\n", runtime);//uptime???????????????
+    fprintf(stderr, "\nRuntime: %.2f sec.\n", runtime);
 
-    //getchar();
     return 0;
 }
 
@@ -249,30 +256,4 @@ int is_uint16(const char *str)
     }
     return 1;
 }
-
-/* ===== WORK IN PROGRESS ===== */
-/*
- * fatal_error: Exits the program (with unsuccessful exit status) after
- *      printing some error messages.
- * Params: pmsg = string to print with perror, denoting what failed.
- *         msg = string to print to stderr, describing the issue. E.g.
- *               "Usage: %s [-t type] start1 [start2 ...] name\n". (%s=argv[0])
- * Returns:
- * Notes: Frees dynamically allocated resources given function.
- */
-/*void fatal_error(char *pmsg, char *msg)*/
-/*{*/
-/*    fprintf(stderr, "\nWarning: ERROR occurred, couldn't finish program!\n");*/
-/*    fprintf(stderr, msg);*/
-/*    perror(pmsg);*/
-/*    //free_all(); // conditional to preprocessor directive (as timers?)*/
-/*    exit(EXIT_FAILURE);*/
-/*}*/
-
-/*void error(char *msg)*/
-/*{*/
-/*    perror(msg);*/
-/*    //free_all();*/
-/*    exit(EXIT_FAILURE);*/
-/*}*/
 

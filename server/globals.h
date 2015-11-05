@@ -1,7 +1,7 @@
 /*
  * globals.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 9/10-15.
+ * Last update: 4/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.h is the header file for the globals.c file.
@@ -19,7 +19,7 @@
 //#include <string.h>
 //#include <sys/wait.h>
 /* --- Data types --- */
-//#include <stdbool.h>
+#include <stdbool.h>
 //#include <stdint.h> /* Subset of inttypes.h */
 #include <inttypes.h> /* Fixed width integers */
 //#include <sys/types.h>
@@ -86,7 +86,8 @@ void incr_nrof_clients();
 void decr_nrof_clients();
 void enqueue(client *cli, pdu_data *pdu);
 pdu_data *dequeue(client *cli);
-int add_client(client *cli);
+bool add_client(client *cli);
+bool nick_used(char *nick);
 pdu_data *get_nicks_pdu(client *cli);
 
 #endif /* GLOBALS_H_ */

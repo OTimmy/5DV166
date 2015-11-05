@@ -1,7 +1,7 @@
 /*
  * name_server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 8/10-15.
+ * Last update: 3/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * name_server.c contains functions for connecting to the name server.
@@ -129,7 +129,7 @@ void *register_at_name_server(void *thread_data_ns)
         }
 
         /* Stay alive and update number of connected clients */
-        while (ACK_OP == buffer[0]) /* Otherwise a NOTREG was received */
+        while (ACK_OP == buffer[0]) /* Otherwise a NOTREG was received */ //break????????
         {
             /* Build and send ALIVE PDU */
             buffer[0] = ALIVE_OP;

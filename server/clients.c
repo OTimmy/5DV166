@@ -1,7 +1,7 @@
 /*
  * clients.c
  * Written by Joakim Sandman, October 2015.
- * Last update: 9/10-15.
+ * Last update: 4/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * clients.c contains functions for handling client input and output.
@@ -49,7 +49,7 @@
 #include "queue.h"
 #include "clients.h"
 
-/*
+/*fix!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  * init_new_client: Initializes the client struct and creates a new thread for
  *      sending output to the client. Then wait for JOIN PDU from the client
  *      followed by adding it to the connected clients array. Unless the JOIN
@@ -86,11 +86,11 @@ void *init_new_client(void *thread_data_cli)
         return NULL;
     }
 
-    int err;
-    uint8_t header[4] = {0}; /* JOIN PDU header */
+    int err = -1;
+    uint8_t header[2] = {0}; /* Informative part of JOIN PDU header */
 
     /* Setup select() to monitor the client socket, with a timeout */
-    struct timeval timeout = {3, 0};
+    struct timeval timeout = {2, 0};
     struct timeval count_down;
     fd_set changed_fds;
     fd_set read_fds;
@@ -98,60 +98,90 @@ void *init_new_client(void *thread_data_cli)
     FD_SET(cli->sockfd, &read_fds);
 
     /* Wait for JOIN PDU and close connection if too much time passes */
-    for (int i = 0; i < 3; i++) /* Allow limited number of faulty packages */
+    for (int i = 0; i < 3; i++) /* Allow limited number of receive hickups */
     {
         count_down = timeout; /* Reset timeout period for monitoring */
         changed_fds = read_fds; /* Reset file descriptors to monitor */
         if (select(cli->sockfd + 1, &changed_fds, NULL, NULL, &count_down) < 0)
         {
             perror("select (join)");
-            continue;
+            continue; /* Try again */
         }
         else /* FD_ISSET(cli->sockfd, &read_fds) */
         {
-            err = recv(cli->sockfd, header, sizeof(header), MSG_DONTWAIT);
-            if (err < 0)
+            err = recv(cli->sockfd, header, sizeof(header),
+                       MSG_DONTWAIT | MSG_PEEK);
+            if (0 == err) /* Client disconnected */
             {
-                /* select() timed out and no JOIN was received */
+                break; /* Exit thread */
+            }
+            else if (err < 0)
+            {
+                /* select() timed out or fooled by faulty packet */
                 if (EAGAIN == errno || EWOULDBLOCK == errno)
                 {
                     perror("recv (join block)");
-                    break; /* Terminate client connection */
+                    continue; /* Try again */
                 }
                 else
                 {
                     perror("recv (join)");
-                    continue;
+                    continue; /* Try again */
                 }
             }
-            // check header
-            if (JOIN_OP == header[0])
+            else if (err < sizeof(header)) /* Not all bytes were received */
             {
-                int nick_len = header[1];//int?????????
+                continue; /* Try again */
+            }
+            if (JOIN_OP == header[0]) /* Check OP code */
+            {
+                size_t nick_len = header[1];
+                size_t pad = pad_length(nick_len);
+                size_t join_len = 4 + nick_len + pad;
+                uint8_t join[join_len]; /* JOIN PDU buffer */
+                err = recv(cli->sockfd, join, join_len, MSG_WAITALL);//wait but comment!!!!???
+                if (0 == err) /* Client disconnected */
+                {
+                    break; /* Exit thread */
+                }
+                else if (err < 0)
+                {
+                    perror("recv (nick)");
+                    break; /* Terminate client connection */
+                }
+
+/*                int read = 0;*/
+/*                while (read < join_len) // recv_all() with timeout????sizeof!!!!handle err!!!*/
+/*                {*/
+/*                    read += recv(cli->sockfd, &join[read], join_len - read, 0);*/
+/*                }*/
+
+                if (!verify_join(join, join_len))
+                {
+                    //errmsg
+                    break; /* Terminate client connection */
+                }
+
+                /* Initiate and set nick in client */
                 cli->nick = malloc(nick_len + 1);
                 if (NULL == cli->nick)
                 {
                     perror("malloc (nick)");
                     break; /* Terminate client connection */
                 }
-                size_t pad = pad_length(nick_len);
-                uint8_t buf[nick_len + pad]; /* Client nickname buffer */
-                err = recv(cli->sockfd, buf, sizeof(buf), MSG_DONTWAIT);
-                if (err < 0)
-                {
-                    perror("recv (nick)");
-                    break; /* Terminate client connection */
-                }
-                /* Set nick in client */
-                err = snprintf(cli->nick, nick_len + 1, "%s", buf);
+                err = snprintf(cli->nick, nick_len + 1, "%s", &join[4]);
                 if (err < 0) // ignore if trunc (expected)
                 {
                     perror("snprintf (nick)");
                     break; /* Terminate client connection */
                 }
-                //verify
+
+                if (nick_used(cli->nick))
+                {
+                    //errmsg
+                    break; /* Terminate client connection */
+                }
                 // JOIN PDU is verified!
-                // check if nick already used
                 // uint8_t nicks[] = get_nicks_pdu(cli);
 /*                uint8_t nicks[] = {NICKS_OP, 1, 0, 4, 'S', 'i', 'r', '\0'};*/
 /*                uint8_t *nicks_copy = malloc(sizeof(nicks));*/
@@ -160,20 +190,22 @@ void *init_new_client(void *thread_data_cli)
 /*                nicks_pdu->len = sizeof(nicks);//watch sizeof!!!*/
 /*                nicks_pdu->pdu = nicks_copy;*/
 /*                enqueue(cli, nicks_pdu);*/
-                enqueue(cli, get_nicks_pdu(cli));
+                pdu_data *nicks_pdu = get_nicks_pdu(cli);
+                if (NULL == nicks_pdu)
+                {
+                    break; /* Terminate client connection */
+                }
+                enqueue(cli, nicks_pdu);
                 // send UJOIN PDU and sign up on list
-                int fail = add_client(cli); //pre nicks?
-                if (fail)
+                if (!add_client(cli))
                 {
                     // quit w/ msg full server!
                     fprintf(stderr, "ERROR: Failed to add client!\n");
                     break;
                 }
                 handle_client_input(cli);
-                //
-                //send(cli->sockfd, nicks, 8, 0);//select???????
-                //for EVER {}
-                fprintf(stderr, "ERROR: client left!\n");
+/*                fprintf(stderr, "ERROR: client left!\n");*/
+                err = 0;//?????????????????????????
                 break;
             }
             else /* Not a JOIN PDU */
@@ -185,6 +217,11 @@ void *init_new_client(void *thread_data_cli)
                 break; /* Terminate client connection */
             }
         }
+    }
+    if (0 != err) /* Terminate client connection */
+    {
+        //enqueue(cli, server_mess("Error while joining!"));
+        //enqueue(cli, &quit_pdu);
     }
 //handle cli a thread,, this thread killed, below done in one of others.//mallocs
 /*    enqueue();*/
@@ -346,32 +383,39 @@ void handle_client_input(client *cli)
     int communicating = 1;
     //uint8_t *send_array;
     uint8_t header[4] = {0}; /* PDU header */
-    uint8_t nick_len = strlen(cli->nick); // checked earlier for len
+    uint8_t nick_len = strlen(cli->nick);
     size_t nick_pad = pad_length(nick_len);
+    size_t nick_size = nick_len + nick_pad;
     int spam_count = 0;
-    uint32_t spam_time = time(NULL);;
+    uint32_t spam_time = time(NULL);
     uint32_t spam_time2;
 
     while (communicating)
     {
-        err = recv(cli->sockfd, header, sizeof(header), 0);// MSG_PEEK MSG_WAITALL
+        err = recv(cli->sockfd, header, sizeof(header), MSG_WAITALL);
         if (0 == err) /* Client disconnected */
         {
-            //communicating = 0;
+            //communicating = 0;//if used as flag later
             break; /* Exit thread */
         }
         else if (err < 0)
         {
             perror("recv (in)");
-            continue; // try again? close conn?
+            continue; /* Try again */
         }
         switch (header[0]) /* Check OP code */
         {
         case MESS_OP:
+            ; /* Dummy line to please gcc */
             // check header
-            ;
             uint8_t more_header[8] = {0}; /* Rest of MESS PDU header */
-            err = recv(cli->sockfd, more_header, sizeof(more_header), 0);
+            err = recv(cli->sockfd, more_header, sizeof(more_header),
+                       MSG_WAITALL);
+            if (0 == err) /* Client disconnected */
+            {
+                communicating = 0;
+                break; /* Exit thread */
+            }
             if (err < 0)
             {
                 perror("recv (in msg head)");
@@ -381,28 +425,48 @@ void handle_client_input(client *cli)
             // check more header
             uint16_t mess_len = (more_header[0] << 8) | (more_header[1] & 0xFF);
             size_t mess_pad = pad_length(mess_len);
-            uint8_t *message = malloc(mess_len + mess_pad);
-            //memset 0?
+            size_t mess_size = mess_len + mess_pad;
+            uint8_t *message = malloc(mess_size);
+/*            uint8_t message[mess_size];*/
             // recv rest (not if len 0)
-            err = recv(cli->sockfd, message, mess_len + mess_pad, 0);
-            if (err < 0)
+            err = recv(cli->sockfd, message, mess_size, MSG_WAITALL);
+            if (0 == err && mess_size > 0) /* Client disconnected */
+            {
+                communicating = 0;
+                break; /* Exit thread */
+            }
+            else if (err < 0)
             {
                 perror("recv (in more head)");
                 communicating = 0; /* Terminate client connection */
-                free(message);
+/*                free(message);*/
                 break; // try again? close conn?
             }
             // verify (len)
+/*            uint8_t mess[12 + mess_size];*/
+            uint8_t *mess = malloc(12 + mess_size);
+            memcpy(&mess[0], header, sizeof(header));
+            memcpy(&mess[4], more_header, sizeof(more_header));
+            memcpy(&mess[12], message, mess_size);
+            if (!verify_mess(mess, 12 + mess_size))
+            {
+                //errmsg
+                communicating = 0; /* Terminate client connection */
+                free(mess);
+                break;
+            }
+            free(mess);
             // join / memcpy? to send_array?
-            size_t send_array_len = 12 + mess_len + mess_pad + nick_len + nick_pad;
+            size_t send_array_len = 12 + mess_size + nick_size;
             uint8_t *send_array = malloc(send_array_len);
+/*            uint8_t send_array[send_array_len];*/
             memset(send_array, 0, send_array_len);
             send_array[0] = MESS_OP;
             send_array[2] = nick_len;
             send_array[4] = more_header[0];
             send_array[5] = more_header[1];
             memcpy(&send_array[12], message, mess_len);
-            memcpy(&send_array[12 + mess_len + mess_pad], cli->nick, nick_len);
+            memcpy(&send_array[12 + mess_size], cli->nick, nick_len);
             free(message);
             // lock
             pthread_mutex_lock(&clients_mutex);
@@ -439,11 +503,11 @@ void handle_client_input(client *cli)
 /*                    printf("\n");*/
 /*                    enqueue(clients[i], &msg_pdu); // nocopyneeded????yes??*/
                     
-/*                    uint8_t *send_array_copy = malloc(sizeof(send_array)); // malloc to begin with???*/
-/*                    memcpy(send_array_copy, send_array, send_array_len);*/
+                    uint8_t *send_array_copy = malloc(send_array_len);
+                    memcpy(send_array_copy, send_array, send_array_len);
                     pdu_data *msg_pdu = malloc(sizeof(pdu_data));
                     msg_pdu->len = send_array_len;
-                    msg_pdu->pdu = send_array;
+                    msg_pdu->pdu = send_array_copy;
                     
 /*                    printf("\n%d OP\n", send_array[0]);*/
 /*                    printf("%d nick len\n", send_array[2]);*/
@@ -465,22 +529,104 @@ void handle_client_input(client *cli)
                     enqueue(clients[i], msg_pdu);
                 }
             }
-/*            free(send_array);*/
+            free(send_array);
             // unlock
             pthread_mutex_unlock(&clients_mutex);
             break;
         case CHNICK_OP:
+            ; /* Dummy line to please gcc */
             // check header
-            // recv rest
+            uint8_t new_len = header[1];
+            size_t new_pad = pad_length(new_len);
+            size_t new_size = new_len + new_pad;
+            uint8_t *new_nick = malloc(new_size);
+/*            uint8_t new_nick[new_size];*/
+            // recv rest (not if len 0)
+            err = recv(cli->sockfd, new_nick, new_size, MSG_WAITALL);
+            if (0 == err && new_size > 0) /* Client disconnected */
+            {
+                communicating = 0;
+                break; /* Exit thread */
+            }
+            else if (err < 0)
+            {
+                perror("recv (in new nick)");
+                communicating = 0; /* Terminate client connection */
+/*                free(new_nick);*/
+                break;
+            }
             // verify
+/*            uint8_t new[4 + new_size];*/
+            uint8_t *new = malloc(4 + new_size);
+            memcpy(&new[0], header, sizeof(header));
+            memcpy(&new[4], new_nick, new_size);
+            if (!verify_chnick(new, 4 + new_size))
+            {
+                //errmsg
+                communicating = 0; /* Terminate client connection */
+                free(new);
+                break;
+            }
+            free(new);
             // join / memcpy? to send_array?
+            size_t uchnick_len = 8 + nick_size + new_size;
+            uint8_t *uchnick = malloc(uchnick_len);
+/*            uint8_t send_array[send_array_len];*/
+            memset(uchnick, 0, uchnick_len);
+            uchnick[0] = UCHNICK_OP;
+            uchnick[1] = nick_len;
+            uchnick[2] = new_len;
+            memcpy(&uchnick[8], cli->nick, nick_len);
+            memcpy(&uchnick[8 + nick_size], new_nick, new_len);
+            nick_len = new_len;
+            nick_pad = new_pad;
+            nick_size = new_size;
             // lock
+            pthread_mutex_lock(&clients_mutex);
+            /* Change nick */
+            free(cli->nick);
+            cli->nick = malloc(new_len + 1);
+            if (NULL == cli->nick)
+            {
+                perror("malloc (new nick)");
+                communicating = 0; /* Terminate client connection */
+                break;
+            }
+            err = snprintf(cli->nick, new_len + 1, "%s", new_nick);
+            if (err < 0) // ignore if trunc (expected)
+            {
+                perror("snprintf (new nick)");
+                communicating = 0; /* Terminate client connection */
+                break;
+            }
+            free(new_nick);
             // create / build uchnick
+            uint32_t unix_time2 = htonl(time(NULL));
+            memcpy(&uchnick[4], &unix_time2, sizeof(unix_time2));
             // enqueue + signal loop
+            for (int i = 0; i < 255; i++)
+            {
+                if (NULL != clients[i])
+                {
+                    uint8_t *uchnick_copy = malloc(uchnick_len);
+                    memcpy(uchnick_copy, uchnick, uchnick_len);
+                    pdu_data *uchnick_pdu = malloc(sizeof(pdu_data));
+                    uchnick_pdu->len = uchnick_len;
+                    uchnick_pdu->pdu = uchnick_copy;
+                    enqueue(clients[i], uchnick_pdu);
+                }
+            }
+            free(uchnick);
             // unlock
+            pthread_mutex_unlock(&clients_mutex);
             break;
         case QUIT_OP:
-            // check header
+            // check header else msg?
+            if (0 != header[1] || 0 != header[2] || 0 != header[3])
+            {
+                //errmsg
+            }
+            communicating = 0; /* Exit thread */
             // lock
             // create / build uleave
             // remove_client() + signal???
@@ -494,6 +640,8 @@ void handle_client_input(client *cli)
             communicating = 0; /* Terminate client connection */
             // break; /* Terminate client connection */
         }
+
+        /* Simple spam filter */
         spam_time2 = time(NULL);
         if ((spam_time2 - spam_time) > 0)
         {
@@ -503,7 +651,7 @@ void handle_client_input(client *cli)
         {
             spam_count++;
         }
-        if (spam_count > 2)
+        if (spam_count > 4) /* If 5 or more messages in one second */
         {
             // spam msg
             printf("SPAMMMMMM\n\n\n");
