@@ -441,9 +441,6 @@ public class GUI {
 		public void run() {
 			Object[] rowData = {address,port,nrClients,name};
 	        tableModel.addRow(rowData);
-			// TODO Auto-generated method stub
-
-
 		}
 
         });
