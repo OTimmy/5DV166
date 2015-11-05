@@ -53,6 +53,7 @@ public class NetworkTCP {
      */
     public synchronized void disconnect() {
         if(isConnected()) {
+        	connected = false;
             try {
                 if(outStream != null) {
                     QuitPDU quitPDU = new QuitPDU();
@@ -71,7 +72,7 @@ public class NetworkTCP {
             }
         }
 
-        connected = false;
+
     }
 
     public synchronized boolean isConnected() {
@@ -82,7 +83,7 @@ public class NetworkTCP {
         try {
             if(isConnected()) {
                 outStream.write(pdu.toByteArray(),0,pdu.toByteArray().length);
-                outStream.flush();                
+                outStream.flush();
             }
         } catch (IOException e) {
             e.printStackTrace();

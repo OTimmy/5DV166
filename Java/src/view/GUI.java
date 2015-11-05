@@ -56,7 +56,7 @@ public class GUI {
     private final int TAB_MAX_NAME      = 20;
     private final int SEND_MSG_LIMIT    = 65535;  //From the spec
     private final int NICK_LIMIT        = 255;
-   
+
 
     private JFrame frame;
     private DefaultTableModel tableModel;
@@ -88,36 +88,36 @@ public class GUI {
 
     private JLabel browsErrLabel;
 
-    public GUI(String nameServerAddress,String nameServerPort, 
+    public GUI(String nameServerAddress,String nameServerPort,
                String serverAddress, String serverPort) {
-        
+
         setup();
-        
+
         nameServerAddressField.setText(nameServerAddress);
         nameServerPortField.setText(nameServerPort);
         serverAddressField.setText(serverAddress);
-        serverPortField.setText(serverPort);                 
+        serverPortField.setText(serverPort);
 
     }
-    
+
     public GUI(final String nameServerAddress,final String nameServerPort) {
         setup();
-        
+
         nameServerAddressField.setText(nameServerAddress);
         nameServerPortField.setText(nameServerPort);
     }
-    
+
     private void setup() {
         frame = buildFrame();
         JPanel configPanel = buildConfigPanel();
         JPanel tabPanel    = buildTabPanel();
- 
+
         frame.add(configPanel,BorderLayout.NORTH);
         frame.add(tabPanel,BorderLayout.CENTER);
         frame.revalidate();
-        
+
     }
-    
+
 
     private JFrame buildFrame() {
         JFrame frame = new JFrame("Client");
@@ -217,11 +217,11 @@ public class GUI {
         gbc.anchor = GridBagConstraints.LINE_START;
         gbc.gridx++;
         nickField = new JTextField(10);
-        
+
         ((PlainDocument) nickField.getDocument()).setDocumentFilter(
                                                 new TextAreaFilter(NICK_LIMIT));
         nickField.setText("Neo");
-        
+
         panel.add(nickField,gbc);
 
         //Button
@@ -335,7 +335,7 @@ public class GUI {
        textArea.setWrapStyleWord(true);
        textArea.setLineWrap(true);
        TextAreaFilter filter = new TextAreaFilter(SEND_MSG_LIMIT);
-       
+
       ( (PlainDocument) textArea.getDocument()).setDocumentFilter(filter);
 
        return textArea;
@@ -357,7 +357,7 @@ public class GUI {
 		JPanel northPanel = new JPanel(new BorderLayout());
 		//northPanel.setPreferredSize(new Dimension(tablePanelSize,tablePanelSize));
 		northPanel.setBackground(Color.white);
-		
+
 		table = buildTable();
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -376,19 +376,19 @@ public class GUI {
 		browsErrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		browsErrLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
 		southPanel.add(browsErrLabel,BorderLayout.CENTER);
-		
+
 		panel.add(southPanel,BorderLayout.SOUTH);
 		panel.add(northPanel,BorderLayout.CENTER);
 		return panel;
 	}
-	
+
     /**
      * @return
      */
      private JTable buildTable() {
 	     String[] columns = {"Address","Port","Connected","Topic"};
 	     tableModel = new DefaultTableModel(null,columns);
-	     
+
 	     final JTable table = new JTable(tableModel);
 
 	         table.addMouseListener(new MouseListener() {
@@ -419,7 +419,7 @@ public class GUI {
 
                }
         });
-	    
+
 	    table.setShowGrid(false);
         return table;
     }
@@ -431,11 +431,22 @@ public class GUI {
 	 * @param nrClients is the number of clients of the current server
 	 * @param name the server name
 	 */
-    public void addToTable(String address, String port, String nrClients,
-                                String name) {
-        
-        Object[] rowData = {address,port,nrClients,name};
-        tableModel.addRow(rowData);
+    public void addToTable(final String address, final String port, final String nrClients,
+                                final String name) {
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+
+		@Override
+		public void run() {
+			Object[] rowData = {address,port,nrClients,name};
+	        tableModel.addRow(rowData);
+			// TODO Auto-generated method stub
+
+
+		}
+
+        });
     }
 
     /**
@@ -556,10 +567,10 @@ public class GUI {
                 browsErrLabel.setText(errorMsg);
             }
         });
-     
+
     }
-    
-    
+
+
 	public String getNameServerAddress() {
 	    return nameServerAddressField.getText();
 	}

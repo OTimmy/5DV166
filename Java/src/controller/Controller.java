@@ -16,7 +16,8 @@ import network.pdu.types.UJoinPDU;
 import network.pdu.types.ULeavePDU;
 import network.pdu.types.SListPDU;
 import network.pdu.types.MessagePDU;
-
+//Refresh button should open browser.
+//
 /**
  * <h1>Listener.java</h1>
  *  Manage the flow between the gui and the underlying model
@@ -30,9 +31,9 @@ public class Controller {
     private final int KEY_ENTER = 10;
     private final int TAB_BROWS = 0;
     private final int TAB_CHAT  = 1;
-    
+
     private final String ERROR_TCP_CONNECT = "Couldn't connect to server";
-    
+
     private Network net;
     private GUI gui;
     private ArrayList<String> nicks;
@@ -81,10 +82,10 @@ public class Controller {
 			    } else {
 			        nick = " <" + t.getNick() +"> ";
 			    }
-			    
+
                 gui.printOnMessageBoard(date +nick
                         +t.getMsg());
-			    
+
 			}
 		});
 
@@ -93,13 +94,13 @@ public class Controller {
 
             @Override
             public void update(String t) {
-                
+
                 if(t.compareTo(ERROR_TCP_CONNECT) == 0) {
                     gui.printErrorBrowser(ERROR_TCP_CONNECT);
                 } else {
-                    gui.printOnMessageBoard("Error:"+t);                    
+                    gui.printOnMessageBoard("Error:"+t);
                 }
-                
+
                 net.disconnectServer();
                 gui.setConnectServerButton("Connect");
                 clearNicks();
@@ -169,46 +170,47 @@ public class Controller {
 	        @Override
 	        public void actionPerformed(ActionEvent e) {
 	            gui.clearTable();
-	            
-	            if(gui.getNameServerAddress().length() != 0 
+
+	            if(gui.getNameServerAddress().length() != 0
 	                    && gui.getNameServerPort().matches("[0-9]+")) {
-	                
+
 	                String address = gui.getNameServerAddress();
-	                
+
 	                int port = new Integer(gui.getNameServerPort());
-	           
+
 	                net.refreshServers(address,port);
+	                gui.openTab(TAB_BROWS);
 	            }
 	        }
         });
 
-		
+
         gui.addConnectSeverButtonListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 gui.printErrorBrowser(""); // reset
                 if(!net.isConnectedToServer()) {
-			        
+
                     String address = gui.getServerAddress();
-                    
-                    if(address.length() != 0 
+
+                    if(address.length() != 0
                             && gui.getServerPort().matches("[0-9]+") ) {
                         gui.clearMessageBoard();
                         int port = new Integer(gui.getServerPort());
-                        String nick = gui.getNick();   
+                        String nick = gui.getNick();
                         net.ConnectToServer(address, port, nick);
                     }
-                    
+
                 } else {
                     net.disconnectServer();
                     clearNicks();
                 }
-               
-                
+
+
                 if(!net.isConnectedToServer()) {
                     gui.setConnectServerButton("Connect");
-                    clearNicks();    
+                    clearNicks();
                     gui.setChatTabTitle("Chat");
                     gui.openTab(TAB_BROWS);
                 } else {

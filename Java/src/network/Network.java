@@ -27,7 +27,7 @@ import network.pdu.types.ULeavePDU;
  */
 public class Network {
 
-    private final int udpTimer = 40;
+    private final int UDP_TIMER = 40;
 
     private NetworkUDP udp;
     private NetworkTCP tcp;
@@ -134,7 +134,7 @@ public class Network {
                         // a timer will be set just in case
                         if(seqMissed) {
                             //set timer
-                            udp.setTimer(udpTimer);
+                            udp.setTimer(UDP_TIMER);
                         }
 
                         sListListener.update(pdu);
@@ -224,9 +224,9 @@ public class Network {
                     break;
                 }
 
-            } else if(pdu == null){
+            } else if(pdu == null && isConnectedToServer()){
                 tcpErrorListener.update("Unknown pdu");
-            } else {
+            } else if(pdu != null){
                 tcpErrorListener.update("\n" + pdu.getClass().getSimpleName()
                                         + ": " +pdu.getError());
             }
