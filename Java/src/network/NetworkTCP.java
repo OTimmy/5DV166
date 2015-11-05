@@ -103,6 +103,7 @@ public class NetworkTCP {
            }
 
         } catch (IOException e) {
+
             errorListener.update(e.getMessage());
         }
 
