@@ -1,7 +1,7 @@
 /*
  * globals.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 8/10-15.
+ * Last update: 6/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * globals.c contains global variables and functions for using them.
@@ -58,6 +58,12 @@ pthread_mutex_t nrof_clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 client *clients[255]; /* Protocol limits number of clients to 255. */
 pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+/*
+ * get_nrof_clients: Gets the number of currently connected clients.
+ * Params:
+ * Returns: The number of currently connected clients.
+ * Notes:
+ */
 uint8_t get_nrof_clients()
 {
     pthread_mutex_lock(&nrof_clients_mutex);
@@ -66,6 +72,12 @@ uint8_t get_nrof_clients()
     return num;
 }
 
+/*
+ * incr_nrof_clients: Increments the number of currently connected clients by 1.
+ * Params:
+ * Returns:
+ * Notes:
+ */
 void incr_nrof_clients()
 {
     pthread_mutex_lock(&nrof_clients_mutex);
@@ -74,6 +86,12 @@ void incr_nrof_clients()
     return;
 }
 
+/*
+ * decr_nrof_clients: Decrements the number of currently connected clients by 1.
+ * Params:
+ * Returns:
+ * Notes:
+ */
 void decr_nrof_clients()
 {
     pthread_mutex_lock(&nrof_clients_mutex);
@@ -82,6 +100,15 @@ void decr_nrof_clients()
     return;
 }
 
+/*
+ * enqueue: Enqueues the given pdu in the output queue of the given client.
+ *      It then signals, with a condition variable, a potentially waiting call
+ *      to the dequeue function.
+ * Params: cli = client pointer for client to enqueue pdu at.
+ *         pdu = pdu_data struct pointer to be enqueued in the output queue.
+ * Returns:
+ * Notes: Signals after enqueueing!
+ */
 void enqueue(client *cli, pdu_data *pdu)
 {
     pthread_mutex_lock(&cli->queue_mutex);
@@ -91,6 +118,14 @@ void enqueue(client *cli, pdu_data *pdu)
     return;
 }
 
+/*
+ * dequeue: Dequeues the first pdu in the output queue of the given client.
+ *      If the queue is empty the function blocks and waits for a condition
+ *      variable signal.
+ * Params: cli = client pointer for client to dequeue pdu from.
+ * Returns: The first pdu_data struct pointer from the output queue.
+ * Notes: Potentially blocking call!
+ */
 pdu_data *dequeue(client *cli)
 {
     pdu_data *data = NULL;
@@ -108,6 +143,14 @@ pdu_data *dequeue(client *cli)
     return data;
 }
 
+/*
+ * add_client: Adds a client to the connected clients array, if it's not full,
+ *      and increments the number of connected clients. Also enqueues UJOIN
+ *      PDUs to all other clients.
+ * Params: cli = client pointer for client to add to the array.
+ * Returns: TRUE if the client was added successfully, FALSE otherwise.
+ * Notes:
+ */
 bool add_client(client *cli)
 {
     bool added = false;
@@ -136,8 +179,18 @@ bool add_client(client *cli)
         if (NULL != clients[i])
         {
             uint8_t *ujoin_copy = malloc(sizeof(ujoin));
+            if (NULL == ujoin_copy)
+            {
+                perror("malloc (ujoin_copy)");
+                exit(EXIT_FAILURE);
+            }
             memcpy(ujoin_copy, ujoin, sizeof(ujoin));
             pdu_data *ujoin_pdu = malloc(sizeof(pdu_data));
+            if (NULL == ujoin_pdu)
+            {
+                perror("malloc (ujoin_pdu)");
+                exit(EXIT_FAILURE);
+            }
             ujoin_pdu->len = sizeof(ujoin);
             ujoin_pdu->pdu = ujoin_copy;
             enqueue(clients[i], ujoin_pdu);
@@ -153,9 +206,17 @@ bool add_client(client *cli)
     return added;
 }
 
+/*
+ * remove_client: Removes a client from the connected clients array, and
+ *      decrements the number of connected clients. Also enqueues ULEAVE
+ *      PDUs to all other clients.
+ * Params: cli = client pointer for client to remove from the array.
+ * Returns:
+ * Notes:
+ */
 void remove_client(client *cli)
 {
-    pthread_mutex_lock(&clients_mutex);//mutex lower!!!!
+    pthread_mutex_lock(&clients_mutex);
 
     size_t nick_len = strlen(cli->nick);
     size_t pad = pad_length(nick_len);
@@ -176,13 +237,23 @@ void remove_client(client *cli)
         {
             clients[i] = NULL;
             decr_nrof_clients();
-            //enqueue(cli, &quit_pdu);
+            enqueue(cli, &quit_pdu);
         }
         else if (NULL != clients[i])
         {
             uint8_t *uleave_copy = malloc(sizeof(uleave));
+            if (NULL == uleave_copy)
+            {
+                perror("malloc (uleave_copy)");
+                exit(EXIT_FAILURE);
+            }
             memcpy(uleave_copy, uleave, sizeof(uleave));
             pdu_data *uleave_pdu = malloc(sizeof(pdu_data));
+            if (NULL == uleave_pdu)
+            {
+                perror("malloc (uleave_pdu)");
+                exit(EXIT_FAILURE);
+            }
             uleave_pdu->len = sizeof(uleave);
             uleave_pdu->pdu = uleave_copy;
             enqueue(clients[i], uleave_pdu);
@@ -192,6 +263,13 @@ void remove_client(client *cli)
     return;
 }
 
+/*
+ * nick_used: Checks weather the given nick is already in use by some other
+ *      client on the server.
+ * Params: nick = string with nick to check.
+ * Returns: TRUE if the nick is already taken, FALSE otherwise.
+ * Notes:
+ */
 bool nick_used(char *nick)
 {
     bool used = false;
@@ -211,6 +289,13 @@ bool nick_used(char *nick)
     return used;
 }
 
+/*
+ * get_nicks_pdu: Composes a NICKS PDU to be sent to a new client, including
+ *      all currently connected clients and the new (joining) client.
+ * Params: cli = client pointer for new client (to make NICKS PDU for).
+ * Returns: The pdu_data stuct pointer with the NICKS PDU.
+ * Notes:
+ */
 pdu_data *get_nicks_pdu(client *cli)
 {
     pthread_mutex_lock(&clients_mutex);
@@ -234,6 +319,11 @@ pdu_data *get_nicks_pdu(client *cli)
     size_t pad = pad_length(nicks_len);
     size_t nicks_size = 4 + nicks_len + pad;
     uint8_t *nicks = malloc(nicks_size);
+    if (NULL == nicks)
+    {
+        perror("malloc (nicks)");
+        exit(EXIT_FAILURE);
+    }
     memset(nicks, 0, nicks_size);
     nicks[0] = NICKS_OP;
     nicks[1] = nrof_nicks;
@@ -256,27 +346,35 @@ pdu_data *get_nicks_pdu(client *cli)
     }
 
     pdu_data *nicks_pdu = malloc(sizeof(pdu_data));
+    if (NULL == nicks_pdu)
+    {
+        perror("malloc (nicks_pdu)");
+        exit(EXIT_FAILURE);
+    }
     nicks_pdu->len = nicks_size;
     nicks_pdu->pdu = nicks;
-
-/*    for (int i = 0; i < 255; i++)*/
-/*    {*/
-/*        if (NULL != clients[i])*/
-/*        {*/
-/*            enqueue(clients[i], nicks_pdu);*/
-/*        }*/
-/*    }*/
     pthread_mutex_unlock(&clients_mutex);
     return nicks_pdu;
 }
 
-//one each
+/*
+ * server_mess: Composes a MESS PDU to be sent to a single client as a server
+ *      message (without nick).
+ * Params: msg = string to send in the MESS PDU.
+ * Returns: The pdu_data stuct pointer with the MESS PDU.
+ * Notes: strlen(msg) must be <= 65535.
+ */
 pdu_data *server_mess(char *msg)
 {
     size_t mess_len = strlen(msg);
     size_t pad = pad_length(mess_len);
     size_t mess_size = 12 + mess_len + pad;
     uint8_t *mess = malloc(mess_size);
+    if (NULL == mess)
+    {
+        perror("malloc (server_mess)");
+        exit(EXIT_FAILURE);
+    }
     memset(mess, 0, mess_size);
     mess[0] = MESS_OP;
 
@@ -288,11 +386,42 @@ pdu_data *server_mess(char *msg)
     mess[3] = get_checksum(mess, mess_size);
 
     pdu_data *mess_pdu = malloc(sizeof(pdu_data));
+    if (NULL == mess_pdu)
+    {
+        perror("malloc (mess_pdu)");
+        exit(EXIT_FAILURE);
+    }
     mess_pdu->len = mess_size;
     mess_pdu->pdu = mess;
     return mess_pdu;
 }
 
-//enqueue_copy()
-//kick cli/all???
+/*
+ * mass_server_kick_mess: Composes and propagates a message about a (soon to
+ *      be) kicked client to all connected clients.
+ * Params: nick = string containing the name of the kicked client.
+ *         msg = string giving the reason for kicking.
+ * Returns:
+ * Notes: strlen(msg) must be <= 32.
+ */
+void mass_server_kick_mess(char *nick, char *msg)
+{
+    pthread_mutex_lock(&clients_mutex);
+    char mess[300] = {0};
+    int err = snprintf(mess, strlen(nick) + 12 + strlen(msg) + 1,
+                       "%s kicked for %s", nick, msg);
+    if (err < 0)
+    {
+        perror("snprintf (kick)");
+    }
+    for (int i = 0; i < 255; i++)
+    {
+        if (NULL != clients[i])
+        {
+            enqueue(clients[i], server_mess(mess));
+        }
+    }
+    pthread_mutex_unlock(&clients_mutex);
+    return;
+}
 

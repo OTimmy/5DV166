@@ -1,7 +1,7 @@
 /*
  * server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 3/11-15.
+ * Last update: 6/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.c implements a chat server.
@@ -12,28 +12,6 @@
  * Memcheck: valgrind --tool=memcheck --leak-check=yes --show-reachable=yes -v ./server
  * Run: ./server "Server name here!" 51515
  */
-
-//                                                          with timeout
-// uchnick to changer too? 65507 buffer size udp. non blocking recv for ack?
-// existing nick change or deny? wrong PDU quit, message allowed? c tests?
-// illasinnade klienter? PDU validering? "händelser" samma ordn? checksum?
-// pad func. toByteArray for each PDU struct. how error safe? user friendly?
-// notice failing clients.
-
-// yes, yes, select timeout.
-// deny, yes, kinda.
-// ??, kinda, guess, soon (tm).
-// quite safe (don't allways quit), naah.
-// yeah.
-
-// uchnick, freeall?
-// main 2 threads (or admin client), ack to alive func.
-// time, server local msges (init, running), main? parser.
-
-//input quit or conn lost => uleave to all (or q?) => output exits (think of queue)
-//freefunc just before free queue => remove client (earlier?)
-//exit => mass quit/kick => term threads. quit and rem separate?
-//error with ns => orderly shutdown?
 
 /* --- Standard headers --- */
 #include <stdlib.h>
@@ -147,7 +125,17 @@ int main(int argc, char *argv[])
         fflush(stdin);
         if (!strcmp(cmd, "exit")) /* Exit the program */
         {
-            //cancel rest of program??????????????
+            pthread_mutex_lock(&clients_mutex);
+            for (int i = 0; i < 255; i++)
+            {
+                if (NULL != clients[i])
+                {
+                    enqueue(clients[i], server_mess("-Server shutting down!-"));
+                    shutdown(clients[i]->sockfd, SHUT_RD); /* Stop input */
+                }
+            }
+            pthread_mutex_unlock(&clients_mutex);
+            sleep(2); /* Give all clients time to exit gracefully */
             exit_flag = 1;
             break;
         }
@@ -160,20 +148,14 @@ int main(int argc, char *argv[])
                     ":%02"PRIu64":%02"PRIu64"\n", uptime/86400,
                     (uptime%86400)/3600, (uptime%3600)/60, uptime%60);
         }
-        // kick client, spy on conversation, mini client, etc.?????????
+        /* Feature bloat here! Could for example add commands for kicking
+           client, spying on conversation, mini client, etc. */
     }
     if (!exit_flag)
     {
         fprintf(stderr, "Server commands unavailable!\n");
         pause(); /* Until program manually terminated */
     }
-
-// if rest of program cancelled????????
-//to know when threads are dead?????
-/*    if (0 != pthread_join(thread_ns, NULL))*/
-/*    {*/
-/*        fprintf(stderr, "ERROR: Failed to join with thread ns!\n");*/
-/*    }*/
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &end_time); /* End timer */
     double runtime = (end_time.tv_sec - start_time.tv_sec)
