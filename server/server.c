@@ -87,14 +87,9 @@ int main(int argc, char *argv[])
 
     parse_arguments(argc, argv);
 
-    /* Initialize thread attribute to detached */
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
     /* Create thread for handling new client connections (doorman) */
     pthread_t thread_dm;
-    if (0 != pthread_create(&thread_dm, &attr, handle_connecting_clients,
+    if (0 != pthread_create(&thread_dm, NULL, handle_connecting_clients,
                             (void *) client_conn_port))
     {
         fprintf(stderr, "ERROR: Failed to create thread dm!\n");
@@ -106,13 +101,12 @@ int main(int argc, char *argv[])
     pdu_reg reg = {REG_OP, strlen(name), ccp, name};
     reg_data thread_data_ns = {name_server_address, name_server_port, reg};
     pthread_t thread_ns;
-    if (0 != pthread_create(&thread_ns, &attr, register_at_name_server,
+    if (0 != pthread_create(&thread_ns, NULL, register_at_name_server,
                             (void *) &thread_data_ns))
     {
         fprintf(stderr, "ERROR: Failed to create thread ns!\n");
         exit(EXIT_FAILURE);
     }
-    pthread_attr_destroy(&attr);
 
     /* Wait for inputs and follow commands */
     char cmdline[20];
@@ -125,6 +119,18 @@ int main(int argc, char *argv[])
         fflush(stdin);
         if (!strcmp(cmd, "exit")) /* Exit the program */
         {
+            /* Cancel major threads */
+            pthread_cancel(thread_dm);
+            pthread_cancel(thread_ns);
+            if (0 != pthread_join(thread_dm, NULL))
+            {
+                fprintf(stderr, "ERROR: Failed to join with thread dm!\n");
+            }
+            if (0 != pthread_join(thread_ns, NULL)) 
+            {
+                fprintf(stderr, "ERROR: Failed to join with thread ns!\n");
+            }
+            /* Tell clients we are closing and request they remove themselves */
             pthread_mutex_lock(&clients_mutex);
             for (int i = 0; i < 255; i++)
             {
@@ -135,7 +141,7 @@ int main(int argc, char *argv[])
                 }
             }
             pthread_mutex_unlock(&clients_mutex);
-            sleep(2); /* Give all clients time to exit gracefully */
+            sleep(2); /* Give clients time to exit gracefully */
             exit_flag = 1;
             break;
         }

@@ -312,6 +312,12 @@ pdu_data *get_nicks_pdu(client *cli)
             nrof_nicks++;
         }
     }
+    if (nrof_nicks > 254)
+    {
+        enqueue(cli, server_mess("Server is full!"));
+        pthread_mutex_unlock(&clients_mutex);
+        return NULL;
+    }
     nick_strings[nrof_nicks] = cli->nick;
     nicks_len += strlen(cli->nick) + 1;
     nrof_nicks++;
