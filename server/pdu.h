@@ -1,7 +1,7 @@
 /*
  * pdu.h
  * Written by Joakim Sandman, September 2015.
- * Last update: 9/10-15.
+ * Last update: 5/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * pdu.h is the header file for the pdu.c file.
@@ -19,7 +19,7 @@
 //#include <string.h>
 //#include <sys/wait.h>
 /* --- Data types --- */
-//#include <stdbool.h>
+#include <stdbool.h>
 //#include <stdint.h> /* Subset of inttypes.h */
 #include <inttypes.h> /* Fixed width integers */
 //#include <sys/types.h>
@@ -64,8 +64,14 @@
 /* Server - Client */
 #define UJOIN_OP 16
 #define ULEAVE_OP 17
-#define UCNICK_OP 18
+#define UCHNICK_OP 18
 #define NICKS_OP 19
+
+/* Struct containing the data needed to send a PDU */
+typedef struct {
+    size_t len;
+    uint8_t *pdu;
+} pdu_data;
 
 /* Struct containing the data for a REG PDU */
 typedef struct {
@@ -108,6 +114,33 @@ size_t reg_arr_size(pdu_reg reg);
 void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len);
 
 /*
+ * verify_join: Verifies that the join PDU is valid.
+ * Params: pdu = array of the join PDU to verify.
+ *         len = length of the array in bytes.
+ * Returns: TRUE if the PDU is valid, FALSE otherwise.
+ * Notes: len must be >= 4 + pdu[1].
+ */
+bool verify_join(uint8_t pdu[], size_t len);
+
+/*
+ * verify_mess: Verifies that the mess PDU is valid.
+ * Params: pdu = array of the mess PDU to verify.
+ *         len = length of the array in bytes.
+ * Returns: TRUE if the PDU is valid, FALSE otherwise.
+ * Notes: len must be >= 12 + (pdu[4] << 8 | pdu[5]).
+ */
+bool verify_mess(uint8_t pdu[], size_t len);
+
+/*
+ * verify_chnick: Verifies that the chnick PDU is valid.
+ * Params: pdu = array of the chnick PDU to verify.
+ *         len = length of the array in bytes.
+ * Returns: TRUE if the PDU is valid, FALSE otherwise.
+ * Notes: len must be >= 4 + pdu[1].
+ */
+bool verify_chnick(uint8_t pdu[], size_t len);
+
+/*
  * get_checksum: Calculates the checksum of an array of bytes in 8-bit ones'
  *      complement form. This means that all bytes are added up, and whenever
  *      the sum surpasses 255 (>255), the sum is subtracted by 255 (-255).
@@ -117,7 +150,7 @@ void reg_to_array(uint8_t reg_array[], pdu_reg reg, size_t array_len);
  * Returns: The checksum of the (first len bytes of the) given array.
  * Notes:
  */
-uint8_t get_checksum(uint8_t *bytes, int len);
+uint8_t get_checksum(uint8_t bytes[], int len);
 
 #endif /* PDU_H_ */
 

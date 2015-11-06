@@ -23,53 +23,47 @@ public class UJoinPDU extends PDU{
     private final int TIME_SIZE = 4;
     private final int PAD_SIZE  = 2;   //Known padded size
 
+    private String error;
     private Date date;
     private String nick;
-    private boolean validFlag;
-
 
     public UJoinPDU(InputStream inStream) throws IOException {
-        validFlag = parser(inStream);
+        error = parser(inStream);
     }
 
     /**
      * @param Reads from inputstream by the given standard.
      * @return a flag.
      */
-    private boolean parser(InputStream inStream) throws IOException {
+    private String parser(InputStream inStream) throws IOException {
 
-        int nickLength = inStream.read();
+        int nickLength = readExactly(1, inStream)[0] & 0xff;
 
         //reading the pad
-        byte[] padBytes = new byte[PAD_SIZE];
-        inStream.read(padBytes, 0, padBytes.length);
-
+        byte[] padBytes = readExactly(PAD_SIZE, inStream);
+        
         if(!isPaddedBytes(padBytes)) {
-            return false;
+            return ERROR_PADDING_PDU;
         }
 
         //Reading time stamp
-        byte[] timeBytes = new byte[TIME_SIZE];
-        inStream.read(timeBytes, 0, timeBytes.length);
+        byte[] timeBytes = readExactly(TIME_SIZE, inStream); 
 
         date = DateUtils.getDateByBytes(timeBytes);
 
         //Reading the nick
-        byte[] nickBytes = new byte[nickLength];
-        inStream.read(nickBytes, 0, nickBytes.length);
+        byte[] nickBytes = readExactly(nickLength, inStream); 
 
         //Read padding
-        padBytes = new byte[padLengths(nickLength)];
-        inStream.read(padBytes, 0, padBytes.length);
-
+        padBytes = readExactly(padLengths(nickLength), inStream);
+        
         if(!isPaddedBytes(padBytes)) {
-            return false;
+            return ERROR_PADDING_NICK;
         }
-
 
         nick = new String(nickBytes, StandardCharsets.UTF_8);
 
-        return true;
+        return null;
 
     }
 
@@ -83,13 +77,11 @@ public class UJoinPDU extends PDU{
 
     @Override
     public byte[] toByteArray() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public int getSize() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -98,7 +90,8 @@ public class UJoinPDU extends PDU{
         return OpCode.UJOIN.value;
     }
 
-    public boolean isValid() {
-        return validFlag;
+    @Override
+    public String getError() {
+        return error;
     }
 }

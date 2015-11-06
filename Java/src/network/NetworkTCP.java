@@ -7,7 +7,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 
-import network.pdu.OpCode;
 import network.pdu.PDU;
 import network.pdu.types.JoinPDU;
 import network.pdu.types.QuitPDU;
@@ -27,28 +26,25 @@ public class NetworkTCP {
     private OutputStream outStream;
     private InputStream inStream;
     private boolean connected;
-    private Object lock;
+    private final String ERROR_CONNECT = "Couldn't connect to server";
 
     public boolean connect(String address,int port, String nick) {
         try {
-            System.out.println("Connecting");
             socket = new Socket();
-        	socket.connect(new InetSocketAddress(address,port),TIME_OUT);
+            socket.connect(new InetSocketAddress(address,port),TIME_OUT);
 
             outStream = socket.getOutputStream();
             inStream = socket.getInputStream();
 
+            connected = true;
             JoinPDU joinPDU = new JoinPDU(nick);
             sendPDU(joinPDU);
-            System.out.println("Connected");
 
         } catch (IOException e) {
-           // e.printStackTrace();
-            errorListener.update(e.getMessage());
+            errorListener.update(ERROR_CONNECT);
             return false;
         }
 
-        connected = true;
         return true;
     }
 
@@ -56,38 +52,42 @@ public class NetworkTCP {
      * Quit by sending QuitPDU, then close out,in stream and the socket.
      */
     public synchronized void disconnect() {
-        try {
-            if(outStream != null) {
-                QuitPDU quitPDU = new QuitPDU();
-                outStream.write(quitPDU.toByteArray(), 0, quitPDU.getSize());
-                outStream.flush();
-                outStream.close();
-                inStream.close();
-                socket.close();
-            }
+        if(isConnected()) {
+        	connected = false;
+            try {
+                if(outStream != null) {
+                    QuitPDU quitPDU = new QuitPDU();
+                    outStream.write(quitPDU.toByteArray(), 0, quitPDU.getSize());
+                    outStream.flush();
+                    outStream.close();
+                    inStream.close();
+                    socket.close();
+                }
 
-        } catch(SocketException e) {
-            //IGNORE becuase of disconnect
-        } catch (IOException e) {
-            e.printStackTrace();
-            errorListener.update(e.getMessage());
+            } catch(SocketException e) {
+                //IGNORE becuase of disconnect
+            } catch (IOException e) {
+                e.printStackTrace();
+                errorListener.update(e.getMessage());
+            }
         }
-        connected = false;
+
+
     }
 
     public synchronized boolean isConnected() {
-    	return connected;
+        return connected;
     }
 
     public void sendPDU(PDU pdu) {
         try {
-            outStream.write(pdu.toByteArray(),0,pdu.toByteArray().length);
-            outStream.flush();
-
+            if(isConnected()) {
+                outStream.write(pdu.toByteArray(),0,pdu.toByteArray().length);
+                outStream.flush();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             errorListener.update(e.getMessage());
-            System.out.println("Error write");
         }
     }
 
@@ -99,13 +99,11 @@ public class NetworkTCP {
             return PDU.fromInputStream(inStream);
         } catch(SocketException e) {
            if(isConnected()) {
-               e.printStackTrace();
                errorListener.update(e.getMessage());
            }
 
         } catch (IOException e) {
-            e.printStackTrace();
-        	System.out.println("Exception shit");
+
             errorListener.update(e.getMessage());
         }
 

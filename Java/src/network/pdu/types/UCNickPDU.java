@@ -23,21 +23,25 @@ public class UCNickPDU extends PDU{
     private String newNick;
     private Date date;
 
-    private boolean validFlag;
-
+    private String error;
     public UCNickPDU(InputStream inStream) throws IOException {
-        validFlag = parse(inStream);
+        error = parse(inStream);
     }
 
-    private boolean parse(InputStream inStream ) throws IOException {
+    private String parse(InputStream inStream ) throws IOException {
 
         int nickLength1 = inStream.read();
         int nickLength2 = inStream.read();
-        int pad = inStream.read();
-
+  
+        //int pad = inStream.read();
+        byte[] padBytes = readExactly(1, inStream);
+        
+        if(!isPaddedBytes(padBytes)) {
+            return ERROR_PADDING_PDU;
+        }
+        
         //Reading time stamp
-        byte[] timeBytes = new byte[ROW_SIZE];
-        inStream.read(timeBytes, 0, timeBytes.length);
+        byte[] timeBytes = readExactly(ROW_SIZE, inStream);
 
         date = DateUtils.getDateByBytes(timeBytes);;
 
@@ -45,19 +49,27 @@ public class UCNickPDU extends PDU{
         byte[] oldNickBytes = readExactly(nickLength1, inStream);
 
         //Read padding
-        byte[] padBytes     = readExactly(padLengths(nickLength1), inStream);
+        padBytes     = readExactly(padLengths(nickLength1), inStream);
 
+        if(!isPaddedBytes(padBytes)) {
+        	return ERROR_PADDING_NICK +"1";
+        }
+        
         //Reading new nick
         byte[] newNickBytes = readExactly(nickLength2, inStream);
 
         //Read padding
         padBytes            = readExactly(padLengths(nickLength2), inStream);
-
+        
+        if(!isPaddedBytes(padBytes)) {
+        	return ERROR_PADDING_NICK+"2";
+        }
+        
         oldNick = new String(oldNickBytes,StandardCharsets.UTF_8);
 
         newNick = new String(newNickBytes,StandardCharsets.UTF_8);
 
-        return true;
+        return null;
     }
 
     @Override
@@ -87,7 +99,8 @@ public class UCNickPDU extends PDU{
         return date;
     }
 
-    public boolean isValid() {
-        return validFlag;
+    @Override
+    public String getError() {
+        return error;
     }
 }

@@ -1,5 +1,6 @@
 package network.pdu.types;
 
+
 import network.pdu.ByteSequenceBuilder;
 import network.pdu.OpCode;
 import network.pdu.PDU;
@@ -37,4 +38,9 @@ public class ChNickPDU extends PDU{
     public byte getOpCode() {
         return OpCode.CHNICK.value;
     }
+
+	@Override
+	public String getError() {
+        return null;
+	}
 }

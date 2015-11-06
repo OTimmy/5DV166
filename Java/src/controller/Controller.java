@@ -4,14 +4,8 @@ import java.awt.event.ActionEvent;
 
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
-
-import javax.swing.JButton;
-import javax.swing.JTable;
-
 
 import view.GUI;
 
@@ -22,7 +16,8 @@ import network.pdu.types.UJoinPDU;
 import network.pdu.types.ULeavePDU;
 import network.pdu.types.SListPDU;
 import network.pdu.types.MessagePDU;
-
+//Refresh button should open browser.
+//
 /**
  * <h1>Listener.java</h1>
  *  Manage the flow between the gui and the underlying model
@@ -30,19 +25,18 @@ import network.pdu.types.MessagePDU;
  * @author c12ton
  * @version 0.0
  */
-//TODOUae hashmap for users, and and let index be there key?
+
 public class Controller {
 
     private final int KEY_ENTER = 10;
     private final int TAB_BROWS = 0;
     private final int TAB_CHAT  = 1;
-    private final int SERVER_ADDRESS = 0;
-    private final int SERVER_NAME    = 1;
-    
+
+    private final String ERROR_TCP_CONNECT = "Couldn't connect to server";
+
     private Network net;
     private GUI gui;
     private ArrayList<String> nicks;
-    private boolean nameServerConnected;
     private String nick;
 
     public Controller(Network net, GUI gui) {
@@ -51,7 +45,6 @@ public class Controller {
 		this.gui = gui;
     	initNetworkListener();
     	initGUIActionListener();
-		nameServerConnected = false;
     	nicks = new ArrayList<String>();
 	}
 
@@ -71,7 +64,7 @@ public class Controller {
 			        String nrClients = (String) t.getClientNumberss().get(i);
 			        String name    = (String) t.getServerNames().get(i);
 
-			        gui.addToServerList(address,port,nrClients,name);
+			        gui.addToTable(address,port,nrClients,name);
 			    }
 
 			}
@@ -83,19 +76,32 @@ public class Controller {
 			@Override
 			public void update(MessagePDU t) {
 			    String date = DateUtils.format(t.getDate());
+			    String nick;
+			    if(t.getNick().length() == 0) {
+			        nick = " **Server** ";
+			    } else {
+			        nick = " <" + t.getNick() +"> ";
+			    }
 
-			    gui.printOnMessageBoard(date +"<"+t.getNick()+"> "
-			                            +t.getMsg());
+                gui.printOnMessageBoard(date +nick
+                        +t.getMsg());
+
 			}
-
 		});
+
 
 		net.addTCPErrorListener(new Listener<String>() {
 
             @Override
             public void update(String t) {
-                gui.clearMessageBoard();
-                gui.printOnMessageBoard("Error:"+t);
+
+                if(t.compareTo(ERROR_TCP_CONNECT) == 0) {
+                    gui.printErrorBrowser(ERROR_TCP_CONNECT);
+                } else {
+                    gui.printOnMessageBoard("Error:"+t);
+                }
+
+                net.disconnectServer();
                 gui.setConnectServerButton("Connect");
                 clearNicks();
             }
@@ -105,8 +111,6 @@ public class Controller {
 
             @Override
             public void update(String t) {
-                System.out.println(t);
-                gui.setConnectNameServerButton("Connect");
                 gui.printErrorBrowser(t);
             }
         });
@@ -161,98 +165,83 @@ public class Controller {
 	 * Adding action listeners for the gui buttons.
 	 */
 	private void initGUIActionListener() {
-		gui.addConnectNameServerButtonListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
+	    gui.addRefreshButtonListener(new ActionListener() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	            gui.clearTable();
 
-			    if(nameServerConnected == false) {
-			        gui.clearTable();
-			        String address = gui.getNameServerAddress();
-			        int port = new Integer(gui.getNameServerPort());
+	            if(gui.getNameServerAddress().length() != 0
+	                    && gui.getNameServerPort().matches("[0-9]+")) {
 
-			        nameServerConnected = net.connectToNameServer(address, port);
+	                String address = gui.getNameServerAddress();
 
-			    } else {
-			        gui.clearTable();
-			        net.disconnectNameServer();
-			        nameServerConnected = false;
-			    }
+	                int port = new Integer(gui.getNameServerPort());
 
-			    JButton button = (JButton) arg0.getSource();
+	                net.refreshServers(address,port);
+	                gui.openTab(TAB_BROWS);
+	            }
+	        }
+        });
 
-			    if(nameServerConnected == false) {
-			        button.setText("Connect");
 
-			    } else {
-			        button.setText("Disconnect");
-			    }
-			}
-		});
+        gui.addConnectSeverButtonListener(new ActionListener() {
 
-		gui.addConnectSeverButtonListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gui.printErrorBrowser(""); // reset
+                if(!net.isConnectedToServer()) {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-			    System.out.println("connection: "+net.isConnectedToServer());
-			    if(!net.isConnectedToServer()) {
-			        gui.clearMessageBoard();
-			        String address = gui.getServerAddress();
-			        int port = new Integer(gui.getServerPort());
-			        String nick = gui.getNick();
+                    String address = gui.getServerAddress();
 
-			        net.ConnectToServer(address, port, nick);
+                    if(address.length() != 0
+                            && gui.getServerPort().matches("[0-9]+") ) {
+                        gui.clearMessageBoard();
+                        int port = new Integer(gui.getServerPort());
+                        String nick = gui.getNick();
+                        net.ConnectToServer(address, port, nick);
+                    }
 
-			    } else {
-			        net.disconnectServer();
-			        clearNicks();
-			    }
+                } else {
+                    net.disconnectServer();
+                    clearNicks();
+                }
 
-			    if(!net.isConnectedToServer()) {
-			        gui.setConnectServerButton("Connect");
-			        clearNicks();
-			        gui.setChatTabTitle("Chat");
-			        gui.openTab(TAB_BROWS);
-			    } else {
-			        gui.setConnectServerButton("Disconnect");
-			    	gui.setChatTabTitle(gui.getServerTopic());
-			        gui.openTab(TAB_CHAT);
-			    }
 
-			}
+                if(!net.isConnectedToServer()) {
+                    gui.setConnectServerButton("Connect");
+                    clearNicks();
+                    gui.setChatTabTitle("Chat");
+                    gui.openTab(TAB_BROWS);
+                } else {
+                    gui.setConnectServerButton("Disconnect");
+                    gui.setChatTabTitle(gui.getServerTopic());
+                    gui.openTab(TAB_CHAT);
+                }
 
-		});
+            }
 
-		gui.addOkButtonListener(new ActionListener() {
+        });
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-			    nick = gui.getNick();
-			    System.out.println("Nick: "+nick);
-			    net.changeNick(nick);
-			}
-		});
+        gui.addOkButtonListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                nick = gui.getNick();
+                net.changeNick(nick);
+            }
+        });
 
-		gui.addRefreshButtonListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-			    if(nameServerConnected) {
-	                gui.clearTable();
-			        net.refreshServers();
-			    }
-			}
-		});
 
-		gui.addSendButtonListener(new ActionListener() {
+        gui.addSendButtonListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String msg = gui.getSendTextArea();
-				net.SendMessage(msg,nick);
-			}
-		});
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String msg = gui.getSendTextArea();
+                net.SendMessage(msg,nick);
+            }
+        });
 
-		gui.addSendTextAreaListener(new KeyListener() {
+        gui.addSendTextAreaListener(new KeyListener() {
 
             @Override
             public void keyTyped(KeyEvent e) {}
@@ -270,24 +259,22 @@ public class Controller {
             @Override
             public void keyReleased(KeyEvent e) {}
 
-		});
-	}
+        });
+    }
 
-	private void addNickToList(String nickName) {
-	    synchronized(nicks) {
-	       // if(!nicks.contains(nick)) {
-	            nicks.add(nickName);
-	            gui.addNick(nickName);
-	       // }
-	    }
-	}
+    private void addNickToList(String nickName) {
+        synchronized(nicks) {
+                nicks.add(nickName);
+                gui.addNick(nickName);
+        }
+    }
 
-	private void changeNickFromList(String oldNickName, String newNickName) {
-	    synchronized(nicks) {
-	        //local
-	        int index = nicks.indexOf(oldNickName);
-	        if(index > -1) {
-		        nicks.set(index, newNickName);
+    private void changeNickFromList(String oldNickName, String newNickName) {
+        synchronized(nicks) {
+            //local
+            int index = nicks.indexOf(oldNickName);
+            if(index > -1) {
+                nicks.set(index, newNickName);
 
 		        //gui
 		        gui.clearNicks();

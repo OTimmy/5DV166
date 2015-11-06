@@ -1,7 +1,7 @@
 /*
  * server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 9/10-15.
+ * Last update: 6/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * server.c implements a chat server.
@@ -12,27 +12,6 @@
  * Memcheck: valgrind --tool=memcheck --leak-check=yes --show-reachable=yes -v ./server
  * Run: ./server "Server name here!" 51515
  */
-
-//                                                          with timeout
-// uchnick to changer too? 65507 buffer size udp. non blocking recv for ack?
-// existing nick change or deny? wrong PDU quit, message allowed? c tests?
-// illasinnade klienter? PDU validering? "händelser" samma ordn? checksum?
-// pad func. toByteArray for each PDU struct. how error safe? user friendly?
-// notice failing clients.
-
-// yes, yes, select timeout.
-// deny, yes, kinda.
-// ??, kinda, guess, soon (tm).
-// quite safe (don't allways quit), naah.
-// yeah.
-
-// uchnick, freeall?
-// main 2 threads (or admin client), ack to alive func.
-// time, server local msges (init, running), main? parser.
-
-//input quit or conn lost => uleave to all (or q?) => output exits (think of queue)
-//freefunc just before free queue => remove client (earlier?)
-//exit => mass quit/kick => term threads. quit and rem separate?
 
 /* --- Standard headers --- */
 #include <stdlib.h>
@@ -83,7 +62,7 @@ static char *name_server_address = "itchy.cs.umu.se";
 /* Port where name server accepts server connections */
 static char *name_server_port = "1337";
 /* Port where this server accepts client connections */
-static char *client_conn_port = "51515";//check len in parser
+static char *client_conn_port = "51515";
 /* Server name */
 static char *name = "Joshua - \"The only winning move is not to play\"";
 /*static char *name = "Anti-SkyNet";*/
@@ -108,14 +87,9 @@ int main(int argc, char *argv[])
 
     parse_arguments(argc, argv);
 
-    /* Initialize thread attribute to detached */
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
     /* Create thread for handling new client connections (doorman) */
     pthread_t thread_dm;
-    if (0 != pthread_create(&thread_dm, &attr, handle_connecting_clients,
+    if (0 != pthread_create(&thread_dm, NULL, handle_connecting_clients,
                             (void *) client_conn_port))
     {
         fprintf(stderr, "ERROR: Failed to create thread dm!\n");
@@ -127,17 +101,17 @@ int main(int argc, char *argv[])
     pdu_reg reg = {REG_OP, strlen(name), ccp, name};
     reg_data thread_data_ns = {name_server_address, name_server_port, reg};
     pthread_t thread_ns;
-    if (0 != pthread_create(&thread_ns, &attr, register_at_name_server,
+    if (0 != pthread_create(&thread_ns, NULL, register_at_name_server,
                             (void *) &thread_data_ns))
     {
         fprintf(stderr, "ERROR: Failed to create thread ns!\n");
         exit(EXIT_FAILURE);
     }
-    pthread_attr_destroy(&attr);
 
     /* Wait for inputs and follow commands */
-    char cmdline[30];
+    char cmdline[20];
     char cmd[20];
+    int exit_flag = 0;
     fflush(stdin);
     while (NULL != fgets(cmdline, sizeof(cmdline), stdin))
     {
@@ -145,8 +119,31 @@ int main(int argc, char *argv[])
         fflush(stdin);
         if (!strcmp(cmd, "exit")) /* Exit the program */
         {
-            //cancel rest of program!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            exit(EXIT_FAILURE);
+            /* Cancel major threads */
+            pthread_cancel(thread_dm);
+            pthread_cancel(thread_ns);
+            if (0 != pthread_join(thread_dm, NULL))
+            {
+                fprintf(stderr, "ERROR: Failed to join with thread dm!\n");
+            }
+            if (0 != pthread_join(thread_ns, NULL)) 
+            {
+                fprintf(stderr, "ERROR: Failed to join with thread ns!\n");
+            }
+            /* Tell clients we are closing and request they remove themselves */
+            pthread_mutex_lock(&clients_mutex);
+            for (int i = 0; i < 255; i++)
+            {
+                if (NULL != clients[i])
+                {
+                    enqueue(clients[i], server_mess("-Server shutting down!-"));
+                    shutdown(clients[i]->sockfd, SHUT_RD); /* Stop input */
+                }
+            }
+            pthread_mutex_unlock(&clients_mutex);
+            sleep(2); /* Give clients time to exit gracefully */
+            exit_flag = 1;
+            break;
         }
         else if (!strcmp(cmd, "up")) /* Print server uptime */
         {
@@ -157,22 +154,20 @@ int main(int argc, char *argv[])
                     ":%02"PRIu64":%02"PRIu64"\n", uptime/86400,
                     (uptime%86400)/3600, (uptime%3600)/60, uptime%60);
         }
-        // kick client, spy on conversation, mini client, etc.?????????
+        /* Feature bloat here! Could for example add commands for kicking
+           client, spying on conversation, mini client, etc. */
     }
-    fprintf(stderr, "Server commands unavailable!\n");
-    pause();
-
-/*    if (0 != pthread_join(thread_ns, NULL))*/
-/*    {*/
-/*        fprintf(stderr, "ERROR: Failed to join with thread ns!\n");*/
-/*    }*/
+    if (!exit_flag)
+    {
+        fprintf(stderr, "Server commands unavailable!\n");
+        pause(); /* Until program manually terminated */
+    }
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &end_time); /* End timer */
     double runtime = (end_time.tv_sec - start_time.tv_sec)
                      + (end_time.tv_nsec - start_time.tv_nsec)/1000000000.0;
-    fprintf(stderr, "\nRuntime: %.2f sec.\n", runtime);//uptime???????????????
+    fprintf(stderr, "\nRuntime: %.2f sec.\n", runtime);
 
-    //getchar();
     return 0;
 }
 
@@ -249,30 +244,4 @@ int is_uint16(const char *str)
     }
     return 1;
 }
-
-/* ===== WORK IN PROGRESS ===== */
-/*
- * fatal_error: Exits the program (with unsuccessful exit status) after
- *      printing some error messages.
- * Params: pmsg = string to print with perror, denoting what failed.
- *         msg = string to print to stderr, describing the issue. E.g.
- *               "Usage: %s [-t type] start1 [start2 ...] name\n". (%s=argv[0])
- * Returns:
- * Notes: Frees dynamically allocated resources given function.
- */
-/*void fatal_error(char *pmsg, char *msg)*/
-/*{*/
-/*    fprintf(stderr, "\nWarning: ERROR occurred, couldn't finish program!\n");*/
-/*    fprintf(stderr, msg);*/
-/*    perror(pmsg);*/
-/*    //free_all(); // conditional to preprocessor directive (as timers?)*/
-/*    exit(EXIT_FAILURE);*/
-/*}*/
-
-/*void error(char *msg)*/
-/*{*/
-/*    perror(msg);*/
-/*    //free_all();*/
-/*    exit(EXIT_FAILURE);*/
-/*}*/
 

@@ -23,74 +23,74 @@ public class ULeavePDU extends PDU{
     private final int TIME_LENGTH = 4;
     private final int PAD_LENGTH = 2;   // Known padded size
 
-	private String nick;
-	private Date date;
-	private boolean validFlag;
+    private String error;
+    private String nick;
+    private Date date;
 
+    public ULeavePDU(InputStream inStream) throws IOException {
+        error = parse(inStream);
+    }
 
-	public ULeavePDU(InputStream inStream) throws IOException {
-	    validFlag = parse(inStream);
-	}
+    /**
+     * @param Reads from inputstream by the given standard of the pdu.
+     * @return a flag.
+     */
+    private String parse(InputStream inStream) throws IOException {
 
-	/**
-	 * @param Reads from inputstream by the given standard of the pdu.
-	 * @return a flag.
-	 */
-	private boolean parse(InputStream inStream) throws IOException {
+        int nickLength = inStream.read();
 
-	    int nickLength = inStream.read();
+        //reading pad
+        byte[] padBytes = readExactly(PAD_LENGTH, inStream);
 
-	    //reading pad
-	    byte[] padBytes = readExactly(PAD_LENGTH, inStream);
+        if(!isPaddedBytes(padBytes)) {
+            return ERROR_PADDING_PDU;
+        }
 
-	    if(!isPaddedBytes(padBytes)) {
-	        return false;
-	    }
+        //Reading time stamp
+        byte[] timeBytes = readExactly(TIME_LENGTH, inStream);
 
-	    //Reading time stamp
-	    byte[] timeBytes = readExactly(TIME_LENGTH, inStream);
+        date = DateUtils.getDateByBytes(timeBytes); 
 
-	    date = DateUtils.getDateByBytes(timeBytes); 
+        //Reading nick
+        byte[] nickBytes = readExactly(nickLength, inStream);
 
-	    //Reading nick
-	    byte[] nickBytes = readExactly(nickLength, inStream);
+        //Reading pad of nick
+        padBytes = readExactly(padLengths(nickLength), inStream);
 
-	    //Reading pad of nick
-	    padBytes = readExactly(padLengths(nickLength), inStream);
+        if(!isPaddedBytes(padBytes)) {
+            return ERROR_PADDING_NICK;
+        }
 
-	    if(!isPaddedBytes(padBytes)) {
-	        return false;
-	    }
+        nick = new String(nickBytes, StandardCharsets.UTF_8);
 
-	    nick = new String(nickBytes, StandardCharsets.UTF_8);
+        return null;
+    }
 
-	    return true;
-	}
+    @Override
+    public byte[] toByteArray() {
+        return null;
+    }
 
-	@Override
-	public byte[] toByteArray() {
-		return null;
-	}
+    @Override
+    public int getSize() {
+        return 0;
+    }
 
-	@Override
-	public int getSize() {
-		return 0;
-	}
+    @Override
+    public byte getOpCode() {
+        return OpCode.ULEAVE.value;
+    }
 
-	@Override
-	public byte getOpCode() {
-		return OpCode.ULEAVE.value;
-	}
+    public String getNick() {
+        return nick;
+    }
 
-	public String getNick() {
-		return nick;
-	}
+    public Date getDate() {
+        return date;
+    }
 
-	public Date getDate() {
-	    return date;
-	}
-
-	public boolean isValid() {
-	    return validFlag;
-	}
+    @Override
+    public String getError() {
+        return error;
+    }
 }

@@ -1,5 +1,6 @@
 package network.pdu.types;
 
+
 import network.pdu.OpCode;
 import network.pdu.PDU;
 
@@ -24,9 +25,14 @@ public class QuitPDU extends PDU{
         return bytes.length;
     }
 
-	@Override
-	public byte getOpCode() {
-		return OpCode.QUIT.value;
-	}
+    @Override
+    public byte getOpCode() {
+        return OpCode.QUIT.value;
+    }
+
+    @Override
+    public String getError() {
+        return null;
+    }
 
 }

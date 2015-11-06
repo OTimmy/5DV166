@@ -1,5 +1,6 @@
 package network.pdu.types;
 
+
 import network.pdu.OpCode;
 import network.pdu.PDU;
 
@@ -25,5 +26,11 @@ public class GetListPDU extends PDU{
 	@Override
 	public byte getOpCode() {
 		return OpCode.GETLIST.value;
+	}
+
+	@Override
+	public String getError() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

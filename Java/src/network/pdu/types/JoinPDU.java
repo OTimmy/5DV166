@@ -10,6 +10,7 @@ public class JoinPDU extends PDU{
     private byte[] bytes;
 
     public JoinPDU(String nick) {
+        
         byte[] nickbytes = nick.getBytes(StandardCharsets.UTF_8);
         ByteSequenceBuilder builder = new ByteSequenceBuilder(OpCode.JOIN.value,
                                                        (byte) nickbytes.length);
@@ -33,5 +34,11 @@ public class JoinPDU extends PDU{
 	@Override
 	public byte getOpCode() {
 		return OpCode.JOIN.value;
+	}
+
+	@Override
+	public String getError() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

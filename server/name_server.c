@@ -1,7 +1,7 @@
 /*
  * name_server.c
  * Written by Joakim Sandman, September 2015.
- * Last update: 8/10-15.
+ * Last update: 6/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * name_server.c contains functions for connecting to the name server.
@@ -87,7 +87,7 @@ void *register_at_name_server(void *thread_data_ns)
     FD_SET(sockfd, &read_fds);
 
     /* Register at name server */
-    for EVER // break if some global var set? if some signal sent?????????????
+    for EVER
     {
         printf("Registering at name server...\n");
         err = send(sockfd, reg_array, reg_arr_len, 0);
@@ -169,8 +169,8 @@ void *register_at_name_server(void *thread_data_ns)
             }
         }
     }
-    printf("Leaving name server.\n");
     close(sockfd);
+    printf("Leaving name server.\n");
     return NULL;
 }
 
