@@ -1,7 +1,7 @@
 /*
  * clients.c
  * Written by Joakim Sandman, October 2015.
- * Last update: 6/11-15.
+ * Last update: 9/11-15.
  * Lab 1: Chattserver, Datakommunikation och datornät HT15.
  *
  * clients.c contains functions for handling client input and output.
@@ -443,7 +443,7 @@ void handle_client_input(client *cli)
             uint8_t new_len = header[1];
             size_t new_pad = pad_length(new_len);
             size_t new_size = new_len + new_pad;
-            uint8_t *new_nick = malloc(new_size);
+            char *new_nick = malloc(new_size);
             if (NULL == new_nick)
             {
                 perror("malloc (new_nick)");
@@ -481,6 +481,14 @@ void handle_client_input(client *cli)
                 break;
             }
             free(new);
+
+            /* Check if nick is already used */
+            if (nick_used(new_nick))
+            {
+                enqueue(cli, server_mess("Nick taken, try another."));
+                free(new_nick);
+                break;
+            }
 
             /* Build UCHNICK PDU to send */
             size_t uchnick_len = 8 + nick_size + new_size;
